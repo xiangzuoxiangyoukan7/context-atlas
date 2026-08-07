@@ -1,0 +1,7 @@
+schema: profile.v1
+required: [profile_id, title, project_types, added_fields, added_acceptance_checks, exclusions]
+rules:
+  - profile fields are additive
+  - profiles cannot override core status, authority or acceptance result values
+  - profile selection must be recorded in the project overview
+

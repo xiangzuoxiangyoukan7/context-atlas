@@ -1,0 +1,24 @@
+schema: feature.v1
+required:
+  - id
+  - type
+  - title
+  - status
+  - phase
+  - priority
+  - current_slice
+  - depends_on
+  - acceptance
+  - contracts
+  - adr
+  - last_updated
+enums:
+  type: [feature]
+  status: [candidate, baselined, scheduled, in_progress, acceptance, completed, deferred, deprecated]
+  phase: [mvp, phase2, phase3]
+  priority: [P0, P1, P2, P3]
+  current_slice: [included, excluded]
+rules:
+  - acceptance must be non-empty and unique
+  - completed requires every acceptance row to be passed with evidence and version
+
