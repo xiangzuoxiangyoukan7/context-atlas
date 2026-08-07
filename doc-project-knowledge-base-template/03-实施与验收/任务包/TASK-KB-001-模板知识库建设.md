@@ -2,7 +2,7 @@
 id: TASK-KB-001
 type: governance_task
 title: 模板知识库建设
-plan: ../../../docs/superpowers/plans/2026-08-07-project-knowledge-base-template.md
+plan: ../../../docs/superpowers/plans/2026-08-07-project-doc-project-knowledge-base-template-template.md
 status: completed
 acceptance: [KB-AC-01, KB-AC-02, KB-AC-03, KB-AC-04, KB-AC-05, KB-AC-06, KB-AC-07, KB-AC-08, KB-AC-09, KB-AC-10]
 last_updated: 2026-08-07

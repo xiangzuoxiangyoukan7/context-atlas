@@ -4,7 +4,7 @@
 
 ## 入口
 
-- [本项目知识库](./knowledge-base/README.md)
+- [本项目知识库](doc-project-knowledge-base-template/README.md)
 - [通用模板](./template/README.md)
 - [核心 Schema](./schemas/README.md)
 - [Frontend 扩展](./profiles/frontend/README.md)

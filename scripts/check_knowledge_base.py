@@ -237,7 +237,7 @@ def validate(root: Path) -> list[Issue]:
     root = root.resolve()
     issues: list[Issue] = []
     if not root.exists():
-        return [_issue("KB010", root, "knowledge-base root does not exist")]
+        return [_issue("KB010", root, "doc-project-knowledge-base-template root does not exist")]
     records = _records(root, issues)
     _validate_metadata(records, issues)
     _validate_matrix(root, records, issues)
@@ -250,7 +250,7 @@ def validate(root: Path) -> list[Issue]:
 def main(argv: Sequence[str] | None = None) -> int:
     args = list(argv if argv is not None else sys.argv[1:])
     if len(args) != 1:
-        print("usage: python scripts/check_knowledge_base.py <knowledge-base>")
+        print("usage: python scripts/check_knowledge_base.py <doc-project-knowledge-base-template>")
         return 2
     issues = validate(Path(args[0]))
     if issues:
