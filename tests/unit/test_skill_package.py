@@ -131,6 +131,28 @@ class SkillPackageTests(unittest.TestCase):
 
             self.assertEqual(sync_assets(source, skill, check=True), [])
 
+    def test_sync_handles_invalid_utf8_text_target_as_mismatch(self) -> None:
+        from scripts.sync_skill_assets import sync_assets
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            skill = root / "skill"
+            assets = skill / "assets"
+            source.mkdir()
+            assets.mkdir(parents=True)
+            canonical = b"canonical line\n"
+            (source / "document.md").write_bytes(canonical)
+            (assets / "manifest.json").write_text(
+                json.dumps({"files": ["document.md"]}), encoding="utf-8"
+            )
+            target = assets / "document.md"
+            target.write_bytes(b"invalid \xff\n")
+
+            self.assertEqual(sync_assets(source, skill, check=True), ["document.md"])
+            self.assertEqual(sync_assets(source, skill, check=False), ["document.md"])
+            self.assertEqual(target.read_bytes(), canonical)
+
 
 if __name__ == "__main__":
     unittest.main()
