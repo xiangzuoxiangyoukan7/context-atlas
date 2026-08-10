@@ -5,7 +5,7 @@
 ## 入口
 
 - [本项目知识库](doc-xiangmuzhishikumoban/README.md)
-- [通用模板](./template/README.md)
+- [通用核心模板](./templates/core/README.md)
 - [核心 Schema](./schemas/README.md)
 - [Java 扩展](./profiles/java/README.md)
 - [Python 扩展](./profiles/python/README.md)
@@ -20,4 +20,4 @@ AI 负责调研、提问和组织候选知识；项目责任人负责确认内�
 
 ## 当前状态
 
-项目正在重新建立产品基线。当前已批准产品方向，但 Skill、完整模板、Java/Python Profile、示例和新版检查器尚未按新基线实现。旧版 KB-AC-01–10 只代表概念骨架曾通过结构验收。
+产品方向、核心 Schema、检查器和语言无关核心模板已进入实现。可安装 Skill、Java/Python Profile、黄金样例和最终跨 Agent 验收仍待完成；旧版 KB-AC-01–10 只代表概念骨架曾通过结构验收。

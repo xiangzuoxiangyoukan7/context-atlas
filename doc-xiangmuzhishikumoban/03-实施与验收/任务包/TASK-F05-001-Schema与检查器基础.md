@@ -3,7 +3,7 @@ id: TASK-F05-001
 type: task
 title: Schema 与检查器基础
 feature: F05
-status: ready
+status: acceptance
 acceptance: [F05-AC-01, F05-AC-02]
 last_updated: 2026-08-10
 ---
@@ -35,3 +35,5 @@ last_updated: 2026-08-10
 ## 验收
 
 以 F05-AC-01、F05-AC-02 及实现计划 Task 1～2 的测试和验证命令为准。
+
+阶段实现已提交为 `5c6ebaf`、`e2e8864`。Schema、Front Matter、模块化检查、文本/JSON 报告和规定反例测试已通过；完整黄金样例留待实现计划 Task 6，因此 F05 整体验收尚未完成。

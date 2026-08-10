@@ -1,6 +1,8 @@
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
+from typing import Sequence
 
 
 def write_record(
@@ -45,6 +47,32 @@ def make_valid_knowledge_base(root: Path) -> Path:
             },
         )
     return root
+
+
+def materialize_core_template(
+    target: Path,
+    project_name: str,
+    profiles: Sequence[str] = (),
+) -> Path:
+    source = Path("templates/core/doc-project")
+    knowledge_base = target / f"doc-{project_name}"
+    shutil.copytree(source, knowledge_base)
+    replacements = {
+        "{{PROJECT_ID}}": project_name,
+        "{{PROJECT_NAME}}": project_name,
+        "{{KNOWLEDGE_BASE_NAME}}": f"doc-{project_name}",
+        "{{INITIALIZED_AT}}": "2026-08-10",
+    }
+    for path in knowledge_base.rglob("*"):
+        if not path.is_file():
+            continue
+        content = path.read_text(encoding="utf-8")
+        for marker, value in replacements.items():
+            content = content.replace(marker, value)
+        if profiles and path.name == "knowledge-base.yaml":
+            content = content.replace("profiles: []", f"profiles: [{', '.join(profiles)}]")
+        path.write_text(content, encoding="utf-8")
+    return knowledge_base
 
 
 class TempDirectoryTestCase(unittest.TestCase):
