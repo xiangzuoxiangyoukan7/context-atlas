@@ -55,7 +55,7 @@ def sync_assets(source_root: Path, skill_root: Path, check: bool = False) -> lis
             mismatches.append(relative_text)
             continue
         expected = _normalized(source)
-        actual = target.read_bytes() if target.is_file() else None
+        actual = _normalized(target) if target.is_file() else None
         if actual is not None and _digest(actual) == _digest(expected):
             continue
         mismatches.append(relative_text)

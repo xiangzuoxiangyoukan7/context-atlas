@@ -113,6 +113,24 @@ class SkillPackageTests(unittest.TestCase):
             self.assertEqual(sync_assets(source, skill), ["declared.txt"])
             self.assertTrue(extra.is_file())
 
+    def test_sync_treats_crlf_target_as_matching_lf_canonical_text(self) -> None:
+        from scripts.sync_skill_assets import sync_assets
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            skill = root / "skill"
+            assets = skill / "assets"
+            source.mkdir()
+            assets.mkdir(parents=True)
+            (source / "document.md").write_bytes(b"first line\nsecond line\n")
+            (assets / "manifest.json").write_text(
+                json.dumps({"files": ["document.md"]}), encoding="utf-8"
+            )
+            (assets / "document.md").write_bytes(b"first line\r\nsecond line\r\n")
+
+            self.assertEqual(sync_assets(source, skill, check=True), [])
+
 
 if __name__ == "__main__":
     unittest.main()
