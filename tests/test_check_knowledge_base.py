@@ -60,8 +60,8 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
 
         codes = self.codes(validate(self.root))
 
-        self.assertIn("KB001", codes)
-        self.assertIn("KB003", codes)
+        self.assertIn("KB_ID_DUPLICATE", codes)
+        self.assertIn("KB_SCHEMA_REQUIRED", codes)
 
     def test_rejects_empty_or_duplicate_acceptance(self) -> None:
         self.valid_feature(acceptance=[])
@@ -74,17 +74,17 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
 
         codes = self.codes(validate(self.root))
 
-        self.assertIn("KB003", codes)
+        self.assertIn("KB_SCHEMA_LIST", codes)
 
     def test_rejects_illegal_acceptance_result_and_passed_without_evidence(self) -> None:
         self.valid_feature()
         self.valid_current()
         self.matrix("| F01-AC-01 | Feature | condition | failed | — | — |\n")
 
-        self.assertIn("KB005", self.codes(validate(self.root)))
+        self.assertIn("KB_ACCEPTANCE_RESULT", self.codes(validate(self.root)))
 
         self.matrix("| F01-AC-01 | Feature | condition | passed | — | — |\n")
-        self.assertIn("KB007", self.codes(validate(self.root)))
+        self.assertIn("KB_ACCEPTANCE_EVIDENCE", self.codes(validate(self.root)))
 
     def test_rejects_missing_or_duplicate_matrix_rows(self) -> None:
         self.valid_feature(acceptance=["F01-AC-01", "F01-AC-02"])
@@ -93,25 +93,26 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
 
         codes = self.codes(validate(self.root))
 
-        self.assertIn("KB004", codes)
+        self.assertIn("KB_MATRIX_IDS", codes)
+        self.assertIn("KB_MATRIX_DUPLICATE", codes)
 
     def test_rejects_missing_current_and_mixed_current_states(self) -> None:
         self.valid_feature()
         self.matrix("| F01-AC-01 | Feature | condition | not_started | — | — |\n")
-        self.assertIn("KB006", self.codes(validate(self.root)))
+        self.assertIn("KB_CURRENT_REQUIRED", self.codes(validate(self.root)))
 
         self.valid_current()
         self.write(
             "03-实施与验收/CURRENT.md",
             "- 当前任务：无可执行开发任务\n- 任务包：[task](./任务包/TASK-F01-001.md)\n",
         )
-        self.assertIn("KB006", self.codes(validate(self.root)))
+        self.assertIn("KB_CURRENT_STATE", self.codes(validate(self.root)))
 
     def test_rejects_broken_relative_link(self) -> None:
         self.valid_current()
         self.write("00-项目总览/README.md", "[missing](./missing.md)\n")
 
-        self.assertIn("KB009", self.codes(validate(self.root)))
+        self.assertIn("KB_LINK_BROKEN", self.codes(validate(self.root)))
 
     def test_rejects_profile_core_override(self) -> None:
         self.valid_current()
@@ -119,7 +120,7 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
         profiles.mkdir(parents=True)
         (profiles / "README.md").write_text("profile_id: bad\n允许修改核心 status\n", encoding="utf-8")
 
-        self.assertIn("KB008", self.codes(validate(self.root)))
+        self.assertIn("KB_PROFILE_OVERRIDE", self.codes(validate(self.root)))
 
     def test_ignores_workspace_excalidraw_documents(self) -> None:
         self.valid_current()

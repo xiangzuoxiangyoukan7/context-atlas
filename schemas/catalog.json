@@ -5,5 +5,6 @@
   "knowledge_item": "knowledge-item.schema.json",
   "profile": "profile.schema.json",
   "project_manifest": "project-manifest.schema.json",
+  "source": "source.schema.json",
   "task": "task.schema.json"
 }
