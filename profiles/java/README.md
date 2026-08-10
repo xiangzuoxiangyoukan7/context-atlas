@@ -1,20 +1,8 @@
 # Java Profile
 
-`profile_id: java.v1`。适用于 Maven、Gradle、Spring 等 Java 服务或组件。
+`java.v1` 是可选增量，适用于纯 Java 或混合项目。机器描述见 [profile.json](./profile.json)，新增知识模板见 [技术栈-Java](./templates/技术栈-Java.md)。
 
-## 增加字段
+- [功能卡增量](./feature-card-template.md)
+- [验收清单](./acceptance-checklist.md)
 
-- `jdk_version`
-- `build_system`
-- `framework`
-- `dependency_source`
-- `test_command`
-
-## 增加验收
-
-构建命令和 JDK 可复现、依赖来源可追溯、单元/集成测试边界明确、公开接口契约稳定、漏洞扫描结果保留原始证据。
-
-## 边界
-
-本 profile 不修改核心功能状态、验收结果枚举或 AI 权威来源规则。
-
+Agent 必须从 Wrapper、构建文件、源码入口和 CI 获取事实；不得预设 Spring、Maven 或 Gradle。本 Profile 不修改核心状态、权威路径、批准规则或验收结果。

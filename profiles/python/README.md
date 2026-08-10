@@ -1,21 +1,8 @@
 # Python Profile
 
-`profile_id: python.v1`。适用于 FastAPI、Django、Flask 和 Python 工具项目。
+`python.v1` 是可选增量，适用于纯 Python 或混合项目。机器描述见 [profile.json](./profile.json)，新增知识模板见 [技术栈-Python](./templates/技术栈-Python.md)。
 
-## 增加字段
+- [功能卡增量](./feature-card-template.md)
+- [验收清单](./acceptance-checklist.md)
 
-- `python_version`
-- `environment_manager`
-- `package_manager`
-- `framework`
-- `test_command`
-- `type_check_command`
-
-## 增加验收
-
-解释器和环境可复现、依赖锁定、pytest/类型检查边界明确、服务入口和配置来源可追溯、秘密不进入仓库。
-
-## 边界
-
-本 profile 不修改核心功能状态、验收结果枚举或 AI 权威来源规则。
-
+Agent 必须从项目配置、锁文件、入口和 CI 获取事实；不得预设 Web 框架或包管理器。本 Profile 不修改核心状态、权威路径、批准规则或验收结果。

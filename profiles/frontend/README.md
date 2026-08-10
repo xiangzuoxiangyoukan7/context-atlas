@@ -1,19 +1,5 @@
-# Frontend Profile
+# Frontend Profile（历史输入，MVP 不支持）
 
-`profile_id: frontend.v1`。适用于 React、Vue、Angular 等前端项目。
+该目录保留旧版 `frontend.v1` 文档，仅用于解释历史，不属于当前 Profile 目录、Skill 打包或产品验收范围。Agent 不得选择或物化本 Profile。
 
-## 增加字段
-
-- `runtime`: Node 版本
-- `package_manager`: npm、pnpm、yarn 或 bun
-- `framework`: React、Vue、Angular 等
-- `build_targets`: 浏览器、SSR 或静态站点
-
-## 增加验收
-
-构建可重复、依赖锁文件存在、关键浏览器范围明确、端到端路径可复现、生产构建不包含调试凭据。
-
-## 边界
-
-本 profile 不修改核心功能状态、验收结果枚举或 AI 权威来源规则。
-
+未来如需恢复，必须先建立获批准的功能、JSON 描述符、加法边界测试和黄金样例；现有文件不能覆盖核心规则。

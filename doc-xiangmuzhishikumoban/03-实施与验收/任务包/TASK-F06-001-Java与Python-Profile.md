@@ -3,7 +3,7 @@ id: TASK-F06-001
 type: task
 title: Java 与 Python 可组合 Profile
 feature: F06
-status: ready
+status: acceptance
 acceptance: [F06-AC-01, F06-AC-02]
 last_updated: 2026-08-10
 ---
@@ -33,3 +33,5 @@ last_updated: 2026-08-10
 ## 验收
 
 以 F06-AC-01、F06-AC-02 和实现计划 Task 4 的测试命令为准；四类黄金样例的最终证据在 Task 6 补齐。
+
+阶段证据：[F06 Profile 阶段验证](../验收证据/F06-Profile阶段验证.md)。组合物化、描述符 Schema 和核心覆盖反例已经通过；移除保留历史和黄金样例仍待后续任务。
