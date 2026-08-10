@@ -78,6 +78,20 @@ def _validate_lifecycle(
                         f"approved item lacks: {', '.join(missing)}",
                     )
                 )
+            proposal_revision = metadata.get("proposal_revision")
+            confirmed_revision = metadata.get("confirmed_revision")
+            if (
+                proposal_revision is not None
+                and confirmed_revision is not None
+                and proposal_revision != confirmed_revision
+            ):
+                issues.append(
+                    Issue(
+                        "KB_PROPOSAL_STALE",
+                        record.path,
+                        "confirmed revision does not match the written Proposal revision",
+                    )
+                )
         if status == "conflicted":
             if len(set(sources)) < 2:
                 issues.append(
@@ -272,18 +286,6 @@ def _validate_current(root: Path, ids: Mapping[str, DocumentRecord]) -> list[Iss
     return []
 
 
-def _validate_profiles(root: Path) -> list[Issue]:
-    profiles = root.parent / "profiles"
-    if not profiles.exists():
-        return []
-    issues: list[Issue] = []
-    for path in sorted(profiles.rglob("*.md")):
-        text = path.read_text(encoding="utf-8")
-        if re.search(r"(允许|可以|must)\s*(修改|override)\s*(核心|core)", text, re.IGNORECASE):
-            issues.append(Issue("KB_PROFILE_OVERRIDE", path, "profile attempts to override core rules"))
-    return issues
-
-
 def validate_traceability(root: Path, records: Iterable[DocumentRecord]) -> list[Issue]:
     materialized = list(records)
     issues: list[Issue] = []
@@ -292,5 +294,4 @@ def validate_traceability(root: Path, records: Iterable[DocumentRecord]) -> list
     issues.extend(_validate_references(materialized, ids))
     issues.extend(_validate_matrix(root, materialized))
     issues.extend(_validate_current(root, ids))
-    issues.extend(_validate_profiles(root))
     return issues

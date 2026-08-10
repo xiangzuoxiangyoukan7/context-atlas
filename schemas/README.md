@@ -9,8 +9,7 @@
 - [产品任务](./task.schema.json)
 - [治理任务](./governance-task.schema.json)
 - [验收](./acceptance.schema.json)
-- [技术栈 Profile](./profile.schema.json)
 - [知识来源](./source.schema.json)
 
-Profile 只能增加约束，不能改变核心状态、权威来源、确认规则或验收结果。
+技术栈记录只增加项目事实，不能改变核心状态、权威来源、确认规则或验收结果。
 

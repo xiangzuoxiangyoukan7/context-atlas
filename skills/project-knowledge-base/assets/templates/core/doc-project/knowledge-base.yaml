@@ -3,7 +3,6 @@ schema_version: 1.0
 project_id: {{PROJECT_ID}}
 project_name: {{PROJECT_NAME}}
 knowledge_base_name: {{KNOWLEDGE_BASE_NAME}}
-profiles: []
 revision: 1
 initialized_at: {{INITIALIZED_AT}}
 authority:

@@ -6,7 +6,6 @@ from pathlib import Path
 from .discovery import discover_records
 from .links import validate_links
 from .model import Issue
-from .profiles import validate_embedded_profiles
 from .schema_catalog import SchemaCatalog
 from .security import validate_security
 from .traceability import validate_traceability
@@ -33,6 +32,5 @@ def validate(root: Path, config: ValidationConfig) -> list[Issue]:
             issues.extend(catalog.validate(kind, record.metadata, record.path))
     issues.extend(validate_links(resolved_root, config.excluded_directories))
     issues.extend(validate_traceability(resolved_root, records))
-    issues.extend(validate_embedded_profiles(resolved_root, config.schema_root))
     issues.extend(validate_security(records))
     return sorted(issues, key=lambda issue: (str(issue.path), issue.code, issue.message))

@@ -4,7 +4,6 @@ import tempfile
 import unittest
 from typing import Sequence
 
-from scripts.project_kb.profiles import apply_profiles
 
 
 def write_record(
@@ -54,7 +53,6 @@ def make_valid_knowledge_base(root: Path) -> Path:
 def materialize_core_template(
     target: Path,
     project_name: str,
-    profiles: Sequence[str] = (),
 ) -> Path:
     source = Path("templates/core/doc-project")
     knowledge_base = target / f"doc-{project_name}"
@@ -71,10 +69,7 @@ def materialize_core_template(
         content = path.read_text(encoding="utf-8")
         for marker, value in replacements.items():
             content = content.replace(marker, value)
-        if profiles and path.name == "knowledge-base.yaml":
-            content = content.replace("profiles: []", f"profiles: [{', '.join(profiles)}]")
         path.write_text(content, encoding="utf-8")
-    apply_profiles(knowledge_base, profiles)
     return knowledge_base
 
 

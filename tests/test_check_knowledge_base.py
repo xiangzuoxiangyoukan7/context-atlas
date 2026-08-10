@@ -114,14 +114,6 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
 
         self.assertIn("KB_LINK_BROKEN", self.codes(validate(self.root)))
 
-    def test_rejects_profile_core_override(self) -> None:
-        self.valid_current()
-        profiles = self.root.parent / "profiles" / "bad"
-        profiles.mkdir(parents=True)
-        (profiles / "README.md").write_text("profile_id: bad\n允许修改核心 status\n", encoding="utf-8")
-
-        self.assertIn("KB_PROFILE_OVERRIDE", self.codes(validate(self.root)))
-
     def test_ignores_workspace_excalidraw_documents(self) -> None:
         self.valid_current()
         self.write("Excalidraw/Drawing.md", "---\nnot valid metadata\n---\n")

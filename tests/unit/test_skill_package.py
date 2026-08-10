@@ -61,8 +61,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertIn('display_name: "项目知识库"', metadata)
         self.assertIn("$project-knowledge-base", metadata)
         self.assertFalse(Path("skills/project-knowledge-context").exists())
-        self.assertFalse(Path("profiles/frontend").exists())
-        self.assertFalse(any(path.startswith("profiles/frontend/") for path in manifest["files"]))
+        self.assertFalse(Path("profiles").exists())
+        self.assertFalse(any(path.startswith("profiles/") for path in manifest["files"]))
 
     def test_skill_frontmatter_matches_official_constraints(self) -> None:
         content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
