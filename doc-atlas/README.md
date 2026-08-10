@@ -1,6 +1,6 @@
-# xiangmuzhishikumoban 项目知识库
+# 脉络地图（Context Atlas）
 
-本目录是项目 `xiangmuzhishikumoban` 的唯一现行知识库。项目目标是为 AI Agent 提供可初始化、可维护、可版本化和可追溯的项目知识库能力，而不是实现任何具体业务系统。
+本目录是项目 `context-atlas` 的唯一现行知识库。项目目标是为 AI Agent 提供可初始化、可维护、可版本化和可追溯的项目知识库能力，而不是实现任何具体业务系统。
 
 ## 当前状态
 

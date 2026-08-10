@@ -4,7 +4,7 @@
 
 ## 入口
 
-- [本项目知识库](doc-xiangmuzhishikumoban/README.md)
+- [本项目知识库](doc-atlas/README.md)
 - [通用核心模板](./templates/core/README.md)
 - [核心 Schema](./schemas/README.md)
 - [知识库检查器](./scripts/check_knowledge_base.py)
