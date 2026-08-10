@@ -3,7 +3,7 @@ id: TASK-F05-001
 type: task
 title: Schema 与检查器基础
 feature: F05
-status: ready
+status: acceptance
 acceptance: [F05-AC-01, F05-AC-02]
 last_updated: 2026-08-10
 ---
@@ -12,7 +12,7 @@ last_updated: 2026-08-10
 
 ## 计划
 
-[Agent-Native Project Knowledge Base MVP Implementation Plan](../../../docs/superpowers/plans/2026-08-10-agent-native-project-knowledge-base-mvp.md) 的 Task 1～2。
+[Single Knowledge Base, Multi-Stack Implementation Plan](../../../docs/superpowers/plans/2026-08-10-single-knowledge-base-multi-stack.md) 的基础检查任务。
 
 ## 关联依据
 
@@ -29,9 +29,11 @@ last_updated: 2026-08-10
 
 ## 排除
 
-- 不实现核心模板、Profile、Skill 或黄金样例。
-- 不完成 F01～F04、F06 的产品验收。
+- 不实现核心模板、Skill 或黄金样例。
+- 不完成 F01～F04 的产品验收。
 
 ## 验收
 
 以 F05-AC-01、F05-AC-02 及实现计划 Task 1～2 的测试和验证命令为准。
+
+阶段实现已提交为 `5c6ebaf`、`e2e8864`。Schema、Front Matter、模块化检查、文本/JSON 报告和规定反例测试已通过；完整黄金样例留待实现计划 Task 6，因此 F05 整体验收尚未完成。
