@@ -13,6 +13,18 @@ def relative_files(root: Path) -> list[str]:
 
 
 class GoldenExampleTests(unittest.TestCase):
+    def test_examples_include_governed_data_assets(self) -> None:
+        expected_types = {
+            "single-stack": "source_types: [database]",
+            "multi-stack": "source_types: [database, api, file]",
+        }
+        for name, expected in expected_types.items():
+            path = Path("examples") / name / "02-架构与契约/数据资产/DATA-001-知识项.md"
+            self.assertTrue(path.is_file(), path)
+            content = path.read_text(encoding="utf-8")
+            self.assertIn(expected, content)
+            self.assertIn("../数据库/DB-001.md", content)
+
     def test_all_golden_examples_validate(self) -> None:
         config = ValidationConfig(schema_root=Path("schemas"))
         for name in EXAMPLES:

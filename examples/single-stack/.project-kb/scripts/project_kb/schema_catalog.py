@@ -54,6 +54,18 @@ class SchemaCatalog:
                 issues.append(
                     Issue("KB_SCHEMA_ENUM", path, f"invalid {field}: {metadata[field]!r}")
                 )
+        for field, allowed in schema.get("list_enums", {}).items():
+            value = metadata.get(field)
+            if isinstance(value, list):
+                invalid = [item for item in value if item not in allowed]
+                if invalid:
+                    issues.append(
+                        Issue(
+                            "KB_SCHEMA_ENUM",
+                            path,
+                            f"invalid {field} values: {invalid!r}",
+                        )
+                    )
         for field, pattern in schema.get("patterns", {}).items():
             value = metadata.get(field)
             if isinstance(value, str) and re.fullmatch(str(pattern), value) is None:

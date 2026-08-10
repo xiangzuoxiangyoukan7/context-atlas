@@ -5,6 +5,7 @@
 - [目录](./catalog.json)
 - [项目清单](./project-manifest.schema.json)
 - [通用知识项](./knowledge-item.schema.json)
+- [数据资产](./data-asset.schema.json)
 - [功能](./feature.schema.json)
 - [产品任务](./task.schema.json)
 - [治理任务](./governance-task.schema.json)
@@ -12,4 +13,6 @@
 - [知识来源](./source.schema.json)
 
 技术栈记录只增加项目事实，不能改变核心状态、权威来源、确认规则或验收结果。
+
+除 `required`、`enums`、`patterns`、`non_empty_lists`、`unique_lists` 外，Schema 还支持 `list_enums`，用于约束字符串列表中的每个成员必须来自预定义枚举。
 

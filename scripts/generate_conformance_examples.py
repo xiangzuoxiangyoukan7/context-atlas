@@ -67,6 +67,50 @@ def _approved_item(root: Path, relative: str, identifier: str, title: str, body:
     )
 
 
+def _approved_data_asset(root: Path, name: str) -> None:
+    source_types = ["database"] if name == "single-stack" else ["database", "api", "file"]
+    _record(
+        root / "02-架构与契约/数据资产/DATA-001-知识项.md",
+        {
+            "id": "DATA-001",
+            "type": "data_asset",
+            "title": "知识项数据",
+            "status": "approved",
+            "version": "1.0.0",
+            "sources": ["SRC-001", "SRC-002"],
+            "owner": "example-owner",
+            "source_types": source_types,
+            "sensitivity": "internal",
+            "retention": "project-lifetime",
+            "approved_by": "example-owner",
+            "approved_at": DATE,
+            "proposal_revision": "1",
+            "confirmed_revision": "1",
+            "last_updated": DATE,
+        },
+        """# DATA-001：知识项数据
+
+这是仅用于黄金样例的虚构业务数据资产，技术细节见[数据库契约](../数据库/DB-001.md)和[接口契约](../CONTRACT-001.md)。
+
+## 数据流转
+
+输入 → 存储 → 查询组件。
+
+## 质量要求
+
+写入前校验知识项标识和来源引用；缺失值必须显式标记。
+
+## 访问规则
+
+仅 `example-owner` 可访问此虚构内部示例数据。
+
+## 保存规则
+
+按 `project-lifetime` 保存，项目结束后按已确认的处置规则清理。
+""",
+    )
+
+
 def _populate_example(root: Path, name: str) -> None:
     _source(root, "SRC-001", "user_statement", "fictional example-owner confirmation")
     _source(root, "SRC-002", "repository_file", "README.example")
@@ -140,6 +184,7 @@ def _populate_example(root: Path, name: str) -> None:
             title,
             f"# {identifier}：{title}\n\n虚构设计事实；关联 F01，来源 SRC-001、SRC-002。",
         )
+    _approved_data_asset(root, name)
     _write(
         root / "02-架构与契约/系统架构.md",
         """# 系统架构

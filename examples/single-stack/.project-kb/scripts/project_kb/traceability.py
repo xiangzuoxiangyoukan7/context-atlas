@@ -19,6 +19,7 @@ REFERENCE_FIELDS = (
     "supersedes",
     "superseded_by",
 )
+LIFECYCLE_TYPES = frozenset({"knowledge_item", "data_asset"})
 
 
 def as_list(value: object) -> list[str]:
@@ -59,7 +60,7 @@ def _validate_lifecycle(
     issues: list[Issue] = []
     for record in _records_with_metadata(records):
         metadata = record.metadata
-        if metadata.get("type") != "knowledge_item":
+        if metadata.get("type") not in LIFECYCLE_TYPES:
             continue
         status = metadata.get("status")
         sources = as_list(metadata.get("sources"))
