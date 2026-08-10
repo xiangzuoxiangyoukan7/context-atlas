@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 
-SKILL_ROOT = Path("skills/project-knowledge-base")
+SKILL_ROOT = Path("skills/context-atlas")
 REFERENCES = (
     "初始化协议.md",
     "知识采集与确认.md",
@@ -58,8 +58,8 @@ class SkillPackageTests(unittest.TestCase):
             (SKILL_ROOT / "assets/manifest.json").read_text(encoding="utf-8")
         )
 
-        self.assertIn('display_name: "项目知识库"', metadata)
-        self.assertIn("$project-knowledge-base", metadata)
+        self.assertIn('display_name: "脉络地图"', metadata)
+        self.assertIn("$context-atlas", metadata)
         self.assertFalse(Path("skills/project-knowledge-context").exists())
         self.assertFalse(Path("profiles").exists())
         self.assertFalse(any(path.startswith("profiles/") for path in manifest["files"]))

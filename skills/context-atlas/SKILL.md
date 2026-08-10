@@ -1,9 +1,9 @@
 ---
-name: project-knowledge-base
+name: context-atlas
 description: Use when a user asks an AI Agent to initialize, inspect, explain, update, migrate, or validate a self-contained project knowledge base, including doc-* directories and optional Java or Python project knowledge.
 ---
 
-# Project Knowledge Base
+# Context Atlas
 
 ## Overview
 

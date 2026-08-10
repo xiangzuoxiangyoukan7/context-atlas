@@ -38,7 +38,7 @@ def _replace_markers(root: Path, values: dict[str, str]) -> None:
 def initialize_from_assets(
     project_root: Path,
     project_name: str | None = None,
-    assets_root: Path = Path("skills/project-knowledge-base/assets"),
+    assets_root: Path = Path("skills/context-atlas/assets"),
     initialized_at: str | None = None,
 ) -> Path:
     project_root = project_root.resolve()

@@ -18,7 +18,7 @@ last_updated: 2026-08-10
 
 - 功能：F01、F02、F03、F05 的产品验收项。
 - 契约：[初始化产物契约](../../02-架构与契约/初始化产物契约.md)、[知识项与 Proposal 契约](../../02-架构与契约/知识项与Proposal契约.md)
-- Skill：[项目知识库 Skill](../../../skills/project-knowledge-base/SKILL.md)
+- Skill：[脉络地图 Skill](../../../skills/context-atlas/SKILL.md)
 
 ## 范围
 

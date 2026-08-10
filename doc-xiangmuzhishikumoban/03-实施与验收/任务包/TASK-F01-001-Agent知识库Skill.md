@@ -22,7 +22,7 @@ last_updated: 2026-08-10
 
 ## 范围
 
-- 建立可安装、Agent 工具无关的 `project-knowledge-base` Skill。
+- 建立可安装、Agent 工具无关的 `context-atlas` Skill（产品名：脉络地图）。
 - 将统一核心模板、Schema 和检查器同步为自包含资产。
 - 明确初始化、采集确认、冲突归档、验证报告流程。
 - 初始化不覆盖既有目标，也不创建 Agent 专属入口文件。

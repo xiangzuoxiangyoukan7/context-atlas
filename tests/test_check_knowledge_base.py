@@ -10,7 +10,7 @@ from scripts.check_knowledge_base import Issue, validate
 class KnowledgeBaseValidationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
-        self.root = Path(self.tmp.name) / "doc-project-knowledge-base-template"
+        self.root = Path(self.tmp.name) / "doc-context-atlas-template"
         self.root.mkdir()
 
     def tearDown(self) -> None:

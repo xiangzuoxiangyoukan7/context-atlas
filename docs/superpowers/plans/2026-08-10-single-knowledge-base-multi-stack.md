@@ -25,7 +25,7 @@
 - Modify: `templates/core/doc-project/00-项目总览/技术栈与版本.md`
 - Modify: `templates/core/doc-project/05-开发指南/AI知识采集协议.md`
 - Modify: `templates/core/doc-project/00-项目总览/README.md`
-- Modify: corresponding synchronized files under `skills/project-knowledge-base/assets/templates/core/doc-project/`
+- Modify: corresponding synchronized files under `skills/context-atlas/assets/templates/core/doc-project/`
 - Test: `tests/unit/test_core_template.py`, `tests/unit/test_skill_package.py`
 
 **Interfaces:** Remove `profiles` metadata and profile wording. Preserve the existing core knowledge IDs and add explicit multi-stack recording guidance.
@@ -43,7 +43,7 @@
 - Delete: `doc-xiangmuzhishikumoban/02-架构与契约/Profile扩展契约.md`
 - Modify: `doc-xiangmuzhishikumoban/00-项目总览/项目边界.md`, `项目目标与成功标准.md`, `产品能力地图.md`, `术语表.md`
 - Modify: `doc-xiangmuzhishikumoban/02-架构与契约/README.md`, `初始化产物契约.md`, `系统架构.md`
-- Modify: `README.md` and `skills/project-knowledge-base/SKILL.md`
+- Modify: `README.md` and `skills/context-atlas/SKILL.md`
 - Test: `tests/unit/test_profiles.py`, `tests/unit/test_skill_package.py`
 
 **Interfaces:** The initializer and validator accept only project root/name and core assets; no profile argument or profile descriptor is exposed.
@@ -58,8 +58,8 @@
 
 **Files:**
 - Modify: `scripts/project_kb/initializer.py`
-- Modify: `skills/project-knowledge-base/assets/scripts/project_kb/initializer.py`
-- Modify: `scripts/sync_skill_assets.py` and `skills/project-knowledge-base/assets/manifest.json`
+- Modify: `skills/context-atlas/assets/scripts/project_kb/initializer.py`
+- Modify: `scripts/sync_skill_assets.py` and `skills/context-atlas/assets/manifest.json`
 - Test: `tests/integration/test_initialization_safety.py`, `tests/unit/test_skill_package.py`
 
 **Interfaces:** `initialize_from_assets(project_root: Path, project_name: str, assets_root: Path) -> Path`; no profile parameter. Existing-target refusal remains atomic and self-contained.

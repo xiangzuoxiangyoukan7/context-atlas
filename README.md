@@ -1,4 +1,4 @@
-# AI 项目知识库
+# 脉络地图（Context Atlas）
 
 本项目规划一套供 AI Agent 使用的项目知识库能力。用户通过 Codex、ChatGPT、Claude Code 等 Agent 初始化和维护知识库；本项目提供工具无关的协议、完整模板、Schema、多技术栈样例和确定性检查器。
 
@@ -8,7 +8,7 @@
 - [通用核心模板](./templates/core/README.md)
 - [核心 Schema](./schemas/README.md)
 - [知识库检查器](./scripts/check_knowledge_base.py)
-- [项目知识库 Skill](./skills/project-knowledge-base/SKILL.md)
+- [脉络地图 Skill](./skills/context-atlas/SKILL.md)
 
 ## 原则
 
