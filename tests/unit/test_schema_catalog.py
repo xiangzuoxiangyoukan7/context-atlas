@@ -68,6 +68,22 @@ class SchemaCatalogTests(TempDirectoryTestCase):
 
         self.assertEqual([issue.code for issue in issues], ["KB_SCHEMA_REQUIRED"])
 
+    def test_catalog_reports_invalid_list_enum_member(self) -> None:
+        self.write_catalog(
+            {
+                "required": ["source_types"],
+                "list_enums": {"source_types": ["database", "api"]},
+            }
+        )
+
+        issues = SchemaCatalog.load(self.root).validate(
+            "feature",
+            {"source_types": ["database", "spreadsheet"]},
+            self.root / "DATA-001.md",
+        )
+
+        self.assertEqual([issue.code for issue in issues], ["KB_SCHEMA_ENUM"])
+
     def test_catalog_rejects_schema_path_outside_root(self) -> None:
         outside = self.root.parent / "outside.json"
         outside.write_text("{}", encoding="utf-8")

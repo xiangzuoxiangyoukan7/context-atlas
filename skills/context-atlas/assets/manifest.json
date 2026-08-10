@@ -4,6 +4,7 @@
     "schemas/README.md",
     "schemas/acceptance.schema.json",
     "schemas/catalog.json",
+    "schemas/data-asset.schema.json",
     "schemas/feature.schema.json",
     "schemas/governance-task.schema.json",
     "schemas/knowledge-item.schema.json",
