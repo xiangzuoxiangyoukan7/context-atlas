@@ -9,6 +9,17 @@ from tests.helpers import TempDirectoryTestCase, materialize_core_template
 
 
 class CoreTemplateTests(TempDirectoryTestCase):
+    def test_data_asset_template_explains_governance_boundaries(self) -> None:
+        root = Path("templates/core/doc-project/02-架构与契约/数据资产")
+        readme = (root / "README.md").read_text(encoding="utf-8")
+        template = (root / "TEMPLATE.md").read_text(encoding="utf-8")
+
+        for phrase in ("业务含义", "数据来源", "质量要求", "安全要求", "保存规则"):
+            self.assertIn(phrase, template)
+        self.assertIn("知识来源", readme)
+        self.assertIn("数据库", readme)
+        self.assertIn("接口契约", readme)
+
     def test_core_template_contains_every_required_knowledge_type(self) -> None:
         root = Path("templates/core/doc-project")
         missing = [path for path in required_template_paths() if not (root / path).exists()]
