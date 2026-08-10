@@ -3,7 +3,7 @@ id: TASK-KB-005
 type: governance_task
 title: 数据资产治理
 plan: docs/superpowers/plans/2026-08-10-data-asset-governance.md
-status: ready
+status: completed
 acceptance: [KB-AC-23, KB-AC-24, KB-AC-25]
 last_updated: 2026-08-10
 ---
@@ -25,3 +25,7 @@ last_updated: 2026-08-10
 - 功能：F04、F05
 - 契约：CONTRACT-INIT-001
 - 验收：KB-AC-23（模板与 Schema）、KB-AC-24（生命周期与来源类型）、KB-AC-25（Skill 与黄金样例一致性）
+
+## 完成证据
+
+2026-08-10 完成全量测试、Skill 同步、单/多技术栈黄金样例、当前知识库和差异格式检查。证据见[数据资产治理阶段验证](../验收证据/数据资产治理阶段验证.md)。
