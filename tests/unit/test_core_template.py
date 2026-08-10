@@ -9,6 +9,26 @@ from tests.helpers import TempDirectoryTestCase, materialize_core_template
 
 
 class CoreTemplateTests(TempDirectoryTestCase):
+    def test_data_asset_readme_has_inventory_columns_and_valid_card_template_link(
+        self,
+    ) -> None:
+        root = Path("templates/core/doc-project/02-架构与契约/数据资产")
+        readme = (root / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("## 资产总清单", readme)
+        self.assertIn("| 资产编号 | 名称 | 负责人 | 状态 | 说明卡 |", readme)
+        self.assertIn("./TEMPLATE.md", LINK_PATTERN.findall(readme))
+        self.assertTrue((root / "TEMPLATE.md").is_file())
+
+    def test_data_asset_template_has_complete_basis_fields(self) -> None:
+        template = Path(
+            "templates/core/doc-project/02-架构与契约/数据资产/TEMPLATE.md"
+        ).read_text(encoding="utf-8")
+
+        for field in ("关联功能", "技术契约", "知识来源", "批准信息", "未决问题"):
+            with self.subTest(field=field):
+                self.assertRegex(template, rf"(?m)^\| {re.escape(field)} \|")
+
     def test_data_asset_template_explains_governance_boundaries(self) -> None:
         root = Path("templates/core/doc-project/02-架构与契约/数据资产")
         readme = (root / "README.md").read_text(encoding="utf-8")

@@ -67,5 +67,8 @@ last_updated: {{INITIALIZED_AT}}
 
 | 类型 | 内容 | 来源/责任人 | 状态 |
 | --- | --- | --- | --- |
+| 关联功能 | missing | missing | missing |
+| 技术契约 | missing | missing | missing |
 | 知识来源 | missing | missing | missing |
+| 批准信息 | missing | missing | missing |
 | 未决问题 | missing | missing | missing |

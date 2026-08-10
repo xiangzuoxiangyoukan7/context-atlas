@@ -37,9 +37,13 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.knowledge_base = make_valid_knowledge_base(self.root / "doc-example")
         self.config = ValidationConfig(schema_root=Path("schemas"))
 
-    def write_data_asset(self, **overrides: object) -> None:
+    def write_data_asset(
+        self,
+        identifier: str = "DATA-001",
+        **overrides: object,
+    ) -> Path:
         metadata: dict[str, object] = {
-            "id": "DATA-001",
+            "id": identifier,
             "type": "data_asset",
             "title": "客户信息",
             "status": "approved",
@@ -52,8 +56,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
             "last_updated": "2026-08-10",
         }
         metadata.update(overrides)
-        write_record(
-            self.knowledge_base / "02-架构与契约/数据资产/DATA-001.md",
+        return write_record(
+            self.knowledge_base / f"02-架构与契约/数据资产/{identifier}.md",
             metadata,
         )
 
@@ -166,6 +170,131 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         codes = {issue.code for issue in validate(self.knowledge_base, self.config)}
 
         self.assertIn("KB_PROPOSAL_STALE", codes)
+
+    def test_lifecycle_source_reference_requires_source_record_type(self) -> None:
+        write_record(
+            self.knowledge_base / "00-项目总览/not-a-source.md",
+            {
+                "id": "EVIDENCE-001",
+                "type": "knowledge_item",
+                "title": "Not a source record",
+                "status": "proposed",
+                "version": "1.0.0",
+                "sources": ["SRC-001"],
+                "last_updated": "2026-08-10",
+            },
+        )
+        path = self.write_data_asset(
+            status="proposed",
+            sources=["EVIDENCE-001"],
+        )
+
+        codes = [
+            issue.code
+            for issue in validate(self.knowledge_base, self.config)
+            if issue.path == path
+        ]
+
+        self.assertEqual(codes, ["KB_SOURCE_TYPE"])
+
+    def test_approved_lifecycle_record_rejects_ai_inference_only_source(self) -> None:
+        write_record(
+            self.knowledge_base / "00-项目总览/SRC-003.md",
+            {
+                "id": "SRC-003",
+                "type": "source",
+                "title": "AI inference",
+                "source_type": "ai_inference",
+                "reference": "test inference",
+                "last_updated": "2026-08-10",
+            },
+        )
+        path = self.write_data_asset(
+            sources=["SRC-003"],
+            approved_by="project-owner",
+            approved_at="2026-08-10",
+        )
+
+        codes = [
+            issue.code
+            for issue in validate(self.knowledge_base, self.config)
+            if issue.path == path
+        ]
+
+        self.assertEqual(codes, ["KB_APPROVAL_AI_INFERENCE"])
+
+    def test_approved_data_asset_accepts_registered_non_inference_source(self) -> None:
+        path = self.write_data_asset(
+            approved_by="project-owner",
+            approved_at="2026-08-10",
+        )
+
+        issues = [
+            issue
+            for issue in validate(self.knowledge_base, self.config)
+            if issue.path == path
+        ]
+
+        self.assertEqual(issues, [])
+
+    def test_superseded_item_rejects_successor_without_reverse_reference(self) -> None:
+        old_path = write_record(
+            self.knowledge_base / "02-架构与契约/old-one-way.md",
+            {
+                "id": "KNOWLEDGE-OLD-ONE-WAY",
+                "type": "knowledge_item",
+                "title": "Old one-way decision",
+                "status": "superseded",
+                "version": "1.0.0",
+                "sources": ["SRC-001"],
+                "superseded_by": "KNOWLEDGE-NEW-ONE-WAY",
+                "last_updated": "2026-08-10",
+            },
+        )
+        write_record(
+            self.knowledge_base / "02-架构与契约/new-one-way.md",
+            {
+                "id": "KNOWLEDGE-NEW-ONE-WAY",
+                "type": "knowledge_item",
+                "title": "New one-way decision",
+                "status": "approved",
+                "version": "2.0.0",
+                "sources": ["SRC-002"],
+                "approved_by": "project-owner",
+                "approved_at": "2026-08-10",
+                "last_updated": "2026-08-10",
+            },
+        )
+
+        codes = [
+            issue.code
+            for issue in validate(self.knowledge_base, self.config)
+            if issue.path == old_path
+        ]
+
+        self.assertEqual(codes, ["KB_SUPERSESSION_LINK"])
+
+    def test_superseded_data_asset_rejects_successor_without_reverse_reference(
+        self,
+    ) -> None:
+        old_path = self.write_data_asset(
+            "DATA-001",
+            status="superseded",
+            superseded_by="DATA-002",
+        )
+        self.write_data_asset(
+            "DATA-002",
+            approved_by="project-owner",
+            approved_at="2026-08-10",
+        )
+
+        codes = [
+            issue.code
+            for issue in validate(self.knowledge_base, self.config)
+            if issue.path == old_path
+        ]
+
+        self.assertEqual(codes, ["KB_SUPERSESSION_LINK"])
 
     def test_approved_data_asset_requires_approval_metadata(self) -> None:
         self.write_data_asset()

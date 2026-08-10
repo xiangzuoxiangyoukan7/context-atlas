@@ -11,6 +11,9 @@ FIXTURES = {
     "broken-traceability": "KB_TRACE_REFERENCE",
     "sensitive-material": "KB_SENSITIVE_VALUE",
     "archived-reference": "KB_TRACE_REFERENCE",
+    "source-wrong-type": "KB_SOURCE_TYPE",
+    "ai-inference-approval": "KB_APPROVAL_AI_INFERENCE",
+    "one-way-supersession": "KB_SUPERSESSION_LINK",
 }
 
 

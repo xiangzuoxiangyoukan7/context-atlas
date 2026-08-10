@@ -69,6 +69,10 @@ def _validate_lifecycle(
                 issues.append(
                     Issue("KB_SOURCE_UNKNOWN", record.path, f"unknown source reference: {source}")
                 )
+            elif ids[source].metadata.get("type") != "source":
+                issues.append(
+                    Issue("KB_SOURCE_TYPE", record.path, f"source reference is not a source: {source}")
+                )
         if status == "approved":
             missing = [field for field in ("approved_by", "approved_at") if not metadata.get(field)]
             if missing:
@@ -91,6 +95,19 @@ def _validate_lifecycle(
                         "KB_PROPOSAL_STALE",
                         record.path,
                         "confirmed revision does not match the written Proposal revision",
+                    )
+                )
+            registered_sources = [ids[source] for source in sources if source in ids]
+            if registered_sources and all(
+                source.metadata.get("type") == "source"
+                and source.metadata.get("source_type") == "ai_inference"
+                for source in registered_sources
+            ):
+                issues.append(
+                    Issue(
+                        "KB_APPROVAL_AI_INFERENCE",
+                        record.path,
+                        "approved item cannot rely only on ai_inference sources",
                     )
                 )
         if status == "conflicted":
@@ -118,6 +135,14 @@ def _validate_lifecycle(
                         "KB_SUPERSESSION_LINK",
                         record.path,
                         "superseded item requires a valid superseded_by reference",
+                    )
+                )
+            elif metadata.get("id") not in as_list(ids[successor].metadata.get("supersedes")):
+                issues.append(
+                    Issue(
+                        "KB_SUPERSESSION_LINK",
+                        record.path,
+                        f"successor does not supersede this item: {successor}",
                     )
                 )
         identifier = metadata.get("id")

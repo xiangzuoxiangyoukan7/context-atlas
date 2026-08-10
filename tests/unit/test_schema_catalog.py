@@ -84,6 +84,22 @@ class SchemaCatalogTests(TempDirectoryTestCase):
 
         self.assertEqual([issue.code for issue in issues], ["KB_SCHEMA_ENUM"])
 
+    def test_catalog_reports_list_enum_field_with_non_list_value(self) -> None:
+        self.write_catalog(
+            {
+                "required": ["source_types"],
+                "list_enums": {"source_types": ["database", "api"]},
+            }
+        )
+
+        issues = SchemaCatalog.load(self.root).validate(
+            "feature",
+            {"source_types": "database"},
+            self.root / "DATA-001.md",
+        )
+
+        self.assertEqual([issue.code for issue in issues], ["KB_SCHEMA_LIST"])
+
     def test_catalog_rejects_schema_path_outside_root(self) -> None:
         outside = self.root.parent / "outside.json"
         outside.write_text("{}", encoding="utf-8")

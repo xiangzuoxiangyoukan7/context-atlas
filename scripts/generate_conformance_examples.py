@@ -69,6 +69,13 @@ def _approved_item(root: Path, relative: str, identifier: str, title: str, body:
 
 def _approved_data_asset(root: Path, name: str) -> None:
     source_types = ["database"] if name == "single-stack" else ["database", "api", "file"]
+    mappings = """| 来源类型 | 名称 | 流向 | 用途 | 技术契约 |
+| --- | --- | --- | --- | --- |
+| database | 知识项存储 | 流入 | 保存并提供虚构知识项数据 | [DB-001](../数据库/DB-001.md) |"""
+    if name == "multi-stack":
+        mappings += """
+| api | 知识查询接口 | 流出 | 向查询组件提供虚构知识项 | [CONTRACT-001](../CONTRACT-001.md) |
+| file | 知识项导入文件 | 流入 | 批量导入虚构知识项 | [FILE-001](../FILE-001.md) |"""
     _record(
         root / "02-架构与契约/数据资产/DATA-001-知识项.md",
         {
@@ -88,9 +95,13 @@ def _approved_data_asset(root: Path, name: str) -> None:
             "confirmed_revision": "1",
             "last_updated": DATE,
         },
-        """# DATA-001：知识项数据
+        f"""# DATA-001：知识项数据
 
 这是仅用于黄金样例的虚构业务数据资产，技术细节见[数据库契约](../数据库/DB-001.md)和[接口契约](../CONTRACT-001.md)。
+
+## 数据来源映射
+
+{mappings}
 
 ## 数据流转
 
@@ -170,13 +181,15 @@ def _populate_example(root: Path, name: str) -> None:
 """,
     )
 
-    for relative, identifier, title in (
+    records = [
         ("02-架构与契约/CONTRACT-001.md", "CONTRACT-001", "查询契约"),
+        ("02-架构与契约/FILE-001.md", "FILE-001", "知识项导入文件契约"),
         ("02-架构与契约/数据库/DB-001.md", "DB-001", "知识项存储"),
         ("02-架构与契约/原型/PROTO-001.md", "PROTO-001", "查询流程原型"),
         ("02-架构与契约/外部依赖/EXT-001.md", "EXT-001", "示例时钟依赖"),
         ("04-决策记录/ADR-001.md", "ADR-001", "采用版本化知识项"),
-    ):
+    ]
+    for relative, identifier, title in records:
         _approved_item(
             root,
             relative,
@@ -274,6 +287,9 @@ def _generate_invalid_fixtures(root: Path) -> None:
         "broken-traceability": "KB_TRACE_REFERENCE",
         "sensitive-material": "KB_SENSITIVE_VALUE",
         "archived-reference": "KB_TRACE_REFERENCE",
+        "source-wrong-type": "KB_SOURCE_TYPE",
+        "ai-inference-approval": "KB_APPROVAL_AI_INFERENCE",
+        "one-way-supersession": "KB_SUPERSESSION_LINK",
     }
     for name, code in cases.items():
         case = root / name
@@ -320,6 +336,32 @@ def _generate_invalid_fixtures(root: Path) -> None:
                     "last_updated": DATE,
                 },
                 "# Archived only",
+            )
+        elif name == "source-wrong-type":
+            metadata["sources"] = ["EVIDENCE-001"]
+            _approved_item(
+                case,
+                "00-项目总览/EVIDENCE-001.md",
+                "EVIDENCE-001",
+                "不是知识来源的记录",
+                "# EVIDENCE-001",
+            )
+        elif name == "ai-inference-approval":
+            metadata.update(
+                status="approved",
+                sources=["SRC-003"],
+                approved_by="owner",
+                approved_at=DATE,
+            )
+            _source(case, "SRC-003", "ai_inference", "fixture model inference")
+        elif name == "one-way-supersession":
+            metadata.update(status="superseded", superseded_by="KNOWLEDGE-002")
+            _approved_item(
+                case,
+                "02-架构与契约/successor.md",
+                "KNOWLEDGE-002",
+                "未反向关联的替代记录",
+                "# KNOWLEDGE-002",
             )
         _record(case / relative, metadata, body)
 

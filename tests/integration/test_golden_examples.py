@@ -1,9 +1,8 @@
 import json
 from pathlib import Path
+import subprocess
+import sys
 import unittest
-
-from scripts.project_kb.validator import ValidationConfig, validate
-
 
 EXAMPLES = ("single-stack", "multi-stack")
 
@@ -25,11 +24,62 @@ class GoldenExampleTests(unittest.TestCase):
             self.assertIn(expected, content)
             self.assertIn("../数据库/DB-001.md", content)
 
-    def test_all_golden_examples_validate(self) -> None:
-        config = ValidationConfig(schema_root=Path("schemas"))
+    def test_examples_include_complete_data_source_mappings(self) -> None:
+        expected_rows = {
+            "single-stack": (
+                "| database | 知识项存储 | 流入 | 保存并提供虚构知识项数据 | "
+                "[DB-001](../数据库/DB-001.md) |",
+            ),
+            "multi-stack": (
+                "| database | 知识项存储 | 流入 | 保存并提供虚构知识项数据 | "
+                "[DB-001](../数据库/DB-001.md) |",
+                "| api | 知识查询接口 | 流出 | 向查询组件提供虚构知识项 | "
+                "[CONTRACT-001](../CONTRACT-001.md) |",
+                "| file | 知识项导入文件 | 流入 | 批量导入虚构知识项 | "
+                "[FILE-001](../FILE-001.md) |",
+            ),
+        }
+        link_targets = {
+            "single-stack": ("../数据库/DB-001.md",),
+            "multi-stack": (
+                "../数据库/DB-001.md",
+                "../CONTRACT-001.md",
+                "../FILE-001.md",
+            ),
+        }
+
+        for name, rows in expected_rows.items():
+            with self.subTest(name=name):
+                path = Path("examples") / name / "02-架构与契约/数据资产/DATA-001-知识项.md"
+                content = path.read_text(encoding="utf-8")
+                self.assertIn("| 来源类型 | 名称 | 流向 | 用途 | 技术契约 |", content)
+                for row in rows:
+                    self.assertIn(row, content)
+                for target in link_targets[name]:
+                    self.assertTrue((path.parent / target).resolve().is_file(), target)
+
+    def test_all_golden_examples_validate_with_bundled_checkers(self) -> None:
         for name in EXAMPLES:
             with self.subTest(name=name):
-                self.assertEqual(validate(Path("examples") / name, config), [])
+                root = Path("examples") / name
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "-B",
+                        str(root / ".project-kb/scripts/check_knowledge_base.py"),
+                        str(root),
+                        "--schema-root",
+                        str(root / ".project-kb/schemas"),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(
+                    result.returncode,
+                    0,
+                    f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+                )
 
     def test_example_structures_match_snapshot(self) -> None:
         expected = json.loads(
