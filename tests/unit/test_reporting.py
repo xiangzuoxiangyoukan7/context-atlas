@@ -35,5 +35,5 @@ class ReportingTests(unittest.TestCase):
             ],
         )
 
-    def test_text_report_preserves_compatibility_success_message(self) -> None:
+    def test_text_report_has_stable_success_message(self) -> None:
         self.assertEqual(render_text([]), "Knowledge base validation passed")

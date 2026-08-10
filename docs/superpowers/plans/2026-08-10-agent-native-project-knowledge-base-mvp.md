@@ -246,7 +246,7 @@ git commit -m "feat: define schema-driven knowledge model"
 - Produces: `validate(root: Path, config: ValidationConfig) -> list[Issue]`.
 - Produces: `render_text(issues: Sequence[Issue]) -> str`.
 - Produces: `render_json(issues: Sequence[Issue]) -> str`.
-- Preserves: `python scripts/check_knowledge_base.py <knowledge-base-root>` for compatibility.
+- Produces: `python scripts/check_knowledge_base.py <knowledge-base-root>` as the canonical validator entry point.
 - Adds: `--schema-root <path>` and `--format text|json`; these are validator options used by Agents, not a knowledge-base product CLI.
 
 - [ ] **Step 1: Write failing approval and conflict tests**
@@ -326,7 +326,7 @@ Require unique IDs, valid source references, approval metadata for `approved`, a
 
 Detect PEM private-key headers and assignments whose key names end with `_TOKEN`, `_PASSWORD`, `_SECRET`, or `_PRIVATE_KEY`. Exclude documented placeholder values such as `example`, `redacted`, and `${ENV_VAR}`. Use warning/error codes defined in `schemas/catalog.json`; never print the secret value.
 
-- [ ] **Step 7: Implement text/JSON reporting and the compatibility entry point**
+- [ ] **Step 7: Implement text/JSON reporting and the canonical entry point**
 
 ```python
 payload = {
@@ -447,7 +447,7 @@ git commit -m "feat: add complete language-neutral knowledge template"
 - Replace: `profiles/python/acceptance-checklist.md`
 - Create: `profiles/python/profile.json`
 - Create: `profiles/python/templates/技术栈-Python.md`
-- Move out of MVP navigation: `profiles/frontend/`
+- Delete obsolete: `profiles/frontend/`
 - Create: `tests/unit/test_profiles.py`
 
 **Interfaces:**
@@ -490,7 +490,7 @@ Require explicit JDK version, Maven/Gradle wrapper and build command, modules/pa
 
 Require interpreter version, environment/package managers, dependency lock strategy, service/CLI entry points, configuration sources, pytest/type/lint commands, package/module boundaries, and secret-handling rules. Do not assume FastAPI, Django, Flask, Poetry, or uv without confirmation.
 
-- [ ] **Step 6: Mark the frontend profile as legacy/excluded without deleting history**
+- [ ] **Step 6: Delete the obsolete frontend profile after retaining any needed rules**
 
 Remove it from current README navigation and packaging manifests, add a short exclusion notice, and keep its files available only as historical input until a future approved feature restores it.
 
@@ -522,7 +522,7 @@ git commit -m "feat: add optional java and python knowledge profiles"
 - Create: `skills/project-knowledge-base/assets/manifest.json`
 - Create: `scripts/sync_skill_assets.py`
 - Create: `tests/unit/test_skill_package.py`
-- Deprecate: `skills/project-knowledge-context/SKILL.md`
+- Delete obsolete: `skills/project-knowledge-context/`
 
 **Interfaces:**
 - Consumes: canonical `templates/`, `profiles/`, `schemas/`, and validator runtime.

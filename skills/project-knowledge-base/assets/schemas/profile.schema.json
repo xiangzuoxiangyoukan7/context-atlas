@@ -1,0 +1,8 @@
+{
+  "required": ["profile_id", "title", "project_types", "added_fields", "added_templates", "added_requests", "added_acceptance_checks", "exclusions"],
+  "patterns": {
+    "profile_id": "[a-z][a-z0-9_-]*\\.v\\d+"
+  },
+  "non_empty_lists": ["project_types", "added_acceptance_checks"],
+  "unique_lists": ["project_types", "added_fields", "added_templates", "added_requests", "added_acceptance_checks", "exclusions"]
+}

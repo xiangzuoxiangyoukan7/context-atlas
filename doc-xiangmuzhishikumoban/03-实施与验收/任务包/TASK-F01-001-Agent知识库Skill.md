@@ -3,7 +3,7 @@ id: TASK-F01-001
 type: task
 title: 可安装的 Agent 项目知识库 Skill
 feature: F01
-status: ready
+status: acceptance
 acceptance: [F01-AC-01, F01-AC-02, F02-AC-01, F02-AC-02]
 last_updated: 2026-08-10
 ---
@@ -34,3 +34,5 @@ last_updated: 2026-08-10
 ## 验收
 
 以 F01/F02 验收项及实现计划 Task 5 的同步与包完整性测试为准。
+
+阶段证据：[Agent Skill 阶段验证](../验收证据/F01-F02-Agent-Skill阶段验证.md)。Skill 结构、同步和行为契约已通过；真实初始化样例和第二 Agent 验收留待后续任务。

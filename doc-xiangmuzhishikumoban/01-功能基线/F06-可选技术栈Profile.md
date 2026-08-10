@@ -9,7 +9,7 @@ current_slice: included
 depends_on: [F04, F05]
 acceptance: [F06-AC-01, F06-AC-02]
 contracts: [CONTRACT-PROFILE-001]
-adr: [ADR-001, ADR-003]
+adr: [ADR-003]
 last_updated: 2026-08-10
 ---
 
@@ -24,7 +24,6 @@ last_updated: 2026-08-10
 - 支持零个、一个或多个 Profile。
 - 第一阶段维护 Java 和 Python。
 - 支持 Java+Python 混合项目。
-- 前端 Profile 不属于当前实现和验收范围。
 
 ## 验收
 

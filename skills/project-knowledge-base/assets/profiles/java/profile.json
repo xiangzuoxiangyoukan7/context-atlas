@@ -1,0 +1,10 @@
+{
+  "profile_id": "java.v1",
+  "title": "Java 项目知识扩展",
+  "project_types": ["java", "mixed"],
+  "added_fields": ["jdk_version", "build_system", "build_command", "module_packages", "dependency_sources", "runtime_framework", "unit_test_command", "integration_test_command", "public_contracts", "security_scan_command"],
+  "added_templates": ["00-项目总览/技术栈-Java.md"],
+  "added_requests": ["确认 JDK 厂商与版本范围", "确认 Maven 或 Gradle Wrapper 及可复现构建命令", "列出模块、包边界与依赖来源", "确认运行框架而不预设 Spring", "区分单元测试与集成测试命令", "登记公开 API、事件和数据库契约"],
+  "added_acceptance_checks": ["JDK 和 Wrapper 版本可复现", "依赖来源与锁定策略可追溯", "单元和集成测试边界明确", "公开契约有版本", "安全扫描保留可复核证据"],
+  "exclusions": ["不默认使用 Spring", "不默认使用 Maven 或 Gradle", "不改变核心状态、批准或验收规则"]
+}

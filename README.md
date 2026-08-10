@@ -10,7 +10,7 @@
 - [Java 扩展](./profiles/java/README.md)
 - [Python 扩展](./profiles/python/README.md)
 - [知识库检查器](./scripts/check_knowledge_base.py)
-- [AI 上下文 Skill](./skills/project-knowledge-context/SKILL.md)
+- [项目知识库 Skill](./skills/project-knowledge-base/SKILL.md)
 
 ## 原则
 
@@ -20,4 +20,4 @@ AI 负责调研、提问和组织候选知识；项目责任人负责确认内�
 
 ## 当前状态
 
-产品方向、核心 Schema、检查器、语言无关核心模板及 Java/Python Profile 已进入实现。可安装 Skill、黄金样例和最终跨 Agent 验收仍待完成；旧版 KB-AC-01–10 只代表概念骨架曾通过结构验收。
+产品方向、核心 Schema、检查器、语言无关核心模板、Java/Python Profile 和可安装 Skill 已进入实现。黄金样例和最终跨 Agent 验收仍待完成。
