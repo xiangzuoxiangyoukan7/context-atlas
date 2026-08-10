@@ -1,13 +1,12 @@
-# Project Knowledge Base Template
+# AI 项目知识库
 
-这是一个可复用的项目知识库模板工程，目标是让不同 AI 工具在不同项目中获得一致、可追溯的上下文。
+本项目规划一套供 AI Agent 使用的项目知识库能力。用户通过 Codex、ChatGPT、Claude Code 等 Agent 初始化和维护知识库；本项目提供工具无关的协议、完整模板、Schema、可选 Profile、示例和确定性检查器。
 
 ## 入口
 
-- [本项目知识库](doc-project-knowledge-base-template/README.md)
+- [本项目知识库](doc-xiangmuzhishikumoban/README.md)
 - [通用模板](./template/README.md)
 - [核心 Schema](./schemas/README.md)
-- [Frontend 扩展](./profiles/frontend/README.md)
 - [Java 扩展](./profiles/java/README.md)
 - [Python 扩展](./profiles/python/README.md)
 - [知识库检查器](./scripts/check_knowledge_base.py)
@@ -15,10 +14,10 @@
 
 ## 原则
 
-知识库负责事实、设计、边界和验收标准；AI 只依据权威文档生成上下文和计划。自动检查只能证明结构和追溯关系正确，不能替代人工确认内容是否正确。
+AI 负责调研、提问和组织候选知识；项目责任人负责确认内容；知识库负责存储、版本、关联和结构校验。自动检查不能替代人工确认内容是否正确。
 
-当前模板项目自身没有任何 frontend、Java 或 Python 产品功能完成声明。
+本项目不生成或维护目标项目的 `AGENTS.md`、`CLAUDE.md` 等工具专属文件，也不调用或托管大模型。
 
 ## 当前状态
 
-模板治理任务已完成；KB-AC-01–10 的最终命令、路径和版本记录在 `knowledge-base/03-实施与验收/验收证据/KB-AC-01-10-模板验收报告.md`。这不代表任何业务项目功能完成。
+项目正在重新建立产品基线。当前已批准产品方向，但 Skill、完整模板、Java/Python Profile、示例和新版检查器尚未按新基线实现。旧版 KB-AC-01–10 只代表概念骨架曾通过结构验收。
