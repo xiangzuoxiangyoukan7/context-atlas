@@ -1,9 +1,0 @@
-schema: acceptance.v1
-required: [id, owner, condition, result, evidence, version]
-enums:
-  result: [not_started, partial, passed, not_applicable]
-rules:
-  - every declared acceptance ID appears exactly once in the matrix
-  - passed requires non-empty evidence and version
-  - failed and blocked are not result values; they belong to task status or evidence detail
-
