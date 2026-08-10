@@ -37,6 +37,26 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.knowledge_base = make_valid_knowledge_base(self.root / "doc-example")
         self.config = ValidationConfig(schema_root=Path("schemas"))
 
+    def write_data_asset(self, **overrides: object) -> None:
+        metadata: dict[str, object] = {
+            "id": "DATA-001",
+            "type": "data_asset",
+            "title": "客户信息",
+            "status": "approved",
+            "version": "1.0.0",
+            "sources": ["SRC-001"],
+            "owner": "project-owner",
+            "source_types": ["database"],
+            "sensitivity": "internal",
+            "retention": "project-lifetime",
+            "last_updated": "2026-08-10",
+        }
+        metadata.update(overrides)
+        write_record(
+            self.knowledge_base / "02-架构与契约/数据资产/DATA-001.md",
+            metadata,
+        )
+
     def test_approved_item_requires_approval_metadata(self) -> None:
         write_record(
             self.knowledge_base / "01-功能基线" / "approved.md",
@@ -146,3 +166,39 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         codes = {issue.code for issue in validate(self.knowledge_base, self.config)}
 
         self.assertIn("KB_PROPOSAL_STALE", codes)
+
+    def test_approved_data_asset_requires_approval_metadata(self) -> None:
+        self.write_data_asset()
+
+        codes = {issue.code for issue in validate(self.knowledge_base, self.config)}
+
+        self.assertIn("KB_APPROVAL_REQUIRED", codes)
+
+    def test_data_asset_rejects_unknown_knowledge_source(self) -> None:
+        self.write_data_asset(status="proposed", sources=["SRC-999"])
+
+        codes = {issue.code for issue in validate(self.knowledge_base, self.config)}
+
+        self.assertIn("KB_SOURCE_UNKNOWN", codes)
+
+    def test_conflicted_data_asset_requires_two_sources(self) -> None:
+        self.write_data_asset(
+            status="conflicted",
+            resolution_required_from="project-owner",
+        )
+
+        codes = {issue.code for issue in validate(self.knowledge_base, self.config)}
+
+        self.assertIn("KB_CONFLICT_SOURCES", codes)
+
+    def test_data_asset_rejects_broken_local_contract_link(self) -> None:
+        self.write_data_asset(status="proposed")
+        path = self.knowledge_base / "02-架构与契约/数据资产/DATA-001.md"
+        path.write_text(
+            path.read_text(encoding="utf-8") + "\n[缺失数据库契约](../数据库/DB-999.md)\n",
+            encoding="utf-8",
+        )
+
+        codes = {issue.code for issue in validate(self.knowledge_base, self.config)}
+
+        self.assertIn("KB_LINK_BROKEN", codes)
