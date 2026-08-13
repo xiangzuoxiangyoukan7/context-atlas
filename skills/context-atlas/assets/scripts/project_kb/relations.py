@@ -126,6 +126,7 @@ class RelationIndex:
     edges: tuple[RelationEdge, ...]
     by_source: dict[str, tuple[RelationEdge, ...]]
     by_target: dict[str, tuple[RelationEdge, ...]]
+    targets: dict[str, tuple[KnowledgeTarget, ...]]
 
     @classmethod
     def build(
@@ -199,10 +200,20 @@ class RelationIndex:
         ordered = tuple(
             sorted(edges, key=lambda edge: (edge.source.identifier, edge.field, edge.target.identifier))
         )
+        targets_by_identifier: dict[str, list[KnowledgeTarget]] = {}
+        for file_targets in targets_by_file.values():
+            for identifier, targets in file_targets.items():
+                targets_by_identifier.setdefault(identifier, []).extend(targets)
         return cls(
             edges=ordered,
             by_source=cls._group(ordered, source=True),
             by_target=cls._group(ordered, source=False),
+            targets={
+                identifier: tuple(
+                    sorted(targets, key=lambda target: (str(target.path), target.anchor or ""))
+                )
+                for identifier, targets in targets_by_identifier.items()
+            },
         ), issues
 
     @staticmethod
@@ -265,3 +276,14 @@ class RelationIndex:
         """返回由正向关系计算得到的全部反向使用方。"""
 
         return self.by_target.get(identifier, ())
+
+    def contains(self, identifier: str) -> bool:
+        """判断稳定编号是否存在于独立文档或聚合文档知识项中。"""
+
+        return identifier in self.targets
+
+    def target(self, identifier: str) -> KnowledgeTarget | None:
+        """返回稳定编号的首个确定性目标；不存在时返回空值。"""
+
+        targets = self.targets.get(identifier, ())
+        return targets[0] if targets else None
