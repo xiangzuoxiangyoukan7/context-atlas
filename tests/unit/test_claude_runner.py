@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from datetime import UTC, datetime
 from pathlib import Path
 from types import ModuleType
@@ -386,22 +387,49 @@ class ClaudeRunnerTests(unittest.TestCase):
             self.assertFalse(created_workspace.exists())
             self.assertTrue(parent.exists())
 
-    def test_bare_auth_preflight_uses_presence_without_exposing_values(self) -> None:
-        """bare 模式只有受支持凭据存在时才允许进入真实模型调用。"""
+    def test_main_lets_claude_resolve_auth_without_environment_preflight(self) -> None:
+        """入口不得因进程环境缺少密钥而跳过 Claude 自己可解析的用户设置。"""
 
         orchestration = importlib.import_module("scripts.run_agent_conformance")
+        passed_report = {
+            "schema_version": "1.0",
+            "agent": "claude",
+            "agent_version": "2.1.226 (Claude Code)",
+            "status": "passed",
+            "scenarios": [],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "claude.json"
+            arguments = [
+                "run_agent_conformance.py",
+                "--agent",
+                "claude",
+                "--plugin-root",
+                str(ROOT),
+                "--output",
+                str(output),
+            ]
+            with (
+                mock.patch.object(sys, "argv", arguments),
+                mock.patch.dict(os.environ, {}, clear=True),
+                mock.patch.object(
+                    orchestration,
+                    "_claude_version",
+                    return_value="2.1.226 (Claude Code)",
+                ),
+                mock.patch.object(
+                    orchestration,
+                    "run_claude_conformance",
+                    return_value=passed_report,
+                ) as run_scenarios,
+            ):
+                exit_code = orchestration.main()
 
-        self.assertFalse(orchestration.has_bare_claude_credentials({}))
-        self.assertTrue(
-            orchestration.has_bare_claude_credentials(
-                {"ANTHROPIC_API_KEY": "private-value"}
-            )
-        )
-        self.assertTrue(
-            orchestration.has_bare_claude_credentials(
-                {"CLAUDE_CODE_USE_BEDROCK": "1"}
-            )
-        )
+            report = json.loads(output.read_text(encoding="utf-8"))
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("passed", report["status"])
+        run_scenarios.assert_called_once()
 
     def test_explicit_scenario_prompt_starts_with_skill_command(self) -> None:
         """显式验收场景必须真正以 Skill 命令启动。"""

@@ -12,7 +12,7 @@ import subprocess
 import sys
 import uuid
 from pathlib import Path
-from typing import Iterator, Mapping, Protocol
+from typing import Iterator, Protocol
 
 if __package__ in {None, ""}:
     # 直接执行 scripts/*.py 时，Python 默认只暴露 scripts 目录，需要补入仓库根。
@@ -56,14 +56,6 @@ NATURAL_LANGUAGE_PROMPT = (
     "请检查当前项目是否已经存在项目知识库；如需初始化，先给出提案并等待我明确确认，"
     "不要创建或修改正式知识文件。"
 )
-BARE_CREDENTIAL_NAMES = (
-    "ANTHROPIC_API_KEY",
-    "CLAUDE_CODE_USE_BEDROCK",
-    "CLAUDE_CODE_USE_VERTEX",
-    "CLAUDE_CODE_USE_FOUNDRY",
-)
-
-
 class TurnRunner(Protocol):
     """描述场景编排器所需的最小 Agent 运行接口。"""
 
@@ -154,16 +146,6 @@ def temporary_workspace_root(parent: Path) -> Iterator[Path]:
             and resolved_workspace.name.startswith("context-atlas-")
         ):
             shutil.rmtree(resolved_workspace, ignore_errors=True)
-
-
-def has_bare_claude_credentials(environment: Mapping[str, str]) -> bool:
-    """仅按受支持环境变量是否启用判断 bare 模式凭据可用性。"""
-
-    disabled_values = {"", "0", "false", "no", "off"}
-    return any(
-        environment.get(name, "").strip().lower() not in disabled_values
-        for name in BARE_CREDENTIAL_NAMES
-    )
 
 
 def _file_summary(before: set[str], after: set[str]) -> dict[str, object]:
@@ -519,43 +501,25 @@ def main() -> int:
     agent_name = str(arguments.agent)
     try:
         version = _claude_version() if agent_name == "claude" else _codex_version()
-        if agent_name == "claude" and not has_bare_claude_credentials(os.environ):
-            scenario_ids = (
-                "initialize_requires_confirmation",
-                "initialize_after_confirmation",
-                "existing_target_is_preserved",
-                "natural_language_triggers_skill",
-            )
-            report = {
-                "schema_version": "1.0",
-                "agent": agent_name,
-                "agent_version": version,
-                "status": "blocked",
-                "scenarios": [
-                    _blocked_scenario(scenario_id, agent_name)
-                    for scenario_id in scenario_ids
-                ],
-            }
-        else:
-            workspace_parent = arguments.output.parent / ".workspaces"
-            with temporary_workspace_root(workspace_parent) as workspace_root:
-                runner_factory: RunnerFactory = ClaudeRunner
-                if agent_name == "codex":
-                    configured_home = Path(
-                        os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))
-                    )
-                    auth_source = configured_home / "auth.json"
-                    runner_factory = CodexRunnerFactory(
-                        codex_home=workspace_root / "codex-home",
-                        auth_source=auth_source if auth_source.is_file() else None,
-                    )
-                report = run_claude_conformance(
-                    plugin_root=arguments.plugin_root,
-                    workspace_root=workspace_root,
-                    runner_factory=runner_factory,
-                    agent_version=version,
-                    agent_name=agent_name,
+        workspace_parent = arguments.output.parent / ".workspaces"
+        with temporary_workspace_root(workspace_parent) as workspace_root:
+            runner_factory: RunnerFactory = ClaudeRunner
+            if agent_name == "codex":
+                configured_home = Path(
+                    os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))
                 )
+                auth_source = configured_home / "auth.json"
+                runner_factory = CodexRunnerFactory(
+                    codex_home=workspace_root / "codex-home",
+                    auth_source=auth_source if auth_source.is_file() else None,
+                )
+            report = run_claude_conformance(
+                plugin_root=arguments.plugin_root,
+                workspace_root=workspace_root,
+                runner_factory=runner_factory,
+                agent_version=version,
+                agent_name=agent_name,
+            )
     except (OSError, subprocess.SubprocessError, RuntimeError, ValueError):
         report = {
             "schema_version": "1.0",
