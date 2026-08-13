@@ -17,7 +17,9 @@ RELATION_LINK = re.compile(
     r"^\[\[(?P<path>[^\]#|]+)(?:#(?P<anchor>[^\]|]+))?\|(?P<identifier>[^\]|]+)\]\]$"
 )
 HEADING_TARGET = re.compile(r"^#{2,6}\s+(?P<identifier>[A-Z][A-Z0-9-]*-\d+)\s+(?P<title>.+?)\s*$")
-BLOCK_TARGET = re.compile(r"(?:^|\s)\^(?P<identifier>[A-Z][A-Z0-9-]*-\d+)\s*$")
+BLOCK_TARGET = re.compile(
+    r"(?:^|\s|\|)\^(?P<identifier>[A-Z][A-Z0-9-]*-\d+)\s*(?:\|\s*)?$"
+)
 
 
 def _identifier_family(identifier: str) -> str:

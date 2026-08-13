@@ -145,6 +145,30 @@ class GoldenExampleTests(unittest.TestCase):
                 self.assertIn(("MODULE-QUERY-001", "required", 1), impacts)
                 self.assertIn(("F01", "review_required", 2), impacts)
 
+    def test_examples_include_database_hierarchy_values_and_logical_foreign_key(self) -> None:
+        """两套样例应展示数据库层级、字段值域和子表到主字段链接。"""
+
+        for name in EXAMPLES:
+            with self.subTest(name=name):
+                database = Path("examples") / name / "02-架构与契约/数据库"
+                expected = (
+                    database / "数据源/DS-KNOWLEDGE.md",
+                    database / "数据库单元/DB-KNOWLEDGE.md",
+                    database / "数据命名空间/NS-KNOWLEDGE.md",
+                    database / "数据表/TABLE-KNOWLEDGE-001.md",
+                    database / "数据表/TABLE-KNOWLEDGE-AUDIT.md",
+                )
+                for path in expected:
+                    self.assertTrue(path.is_file(), path)
+                parent = expected[3].read_text(encoding="utf-8")
+                child = expected[4].read_text(encoding="utf-8")
+                self.assertIn("1=待确认;2=已批准;3=已归档", parent)
+                self.assertIn("rel_logical_parent", child)
+                self.assertIn(
+                    "[[02-架构与契约/数据库/数据表/TABLE-KNOWLEDGE-001#^FIELD-KNOWLEDGE-001|FIELD-KNOWLEDGE-001]]",
+                    child,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

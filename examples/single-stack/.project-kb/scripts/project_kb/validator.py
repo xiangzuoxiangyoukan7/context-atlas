@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .discovery import discover_records
+from .database import validate_database_fields, validate_database_relations
 from .links import validate_links
 from .model import Issue
 from .relation_catalog import RelationCatalog
@@ -55,10 +56,12 @@ def validate(root: Path, config: ValidationConfig) -> list[Issue]:
             )
         )
     else:
-        _, relation_issues = RelationIndex.build(
+        relation_index, relation_issues = RelationIndex.build(
             resolved_root, records, relation_catalog
         )
         issues.extend(relation_issues)
+        issues.extend(validate_database_relations(resolved_root, records, relation_index))
+    issues.extend(validate_database_fields(records))
     issues.extend(validate_links(resolved_root, config.excluded_directories))
     issues.extend(validate_traceability(resolved_root, records))
     issues.extend(validate_security(records))

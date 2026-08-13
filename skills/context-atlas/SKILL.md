@@ -21,6 +21,7 @@ Operate a tool-neutral project knowledge base on the user's behalf. Treat reposi
 | Update, resolve conflict, or supersede knowledge | Read [知识采集与确认](references/知识采集与确认.md) and [更新冲突与归档](references/更新冲突与归档.md). |
 | Validate or report results | Read [验证与结果报告](references/验证与结果报告.md). |
 | Add relations, find consumers, or analyze change impact | Read [关系与影响分析](references/关系与影响分析.md). |
+| Record data sources, database hierarchy, tables, field domains, or logical foreign keys | Read [数据库知识](references/数据库知识.md) and [关系与影响分析](references/关系与影响分析.md). |
 
 For combined requests, read every referenced file before writing.
 

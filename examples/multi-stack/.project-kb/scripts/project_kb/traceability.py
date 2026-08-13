@@ -23,7 +23,16 @@ REFERENCE_FIELDS = (
     "supersedes",
     "superseded_by",
 )
-LIFECYCLE_TYPES = frozenset({"knowledge_item", "data_asset"})
+LIFECYCLE_TYPES = frozenset(
+    {
+        "knowledge_item",
+        "data_asset",
+        "data_source",
+        "database_unit",
+        "database_namespace",
+        "database_table",
+    }
+)
 
 
 def as_list(value: object) -> list[str]:

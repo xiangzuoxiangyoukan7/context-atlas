@@ -8,7 +8,7 @@ sources: [SRC-002]
 approved_by: example-owner
 approved_at: 2026-08-10
 rel_reads:
-  - "[[02-架构与契约/数据库/TABLE-KNOWLEDGE-001|TABLE-KNOWLEDGE-001]]"
+  - "[[02-架构与契约/数据库/数据表/TABLE-KNOWLEDGE-001|TABLE-KNOWLEDGE-001]]"
 last_updated: 2026-08-10
 ---
 # MODULE-QUERY-001 知识查询模块
