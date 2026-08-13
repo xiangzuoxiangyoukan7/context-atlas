@@ -43,6 +43,21 @@ class PythonDocumentationTests(unittest.TestCase):
 
         self.assertEqual([], validate_python_documentation(Path.cwd()))
 
+    def test_repository_owned_worktrees_are_not_scanned(self) -> None:
+        """主工作区检查不得把其他 Git worktree 的旧代码计入结果。"""
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            current = root / "current.py"
+            current.write_text('"""当前代码。"""\n', encoding="utf-8")
+            old = root / ".worktrees" / "old" / "undocumented.py"
+            old.parent.mkdir(parents=True)
+            old.write_text("def old(value):\n    return value\n", encoding="utf-8")
+
+            issues = validate_python_documentation(root)
+
+        self.assertEqual([], issues)
+
 
 if __name__ == "__main__":
     unittest.main()

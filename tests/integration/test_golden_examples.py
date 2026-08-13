@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 
 EXAMPLES = ("single-stack", "multi-stack")
@@ -12,7 +13,11 @@ EXAMPLES = ("single-stack", "multi-stack")
 def relative_files(root: Path) -> list[str]:
     """提供 relative_files 测试辅助行为。"""
 
-    return sorted(path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file())
+    return sorted(
+        path.relative_to(root).as_posix()
+        for path in root.rglob("*")
+        if path.is_file() and "__pycache__" not in path.relative_to(root).parts
+    )
 
 
 class GoldenExampleTests(unittest.TestCase):
@@ -102,6 +107,21 @@ class GoldenExampleTests(unittest.TestCase):
         actual = {name: relative_files(Path("examples") / name) for name in EXAMPLES}
 
         self.assertEqual(actual, expected)
+
+    def test_example_structure_ignores_python_runtime_cache(self) -> None:
+        """黄金样例结构不得随 Python 版本或缓存生成时机变化。"""
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            document = root / "README.md"
+            document.write_text("# 示例\n", encoding="utf-8")
+            cache = root / "scripts/__pycache__/module.cpython-314.pyc"
+            cache.parent.mkdir(parents=True)
+            cache.write_bytes(b"runtime cache")
+
+            files = relative_files(root)
+
+        self.assertEqual(["README.md"], files)
 
     def test_single_and_multi_stack_use_the_same_core_paths(self) -> None:
         """验证 single_and_multi_stack_use_the_same_core_paths 场景。"""

@@ -11,7 +11,9 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 
-EXCLUDED_PARTS = frozenset({".git", "__pycache__", ".test-probe", ".test-run", ".test-tmp"})
+EXCLUDED_PARTS = frozenset(
+    {".git", ".worktrees", "__pycache__", ".test-probe", ".test-run", ".test-tmp"}
+)
 
 
 @dataclass(frozen=True)

@@ -102,6 +102,8 @@ def validate_plugin_contract(root: Path) -> list[str]:
     canonical_skill = root / "skills" / "context-atlas" / "SKILL.md"
     named_skills: list[Path] = []
     for path in root.rglob("SKILL.md"):
+        if ".worktrees" in path.relative_to(root).parts:
+            continue
         try:
             if "name: context-atlas" in path.read_text(encoding="utf-8"):
                 named_skills.append(path.resolve())
