@@ -1,6 +1,7 @@
 """test_invalid_fixtures 自动化测试。"""
 
 from pathlib import Path
+import tempfile
 import unittest
 
 from scripts.project_kb.validator import ValidationConfig, validate
@@ -16,6 +17,9 @@ FIXTURES = {
     "source-wrong-type": "KB_SOURCE_TYPE",
     "ai-inference-approval": "KB_APPROVAL_AI_INFERENCE",
     "one-way-supersession": "KB_SUPERSESSION_LINK",
+    "relation-unknown-field": "KB_REL_FIELD_UNKNOWN",
+    "relation-broken-target": "KB_REL_TARGET_FILE",
+    "relation-wrong-direction": "KB_REL_DIRECTION",
 }
 
 
@@ -34,6 +38,22 @@ class InvalidFixtureTests(unittest.TestCase):
 
                 self.assertIn(f"expected_code: {expected_code}", readme)
                 self.assertEqual(codes, {expected_code})
+
+    def test_invalid_relation_catalog_has_stable_issue(self) -> None:
+        """关系目录缺失时应返回稳定问题，而不是向用户暴露异常堆栈。"""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            missing_catalog = root / "missing-relation-catalog.json"
+            issues = validate(
+                root,
+                ValidationConfig(
+                    schema_root=Path("schemas"),
+                    relation_catalog_path=missing_catalog,
+                ),
+            )
+
+        self.assertEqual(["KB_REL_CATALOG"], [issue.code for issue in issues])
 
 
 if __name__ == "__main__":

@@ -8,6 +8,8 @@ from pathlib import Path
 from .discovery import discover_records
 from .links import validate_links
 from .model import Issue
+from .relation_catalog import RelationCatalog
+from .relations import RelationIndex
 from .schema_catalog import SchemaCatalog
 from .security import validate_security
 from .traceability import validate_traceability
@@ -18,6 +20,7 @@ class ValidationConfig:
     """保存 Schema 位置和知识发现排除目录。"""
 
     schema_root: Path
+    relation_catalog_path: Path | None = None
     excluded_directories: frozenset[str] = frozenset(
         {".obsidian", "Excalidraw", "90-历史归档"}
     )
@@ -36,6 +39,26 @@ def validate(root: Path, config: ValidationConfig) -> list[Issue]:
         kind = record.metadata.get("type")
         if isinstance(kind, str) and kind in catalog.schemas:
             issues.extend(catalog.validate(kind, record.metadata, record.path))
+    relation_catalog_path = (
+        config.relation_catalog_path
+        if config.relation_catalog_path is not None
+        else config.schema_root / "relation-catalog.json"
+    )
+    try:
+        relation_catalog = RelationCatalog.load(relation_catalog_path)
+    except (OSError, ValueError) as error:
+        issues.append(
+            Issue(
+                "KB_REL_CATALOG",
+                relation_catalog_path,
+                f"关系目录不可用：{error}",
+            )
+        )
+    else:
+        _, relation_issues = RelationIndex.build(
+            resolved_root, records, relation_catalog
+        )
+        issues.extend(relation_issues)
     issues.extend(validate_links(resolved_root, config.excluded_directories))
     issues.extend(validate_traceability(resolved_root, records))
     issues.extend(validate_security(records))
