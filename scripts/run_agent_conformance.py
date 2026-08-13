@@ -23,6 +23,7 @@ from scripts.agent_conformance.assertions import (
     assert_existing_target_preserved,
     assert_no_formal_write_before_confirmation,
     assert_valid_initialized_target,
+    compare_invariants,
 )
 from scripts.agent_conformance.claude_runner import (
     ClaudeRunner,
@@ -30,15 +31,21 @@ from scripts.agent_conformance.claude_runner import (
     resolve_claude_executable,
 )
 from scripts.agent_conformance.model import AgentTurn, ScenarioResult
+from scripts.agent_conformance.codex_runner import (
+    CodexRunner,
+    resolve_codex_executable,
+)
 
 
+CONFORMANCE_PROPOSAL_REVISION = "CONFORMANCE-001"
 EXPLICIT_INITIALIZE_PROMPT = (
     "/context-atlas:context-atlas\n"
     "请为当前项目初始化名为 example 的项目知识库。"
-    "现在只检查并提出带修订号的 Proposal，不要确认，也不要创建或修改正式知识文件。"
+    f"现在只检查并提出 proposal_revision 为 {CONFORMANCE_PROPOSAL_REVISION} 的 Proposal，"
+    "不要确认，也不要创建或修改正式知识文件。"
 )
 CONFIRM_PROMPT = (
-    "我明确确认你上一轮提供的当前 Proposal 修订号。"
+    f"我明确确认你上一轮提供的 Proposal 修订号 {CONFORMANCE_PROPOSAL_REVISION}。"
     "请严格按已确认范围初始化 doc-example，并运行目标内置检查器后报告。"
 )
 EXISTING_TARGET_PROMPT = (
@@ -80,6 +87,33 @@ class RunnerFactory(Protocol):
         """创建单轮或可续接会话运行器。"""
 
 
+class CodexRunnerFactory:
+    """为全部隔离场景复用一个临时 Codex 主目录。"""
+
+    codex_home: Path
+    auth_source: Path | None
+
+    def __init__(self, codex_home: Path, auth_source: Path | None) -> None:
+        """保存临时主目录及只读认证文件来源。"""
+
+        self.codex_home = codex_home
+        self.auth_source = auth_source
+
+    def __call__(
+        self,
+        plugin_root: Path,
+        persist_sessions: bool = False,
+    ) -> TurnRunner:
+        """创建使用同一临时安装、按场景控制会话持久化的运行器。"""
+
+        return CodexRunner(
+            plugin_root=plugin_root,
+            codex_home=self.codex_home,
+            persist_sessions=persist_sessions,
+            auth_source=self.auth_source,
+        )
+
+
 def _sha256(path: Path) -> str:
     """计算文件摘要，供不暴露正文的工作区快照使用。"""
 
@@ -97,6 +131,8 @@ def snapshot_workspace(workspace: Path) -> set[str]:
         f"{path.relative_to(workspace).as_posix()}\tsha256:{_sha256(path)}"
         for path in workspace.rglob("*")
         if path.is_file()
+        and "__pycache__" not in path.relative_to(workspace).parts
+        and path.suffix.lower() != ".pyc"
     }
 
 
@@ -163,13 +199,16 @@ def _scenario_report(
     }
 
 
-def _blocked_scenario(scenario_id: str) -> dict[str, object]:
+def _blocked_scenario(
+    scenario_id: str,
+    agent_name: str = "claude",
+) -> dict[str, object]:
     """构造不泄露外部异常详情的阻塞场景报告。"""
 
     return {
         "id": scenario_id,
         "status": "blocked",
-        "assertions": ["Claude Code 外部调用不可用、超时或未认证"],
+        "assertions": [f"{agent_name} 外部调用不可用、超时或未认证"],
         "command_exit_codes": [],
         "file_summary": {
             "before_count": 0,
@@ -352,8 +391,9 @@ def run_claude_conformance(
     workspace_root: Path,
     runner_factory: RunnerFactory = ClaudeRunner,
     agent_version: str = "unknown",
+    agent_name: str = "claude",
 ) -> dict[str, object]:
-    """在四个隔离目录运行 Claude 场景并汇总状态。"""
+    """在四个隔离目录运行指定 Agent 的共享场景并汇总状态。"""
 
     scenario_functions = (
         ("initialize_requires_confirmation", _run_requires_confirmation),
@@ -373,16 +413,16 @@ def run_claude_conformance(
             if scenario_report["status"] == "blocked":
                 # 非零进程结果与异常一样表示全局外部条件不可用，停止重复调用。
                 scenarios.extend(
-                    _blocked_scenario(remaining_id)
+                    _blocked_scenario(remaining_id, agent_name)
                     for remaining_id, _ in scenario_functions[index + 1 :]
                 )
                 break
         except (OSError, subprocess.SubprocessError):
             # 认证、网络、进程启动和超时属于外部阻塞，不能伪装成行为通过。
-            scenarios.append(_blocked_scenario(scenario_id))
+            scenarios.append(_blocked_scenario(scenario_id, agent_name))
             # 同一 Agent 环境的全局外部故障无需在每个场景重复等待超时。
             scenarios.extend(
-                _blocked_scenario(remaining_id)
+                _blocked_scenario(remaining_id, agent_name)
                 for remaining_id, _ in scenario_functions[index + 1 :]
             )
             break
@@ -397,7 +437,7 @@ def run_claude_conformance(
     )
     return {
         "schema_version": "1.0",
-        "agent": "claude",
+        "agent": agent_name,
         "agent_version": agent_version,
         "status": overall_status,
         "scenarios": scenarios,
@@ -418,6 +458,29 @@ def _claude_version() -> str:
     return completed.stdout.strip()
 
 
+def _codex_version() -> str:
+    """读取 Codex 版本；失败时由调用方标记整体验收阻塞。"""
+
+    completed = subprocess.run(
+        [resolve_codex_executable(), "--version"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError("Codex 版本检查失败")
+    return completed.stdout.strip()
+
+
+def _read_report(path: Path) -> dict[str, object]:
+    """读取用于平台对照的 JSON 报告并校验顶层对象。"""
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("验收报告顶层必须是对象")
+    return payload
+
+
 def _write_report(path: Path, report: dict[str, object]) -> None:
     """使用同目录临时文件原子替换最终脱敏报告。"""
 
@@ -432,16 +495,31 @@ def _write_report(path: Path, report: dict[str, object]) -> None:
 
 
 def main() -> int:
-    """解析命令行参数、运行 Claude 场景并写出报告。"""
+    """解析命令行参数，运行单平台场景或比较两平台报告。"""
 
     parser = argparse.ArgumentParser(description="运行跨 Agent 黑盒验收")
-    parser.add_argument("--agent", choices=("claude",), required=True)
-    parser.add_argument("--plugin-root", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--agent", choices=("claude", "codex"))
+    mode.add_argument("--compare", nargs=2, type=Path, metavar=("CLAUDE", "CODEX"))
+    parser.add_argument("--plugin-root", type=Path)
+    parser.add_argument("--output", type=Path)
     arguments = parser.parse_args()
+    if arguments.compare:
+        try:
+            claude_report = _read_report(arguments.compare[0])
+            codex_report = _read_report(arguments.compare[1])
+            issues = compare_invariants(claude_report, codex_report)
+        except (OSError, json.JSONDecodeError, ValueError) as error:
+            parser.error(f"无法读取对照报告：{error}")
+        print(json.dumps({"status": "failed" if issues else "passed", "issues": issues}, ensure_ascii=False, indent=2))
+        return 1 if issues else 0
+    if arguments.plugin_root is None or arguments.output is None:
+        parser.error("运行 Agent 时必须同时提供 --plugin-root 和 --output")
+
+    agent_name = str(arguments.agent)
     try:
-        version = _claude_version()
-        if not has_bare_claude_credentials(os.environ):
+        version = _claude_version() if agent_name == "claude" else _codex_version()
+        if agent_name == "claude" and not has_bare_claude_credentials(os.environ):
             scenario_ids = (
                 "initialize_requires_confirmation",
                 "initialize_after_confirmation",
@@ -450,25 +528,38 @@ def main() -> int:
             )
             report = {
                 "schema_version": "1.0",
-                "agent": "claude",
+                "agent": agent_name,
                 "agent_version": version,
                 "status": "blocked",
                 "scenarios": [
-                    _blocked_scenario(scenario_id) for scenario_id in scenario_ids
+                    _blocked_scenario(scenario_id, agent_name)
+                    for scenario_id in scenario_ids
                 ],
             }
         else:
             workspace_parent = arguments.output.parent / ".workspaces"
             with temporary_workspace_root(workspace_parent) as workspace_root:
+                runner_factory: RunnerFactory = ClaudeRunner
+                if agent_name == "codex":
+                    configured_home = Path(
+                        os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))
+                    )
+                    auth_source = configured_home / "auth.json"
+                    runner_factory = CodexRunnerFactory(
+                        codex_home=workspace_root / "codex-home",
+                        auth_source=auth_source if auth_source.is_file() else None,
+                    )
                 report = run_claude_conformance(
                     plugin_root=arguments.plugin_root,
                     workspace_root=workspace_root,
+                    runner_factory=runner_factory,
                     agent_version=version,
+                    agent_name=agent_name,
                 )
-    except (OSError, subprocess.SubprocessError, RuntimeError):
+    except (OSError, subprocess.SubprocessError, RuntimeError, ValueError):
         report = {
             "schema_version": "1.0",
-            "agent": "claude",
+            "agent": agent_name,
             "agent_version": "unavailable",
             "status": "blocked",
             "scenarios": [],

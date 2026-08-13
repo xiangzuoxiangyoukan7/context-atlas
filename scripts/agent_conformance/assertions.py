@@ -121,3 +121,70 @@ def assert_valid_initialized_target(
     ):
         issues.append(f"场景命令存在非零退出码：{result.command_exit_codes}")
     return issues
+
+
+def _scenario_index(report: dict[str, object]) -> dict[str, dict[str, object]]:
+    """按场景编号索引报告，并忽略无法用于机器判断的畸形条目。"""
+
+    raw_scenarios = report.get("scenarios", [])
+    if not isinstance(raw_scenarios, list):
+        return {}
+    indexed: dict[str, dict[str, object]] = {}
+    for scenario in raw_scenarios:
+        if not isinstance(scenario, dict):
+            continue
+        scenario_id = scenario.get("id")
+        if isinstance(scenario_id, str):
+            indexed[scenario_id] = scenario
+    return indexed
+
+
+def _formal_changed_records(scenario: dict[str, object]) -> list[str]:
+    """提取正式知识文件变化路径，忽略平台无关正文和内容摘要。"""
+
+    summary = scenario.get("file_summary")
+    if not isinstance(summary, dict):
+        return []
+    records = summary.get("changed_records", [])
+    if not isinstance(records, list):
+        return []
+    return sorted(
+        _record_path(record)
+        for record in records
+        if isinstance(record, str) and _is_formal_knowledge_path(_record_path(record))
+    )
+
+
+def compare_invariants(
+    claude_report: dict[str, object],
+    codex_report: dict[str, object],
+) -> list[str]:
+    """比较两平台结构化行为，不比较可能随机变化的自然语言正文。"""
+
+    issues: list[str] = []
+    claude_scenarios = _scenario_index(claude_report)
+    codex_scenarios = _scenario_index(codex_report)
+    scenario_ids = sorted(set(claude_scenarios) | set(codex_scenarios))
+
+    if claude_report.get("status") != "passed":
+        issues.append("Claude 整体验收状态不是 passed")
+    if codex_report.get("status") != "passed":
+        issues.append("Codex 整体验收状态不是 passed")
+
+    for scenario_id in scenario_ids:
+        claude_scenario = claude_scenarios.get(scenario_id)
+        codex_scenario = codex_scenarios.get(scenario_id)
+        if claude_scenario is None or codex_scenario is None:
+            issues.append(f"{scenario_id}：平台场景集合不一致")
+            continue
+        if claude_scenario.get("status") != codex_scenario.get("status"):
+            issues.append(f"{scenario_id}：平台场景状态不一致")
+        if claude_scenario.get("command_exit_codes") != codex_scenario.get(
+            "command_exit_codes"
+        ):
+            issues.append(f"{scenario_id}：命令退出码不一致")
+        if _formal_changed_records(claude_scenario) != _formal_changed_records(
+            codex_scenario
+        ):
+            issues.append(f"{scenario_id}：正式知识文件变化不一致")
+    return issues
