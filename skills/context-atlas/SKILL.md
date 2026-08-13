@@ -19,6 +19,8 @@ Operate a tool-neutral project knowledge base on the user's behalf. Treat reposi
 | Initialize a knowledge base | Read [初始化协议](references/初始化协议.md) and [知识采集与确认](references/知识采集与确认.md). |
 | Inspect or explain one | Read its root README and `knowledge-base.yaml`, then [知识采集与确认](references/知识采集与确认.md). |
 | Update, resolve conflict, or supersede knowledge | Read [知识采集与确认](references/知识采集与确认.md) and [更新冲突与归档](references/更新冲突与归档.md). |
+| Diagnose or convert an older knowledge-base format | Read [兼容与迁移](references/兼容与迁移.md). |
+| Identify a contributor or capture knowledge at a natural checkpoint | Read [身份与主动采集](references/身份与主动采集.md) and [知识采集与确认](references/知识采集与确认.md). |
 | Validate or report results | Read [验证与结果报告](references/验证与结果报告.md). |
 | Add relations, find consumers, or analyze change impact | Read [关系与影响分析](references/关系与影响分析.md). |
 | Record data sources, database hierarchy, tables, field domains, or logical foreign keys | Read [数据库知识](references/数据库知识.md) and [关系与影响分析](references/关系与影响分析.md). |
@@ -38,6 +40,7 @@ Follow `inspect -> propose -> await_confirmation -> apply -> validate -> report`
 - Never store passwords, tokens, private keys, or unredacted personal data.
 - Never treat validator success as content approval.
 - Govern knowledge writes only. Never use the knowledge base to decide whether another plugin's development task may execute.
+- At natural checkpoints, capture new project knowledge as a deduplicated `proposed` queue item; never silently promote it to formal knowledge.
 
 ## Assets
 

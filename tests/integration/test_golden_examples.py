@@ -169,6 +169,23 @@ class GoldenExampleTests(unittest.TestCase):
                     child,
                 )
 
+    def test_examples_include_people_and_knowledge_proposal_entry_points(self) -> None:
+        """两套样例都应展示人员登记和主动知识提案入口。"""
+
+        for name in EXAMPLES:
+            with self.subTest(name=name):
+                root = Path("examples") / name
+                people = root / "00-项目总览/协作人员.md"
+                queue = root / "03-实施与验收/知识提案"
+                self.assertTrue(people.is_file())
+                self.assertTrue((queue / "README.md").is_file())
+                self.assertTrue((queue / "TEMPLATE.md").is_file())
+                self.assertIn("Git 邮箱摘要", people.read_text(encoding="utf-8"))
+                self.assertIn(
+                    "status: proposed",
+                    (queue / "TEMPLATE.md").read_text(encoding="utf-8"),
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

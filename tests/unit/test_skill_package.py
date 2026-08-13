@@ -16,6 +16,8 @@ REFERENCES = (
     "验证与结果报告.md",
     "关系与影响分析.md",
     "数据库知识.md",
+    "兼容与迁移.md",
+    "身份与主动采集.md",
 )
 
 
@@ -65,6 +67,8 @@ class SkillPackageTests(unittest.TestCase):
             "references/更新冲突与归档.md",
             "references/验证与结果报告.md",
             "references/关系与影响分析.md",
+            "references/兼容与迁移.md",
+            "references/身份与主动采集.md",
         )
         for phrase in required:
             self.assertIn(phrase, content)
@@ -144,6 +148,37 @@ class SkillPackageTests(unittest.TestCase):
         self.assertIn("目标已存在", content)
         self.assertIn("更新流程", content)
         self.assertIn("不决定外部任务是否执行", content)
+
+    def test_identity_capture_and_migration_references_explain_runtime_protocol(self) -> None:
+        """Skill 必须给 Agent 明确的身份、检查点和轻量迁移调用协议。"""
+
+        identity = (SKILL_ROOT / "references" / "身份与主动采集.md").read_text(
+            encoding="utf-8"
+        )
+        migration = (SKILL_ROOT / "references" / "兼容与迁移.md").read_text(
+            encoding="utf-8"
+        )
+        for phrase in (
+            "Git 邮箱摘要",
+            "PERSON-UNKNOWN",
+            "user_decision",
+            "before_delivery",
+            "session_end",
+            "status: proposed",
+            "不控制开发任务",
+            "agent_kb_operation.py capture",
+        ):
+            self.assertIn(phrase, identity)
+        for phrase in (
+            "format_version",
+            "project_version",
+            "migrate-propose",
+            "migrate-apply",
+            "proposal_revision",
+            "旧字段",
+            "rel_supported_by",
+        ):
+            self.assertIn(phrase, migration)
 
     def test_proposal_and_report_references_use_state_machine_contract(self) -> None:
         """验证 proposal_and_report_references_use_state_machine_contract 场景。"""
