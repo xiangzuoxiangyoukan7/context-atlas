@@ -146,15 +146,24 @@ class ClaudeRunner:
         """运行一次 Claude 对话并返回解析后的内存结果。"""
 
         started_at = self.now()
-        completed = self.process_runner(
-            self._build_command(prompt, resume_session_id),
-            cwd=workspace,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=600,
-        )
+        command = self._build_command(prompt, resume_session_id)
+        attempts = 2 if resume_session_id is None else 1
+        for attempt in range(attempts):
+            try:
+                completed = self.process_runner(
+                    command,
+                    cwd=workspace,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=600,
+                )
+                break
+            except subprocess.TimeoutExpired:
+                # 未续接轮按契约不得正式写入，可重试一次；确认后的写入轮必须立即上抛。
+                if attempt + 1 >= attempts:
+                    raise
         finished_at = self.now()
         try:
             session_id, result_text, structured_output = _parse_payload(completed.stdout)

@@ -56,6 +56,34 @@ class RecordingProcess:
         )
 
 
+class TimeoutThenSuccessProcess:
+    """首轮抛出超时、第二轮返回成功，用于验证只读轮次安全重试。"""
+
+    calls: int
+
+    def __init__(self) -> None:
+        """初始化调用次数。"""
+
+        self.calls = 0
+
+    def __call__(
+        self,
+        command: list[str],
+        **kwargs: Any,
+    ) -> subprocess.CompletedProcess[str]:
+        """第一次模拟外部停滞，后续返回完整 Claude 结果。"""
+
+        self.calls += 1
+        if self.calls == 1:
+            raise subprocess.TimeoutExpired(command, timeout=600)
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            '{"type":"result","session_id":"session-1","result":"完成"}',
+            "",
+        )
+
+
 class ScriptedClaudeRunner:
     """在临时项目中模拟 Claude 场景的可观察文件副作用。"""
 
@@ -231,6 +259,42 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertTrue(resolved.is_file())
         if os.name == "nt":
             self.assertEqual(".exe", resolved.suffix.lower())
+
+    def test_unconfirmed_read_only_turn_retries_one_transient_timeout(self) -> None:
+        """没有续接编号的只读提案轮超时一次后应安全重试。"""
+
+        api = _load_runner_api()
+        process = TimeoutThenSuccessProcess()
+        with tempfile.TemporaryDirectory() as directory:
+            runner = api.ClaudeRunner(
+                plugin_root=ROOT,
+                process_runner=process,
+                now=_fixed_now,
+            )
+
+            turn = runner.run_turn(Path(directory), "只检查并给出提案", None)
+
+        self.assertEqual(2, process.calls)
+        self.assertEqual(0, turn.exit_code)
+        self.assertEqual("完成", turn.result_text)
+
+    def test_confirmed_resumed_turn_does_not_retry_timeout(self) -> None:
+        """可能产生正式写入的续接轮超时后不得自动重试。"""
+
+        api = _load_runner_api()
+        process = TimeoutThenSuccessProcess()
+        with tempfile.TemporaryDirectory() as directory:
+            runner = api.ClaudeRunner(
+                plugin_root=ROOT,
+                persist_sessions=True,
+                process_runner=process,
+                now=_fixed_now,
+            )
+
+            with self.assertRaises(subprocess.TimeoutExpired):
+                runner.run_turn(Path(directory), "执行已确认提案", "session-1")
+
+        self.assertEqual(1, process.calls)
 
     def test_resumable_turn_uses_session_without_disabling_persistence(self) -> None:
         """两阶段场景必须持久化首轮会话并用会话编号续接。"""
