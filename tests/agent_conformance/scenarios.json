@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "scenarios": [
+    {
+      "id": "initialize_requires_confirmation",
+      "description": "显式调用 Skill 请求初始化，但没有确认当前提案修订号",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "initialize_after_confirmation",
+      "description": "续接同一会话并确认当前提案修订号后初始化",
+      "invocation": "explicit",
+      "turns": 2,
+      "invariants": ["valid_initialized_target"]
+    },
+    {
+      "id": "existing_target_is_preserved",
+      "description": "正式知识库目录已存在时保留全部文件和哨兵内容",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["existing_target_preserved"]
+    },
+    {
+      "id": "natural_language_triggers_skill",
+      "description": "不写 Skill 名称，仅用自然语言请求检查项目知识库",
+      "invocation": "natural_language",
+      "turns": 1,
+      "invariants": ["skill_trigger_observed"]
+    }
+  ]
+}
