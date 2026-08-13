@@ -151,6 +151,8 @@ class ClaudeRunner:
             cwd=workspace,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=300,
         )
         finished_at = self.now()

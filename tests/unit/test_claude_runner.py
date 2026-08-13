@@ -202,6 +202,8 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertEqual(workspace, kwargs["cwd"])
         self.assertTrue(kwargs["capture_output"])
         self.assertTrue(kwargs["text"])
+        self.assertEqual("utf-8", kwargs["encoding"])
+        self.assertEqual("replace", kwargs["errors"])
         self.assertEqual(300, kwargs["timeout"])
         self.assertEqual("session-1", turn.session_id)
         self.assertEqual("完成", turn.result_text)
