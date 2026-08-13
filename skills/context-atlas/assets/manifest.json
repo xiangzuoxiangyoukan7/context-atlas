@@ -37,6 +37,7 @@
     "scripts/check_rule_coverage.py",
     "scripts/project_kb/__init__.py",
     "scripts/project_kb/agent_operation.py",
+    "scripts/project_kb/database.py",
     "scripts/project_kb/discovery.py",
     "scripts/project_kb/frontmatter.py",
     "scripts/project_kb/impact.py",
