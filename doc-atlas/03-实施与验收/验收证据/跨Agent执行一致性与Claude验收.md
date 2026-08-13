@@ -9,7 +9,7 @@
 | 项目 | 实际值 | 结果 |
 | --- | --- | --- |
 | Codex | `codex-cli 0.147.0` | 四个真实场景全部通过 |
-| Claude Code | `2.1.226 (Claude Code)` | CLI 可用；真实场景因 bare 凭据缺失而阻塞 |
+| Claude Code | `2.1.226 (Claude Code)` + DeepSeek 兼容接口 | 三个真实安全场景通过；确认后初始化未落盘 |
 | Codex 清单 | `.codex-plugin/plugin.json` | 静态契约测试通过 |
 | Claude 发布包 | `.claude-plugin/` 与唯一 `skills/` | `claude plugin validate <临时发布包> --strict` 退出码 0 |
 
@@ -43,22 +43,32 @@ Codex 运行使用临时 `CODEX_HOME` 和临时本地 marketplace，只复制认
 
 ## Claude Code 真实行为报告
 
-运行命令：`py scripts/run_agent_conformance.py --agent claude --plugin-root . --output .agent-conformance-runs/claude-release.json`。CLI 版本读取成功，但当前环境不存在 `ANTHROPIC_API_KEY` 或受支持的 Bedrock、Vertex、Foundry bare 模式开关；运行器在模型调用前将四个场景全部标记为 `blocked`，没有伪装为通过。
+运行命令：`py scripts/run_agent_conformance.py --agent claude --plugin-root . --output .agent-conformance-runs/claude-release.json`。Claude Code 能从用户 `settings.json` 读取 DeepSeek 兼容接口配置；正常模式与 `--bare` 最小调用均退出 0。运行器已移除只检查操作系统环境变量的错误预检，并固定以 UTF-8 读取输出。
 
-Claude Code 的静态插件校验和模拟运行器测试不能替代这四个真实行为场景。
+发布级报告中，`initialize_requires_confirmation`、`existing_target_is_preserved` 和 `natural_language_triggers_skill` 均为 `passed`。`initialize_after_confirmation` 的两个模型轮次退出码均为 0，但文件变化为 0，目标内置检查器因目标不存在而退出 1，因此该场景为 `failed`。Claude Code 的静态插件校验和模拟运行器测试不能替代这项真实行为缺口。
+
+### 人工复核步骤
+
+1. 在空的临时项目中调用 `/context-atlas:context-atlas`，要求初始化 `example`，但先给 Proposal 且不要写文件。
+2. 确认 `doc-example/` 不存在，记录实际 `proposal_revision`。
+3. 明确确认同一个修订号，要求初始化并运行目标内置检查器。
+4. 确认存在 `doc-example/knowledge-base.yaml`。
+5. 执行 `py doc-example/.project-kb/scripts/check_knowledge_base.py doc-example --schema-root doc-example/.project-kb/schemas`，记录退出码。
+
+只有文件存在且检查器退出码为 0，才能补充人工通过证据。
 
 ## 平台对照
 
-执行 `py scripts/run_agent_conformance.py --compare .agent-conformance-runs/claude-release.json .agent-conformance-runs/codex-release.json` 返回非零。原因是 Claude 整体状态不是 `passed`，四个场景无法与 Codex 的真实通过结果形成同等级比较；这证明比较门禁会拒绝不完整证据。
+执行 `py scripts/run_agent_conformance.py --compare .agent-conformance-runs/claude-release.json .agent-conformance-runs/codex-release.json` 返回非零。原因是 Claude 的确认后初始化场景没有生成目标，而 Codex 对应场景生成 65 个正式文件且检查器退出码为 0；比较门禁正确拒绝该行为差异。
 
 ## 验收项映射
 
 | 验收编号 | 证据 | 结果 |
 | --- | --- | --- |
 | KB-AC-26 | 两个平台清单静态契约、唯一 Skill、发布包严格校验和 107 个测试通过 | passed |
-| KB-AC-27 | Codex 确认前/后场景通过；Claude 真实场景因 bare 凭据缺失阻塞 | partial |
-| KB-AC-28 | Codex 目标内置检查器和防覆盖场景通过；Claude 尚无真实结果 | partial |
-| KB-AC-29 | 比较器实现并正确拒绝 Claude blocked 与 Codex passed 的报告组合 | partial |
+| KB-AC-27 | Codex 确认前/后场景通过；Claude 确认前通过、确认后未落盘 | partial |
+| KB-AC-28 | 两个平台防覆盖通过；Codex 内置检查通过，Claude 目标未生成 | partial |
+| KB-AC-29 | 比较器正确识别 Claude 与 Codex 在确认后初始化上的行为差异 | partial |
 
 ## 证据边界
 

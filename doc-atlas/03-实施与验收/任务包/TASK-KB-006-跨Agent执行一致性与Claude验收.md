@@ -3,7 +3,7 @@ id: TASK-KB-006
 type: governance_task
 title: 跨 Agent 执行一致性与 Claude Code 验收
 plan: docs/superpowers/plans/2026-08-13-cross-agent-execution-and-claude-validation.md
-status: blocked
+status: in_progress
 acceptance: [KB-AC-26, KB-AC-27, KB-AC-28, KB-AC-29]
 last_updated: 2026-08-13
 ---
@@ -31,6 +31,6 @@ last_updated: 2026-08-13
 
 ## 当前状态
 
-Codex CLI `0.147.0` 的四个发布级场景已全部通过；Claude Code `2.1.226` 可执行且发布包严格校验通过，但本机未配置 `--bare` 模式支持的认证环境变量，因此真实行为场景被运行器如实标记为 `blocked`。
+Codex CLI `0.147.0` 的四个发布级场景已全部通过。Claude Code `2.1.226` 已通过用户配置的 DeepSeek 兼容接口完成真实调用；确认前零写入、已有目标防覆盖和自然语言触发三个场景通过，但确认后初始化场景中两轮调用虽均退出 0，仍未生成正式文件，目标检查器退出 1。
 
-在 Claude Code 四场景真实通过且与 Codex 报告比较通过前，本任务保持 `blocked`，不得关闭或宣称第一版双平台发布验收完成。该状态只描述知识库插件验收，不限制其他任务执行。
+确认后初始化改为按本文证据提供的步骤人工验证；在人工证据或后续稳定的自动报告通过前，本任务保持 `in_progress`，不得宣称第一版双平台发布验收完成。该状态只描述知识库插件验收，不限制其他任务执行。
