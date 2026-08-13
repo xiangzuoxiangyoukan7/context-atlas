@@ -1,3 +1,5 @@
+"""实现带提案修订门禁的确定性 Agent 操作。"""
+
 from __future__ import annotations
 
 # context-atlas-rules: [[rules/知识治理规则#RULE-AGENT-001|RULE-AGENT-001]]
@@ -11,6 +13,8 @@ from .validator import ValidationConfig, validate
 
 @dataclass(frozen=True)
 class OperationIssue:
+    """保存操作后验证发现的单个结构问题。"""
+
     code: str
     path: str
     message: str
@@ -18,6 +22,8 @@ class OperationIssue:
 
 @dataclass(frozen=True)
 class OperationReport:
+    """保存 Agent 可安全返回的固定字段操作报告。"""
+
     operation: str
     target: Path
     changed_files: tuple[str, ...]
@@ -26,6 +32,8 @@ class OperationReport:
 
 
 def _relative_text(path: Path, root: Path) -> str:
+    """将问题路径限制为知识库内相对路径或安全文件名。"""
+
     try:
         return path.resolve().relative_to(root.resolve()).as_posix()
     except ValueError:
@@ -39,6 +47,9 @@ def execute_initialize(
     confirmed_revision: str,
     assets_root: Path,
 ) -> OperationReport:
+    """在确认修订一致后初始化知识库并执行二次验证。"""
+
+    # 修订门禁必须早于路径解析和目录创建，才能保证拒绝时真正零写入。
     if not proposal_revision or proposal_revision != confirmed_revision:
         raise PermissionError("confirmed revision does not match current proposal")
 

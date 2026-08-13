@@ -1,3 +1,5 @@
+"""验证知识生命周期、跨记录引用和验收追溯关系。"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -5,6 +7,8 @@ import re
 from typing import Iterable, Mapping
 
 from .model import DocumentRecord, Issue
+
+# context-atlas-rules: [[rules/知识治理规则#RULE-SRC-001|RULE-SRC-001]]
 
 
 ACCEPTANCE_PATTERN = re.compile(r"(?:F\d{2}|KB)-AC-\d{2}\Z")
@@ -23,6 +27,8 @@ LIFECYCLE_TYPES = frozenset({"knowledge_item", "data_asset"})
 
 
 def as_list(value: object) -> list[str]:
+    """把空值、标量或列表统一转换为字符串列表。"""
+
     if isinstance(value, list):
         return [str(item) for item in value]
     if value is None:
@@ -31,10 +37,14 @@ def as_list(value: object) -> list[str]:
 
 
 def _records_with_metadata(records: Iterable[DocumentRecord]) -> list[DocumentRecord]:
+    """过滤出具有正式元数据的知识记录。"""
+
     return [record for record in records if record.metadata]
 
 
 def _id_index(records: Iterable[DocumentRecord], issues: list[Issue]) -> dict[str, DocumentRecord]:
+    """建立稳定编号索引并报告重复编号。"""
+
     index: dict[str, DocumentRecord] = {}
     for record in _records_with_metadata(records):
         identifier = record.metadata.get("id")
@@ -57,6 +67,8 @@ def _validate_lifecycle(
     records: Iterable[DocumentRecord],
     ids: Mapping[str, DocumentRecord],
 ) -> list[Issue]:
+    """验证来源、确认、冲突和替代状态的一致性。"""
+
     issues: list[Issue] = []
     for record in _records_with_metadata(records):
         metadata = record.metadata
@@ -169,6 +181,8 @@ def _validate_references(
     records: Iterable[DocumentRecord],
     ids: Mapping[str, DocumentRecord],
 ) -> list[Issue]:
+    """验证受控引用字段均指向已登记知识编号。"""
+
     issues: list[Issue] = []
     for record in _records_with_metadata(records):
         for field in REFERENCE_FIELDS:
@@ -191,6 +205,8 @@ def _validate_references(
 
 
 def _matrix_rows(path: Path, issues: list[Issue]) -> list[tuple[str, str, str, str]]:
+    """解析验收矩阵中的编号、结果、证据和版本列。"""
+
     if not path.exists():
         return []
     rows: list[tuple[str, str, str, str]] = []
@@ -230,10 +246,14 @@ def _matrix_rows(path: Path, issues: list[Issue]) -> list[tuple[str, str, str, s
 
 
 def _registered(value: str) -> bool:
+    """判断矩阵单元格是否登记了非占位内容。"""
+
     return bool(value.strip() and value.strip() not in {"—", "-"})
 
 
 def _validate_matrix(root: Path, records: Iterable[DocumentRecord]) -> list[Issue]:
+    """核对验收声明、矩阵行和完成状态证据。"""
+
     issues: list[Issue] = []
     declared: set[str] = set()
     completed: list[tuple[Path, list[str]]] = []
@@ -290,6 +310,8 @@ def _validate_matrix(root: Path, records: Iterable[DocumentRecord]) -> list[Issu
 
 
 def validate_traceability(root: Path, records: Iterable[DocumentRecord]) -> list[Issue]:
+    """汇总生命周期、引用和验收矩阵的追溯问题。"""
+
     materialized = list(records)
     issues: list[Issue] = []
     ids = _id_index(materialized, issues)

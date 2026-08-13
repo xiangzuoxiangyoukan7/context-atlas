@@ -9,7 +9,11 @@ import tempfile
 
 if os.name == "nt":
 
-    def _windows_sandbox_mkdtemp(suffix=None, prefix=None, dir=None):
+    def _windows_sandbox_mkdtemp(
+        suffix: str | None = None,
+        prefix: str | None = None,
+        dir: str | None = None,
+    ) -> str:
         """兼容限制 0700 子目录写入的受管 Windows 测试环境。"""
 
         prefix, suffix, directory, output_type = tempfile._sanitize_params(  # type: ignore[attr-defined]

@@ -1,3 +1,5 @@
+"""编排元数据、链接、追溯和安全验证器。"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -13,6 +15,8 @@ from .traceability import validate_traceability
 
 @dataclass(frozen=True)
 class ValidationConfig:
+    """保存 Schema 位置和知识发现排除目录。"""
+
     schema_root: Path
     excluded_directories: frozenset[str] = frozenset(
         {".obsidian", "Excalidraw", "90-历史归档"}
@@ -20,6 +24,8 @@ class ValidationConfig:
 
 
 def validate(root: Path, config: ValidationConfig) -> list[Issue]:
+    """执行全部确定性检查并返回稳定排序的问题。"""
+
     resolved_root = root.resolve()
     if not resolved_root.exists():
         return [Issue("KB_ROOT_MISSING", resolved_root, "knowledge-base root does not exist")]

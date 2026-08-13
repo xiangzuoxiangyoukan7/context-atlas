@@ -1,3 +1,5 @@
+"""test_lifecycle 自动化测试。"""
+
 from pathlib import Path
 
 from scripts.project_kb.validator import ValidationConfig, validate
@@ -9,7 +11,11 @@ from tests.helpers import (
 
 
 class TechnologyStackModelTests(TempDirectoryTestCase):
+    """验证 TechnologyStackModelTests 相关行为。"""
+
     def test_single_and_multi_stack_projects_share_one_core_structure(self) -> None:
+        """验证 single_and_multi_stack_projects_share_one_core_structure 场景。"""
+
         cases = {
             "single": "| Java | 21 | app | Spring Boot service | mvn test | application.yml | SRC-001 | approved |",
             "multi": "| Spring Boot | 3.x | backend | API | mvn test | application.yml | SRC-001 | approved |\n| Python | 3.12 | tools | data job | pytest | pyproject.toml | SRC-002 | approved |\n| Vue | 3.x | web | frontend | npm test | package.json | SRC-001 | approved |",
@@ -32,7 +38,11 @@ class TechnologyStackModelTests(TempDirectoryTestCase):
 
 
 class LifecycleValidationTests(TempDirectoryTestCase):
+    """验证 LifecycleValidationTests 相关行为。"""
+
     def setUp(self) -> None:
+        """初始化当前测试所需的隔离环境。"""
+
         super().setUp()
         self.knowledge_base = make_valid_knowledge_base(self.root / "doc-example")
         self.config = ValidationConfig(schema_root=Path("schemas"))
@@ -42,6 +52,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         identifier: str = "DATA-001",
         **overrides: object,
     ) -> Path:
+        """提供 write_data_asset 测试辅助行为。"""
+
         metadata: dict[str, object] = {
             "id": identifier,
             "type": "data_asset",
@@ -62,6 +74,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         )
 
     def test_approved_item_requires_approval_metadata(self) -> None:
+        """验证 approved_item_requires_approval_metadata 场景。"""
+
         write_record(
             self.knowledge_base / "01-功能基线" / "approved.md",
             {
@@ -80,6 +94,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertIn("KB_APPROVAL_REQUIRED", codes)
 
     def test_conflicted_item_requires_two_distinct_sources(self) -> None:
+        """验证 conflicted_item_requires_two_distinct_sources 场景。"""
+
         write_record(
             self.knowledge_base / "02-架构与契约" / "conflict.md",
             {
@@ -99,6 +115,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertIn("KB_CONFLICT_SOURCES", codes)
 
     def test_conflicted_item_requires_named_resolver(self) -> None:
+        """验证 conflicted_item_requires_named_resolver 场景。"""
+
         write_record(
             self.knowledge_base / "02-架构与契约" / "conflict.md",
             {
@@ -117,6 +135,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertIn("KB_CONFLICT_RESOLVER", codes)
 
     def test_superseded_item_requires_bidirectional_replacement_link(self) -> None:
+        """验证 superseded_item_requires_bidirectional_replacement_link 场景。"""
+
         write_record(
             self.knowledge_base / "02-架构与契约/old.md",
             {
@@ -150,6 +170,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertIn("KB_SUPERSESSION_LINK", codes)
 
     def test_approved_item_rejects_confirmation_for_stale_proposal(self) -> None:
+        """验证 approved_item_rejects_confirmation_for_stale_proposal 场景。"""
+
         write_record(
             self.knowledge_base / "02-架构与契约/stale.md",
             {
@@ -172,6 +194,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertIn("KB_PROPOSAL_STALE", codes)
 
     def test_lifecycle_source_reference_requires_source_record_type(self) -> None:
+        """验证 lifecycle_source_reference_requires_source_record_type 场景。"""
+
         write_record(
             self.knowledge_base / "00-项目总览/not-a-source.md",
             {
@@ -198,6 +222,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertEqual(codes, ["KB_SOURCE_TYPE"])
 
     def test_approved_lifecycle_record_rejects_ai_inference_only_source(self) -> None:
+        """验证 approved_lifecycle_record_rejects_ai_inference_only_source 场景。"""
+
         write_record(
             self.knowledge_base / "00-项目总览/SRC-003.md",
             {
@@ -224,6 +250,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertEqual(codes, ["KB_APPROVAL_AI_INFERENCE"])
 
     def test_approved_data_asset_accepts_registered_non_inference_source(self) -> None:
+        """验证 approved_data_asset_accepts_registered_non_inference_source 场景。"""
+
         path = self.write_data_asset(
             approved_by="project-owner",
             approved_at="2026-08-10",
@@ -238,6 +266,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertEqual(issues, [])
 
     def test_superseded_item_rejects_successor_without_reverse_reference(self) -> None:
+        """验证 superseded_item_rejects_successor_without_reverse_reference 场景。"""
+
         old_path = write_record(
             self.knowledge_base / "02-架构与契约/old-one-way.md",
             {
@@ -277,6 +307,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
     def test_superseded_data_asset_rejects_successor_without_reverse_reference(
         self,
     ) -> None:
+        """验证 superseded_data_asset_rejects_successor_without_reverse_reference 场景。"""
+
         old_path = self.write_data_asset(
             "DATA-001",
             status="superseded",
@@ -297,6 +329,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertEqual(codes, ["KB_SUPERSESSION_LINK"])
 
     def test_approved_data_asset_requires_approval_metadata(self) -> None:
+        """验证 approved_data_asset_requires_approval_metadata 场景。"""
+
         self.write_data_asset()
 
         codes = {issue.code for issue in validate(self.knowledge_base, self.config)}
@@ -304,6 +338,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertIn("KB_APPROVAL_REQUIRED", codes)
 
     def test_data_asset_rejects_unknown_knowledge_source(self) -> None:
+        """验证 data_asset_rejects_unknown_knowledge_source 场景。"""
+
         self.write_data_asset(status="proposed", sources=["SRC-999"])
 
         codes = {issue.code for issue in validate(self.knowledge_base, self.config)}
@@ -311,6 +347,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertIn("KB_SOURCE_UNKNOWN", codes)
 
     def test_conflicted_data_asset_requires_two_sources(self) -> None:
+        """验证 conflicted_data_asset_requires_two_sources 场景。"""
+
         self.write_data_asset(
             status="conflicted",
             resolution_required_from="project-owner",
@@ -321,6 +359,8 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         self.assertIn("KB_CONFLICT_SOURCES", codes)
 
     def test_data_asset_rejects_broken_local_contract_link(self) -> None:
+        """验证 data_asset_rejects_broken_local_contract_link 场景。"""
+
         self.write_data_asset(status="proposed")
         path = self.knowledge_base / "02-架构与契约/数据资产/DATA-001.md"
         path.write_text(

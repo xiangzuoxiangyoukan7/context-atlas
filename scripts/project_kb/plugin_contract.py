@@ -1,3 +1,5 @@
+"""验证 Codex 与 Claude Code 插件清单的一致性。"""
+
 from __future__ import annotations
 
 import json
@@ -23,6 +25,8 @@ COMMON_FIELDS = ("name", "version", "description")
 
 
 def _load_object(path: Path) -> dict[str, object]:
+    """读取并确认插件清单根节点是 JSON 对象。"""
+
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError(f"插件清单必须是 JSON 对象：{path}")
@@ -30,6 +34,8 @@ def _load_object(path: Path) -> dict[str, object]:
 
 
 def load_plugin_manifests(root: Path) -> tuple[dict[str, object], dict[str, object]]:
+    """读取仓库中的 Claude 与 Codex 插件清单。"""
+
     root = root.resolve()
     claude = _load_object(root / ".claude-plugin" / "plugin.json")
     codex = _load_object(root / ".codex-plugin" / "plugin.json")
@@ -37,15 +43,21 @@ def load_plugin_manifests(root: Path) -> tuple[dict[str, object], dict[str, obje
 
 
 def _safe_skill_path(value: object) -> bool:
+    """判断清单是否指向唯一共享 Skill 根目录。"""
+
     return value == "./skills/"
 
 
 def _author_name(manifest: dict[str, object]) -> object:
+    """安全提取清单中的作者名称。"""
+
     author = manifest.get("author")
     return author.get("name") if isinstance(author, dict) else None
 
 
 def validate_plugin_contract(root: Path) -> list[str]:
+    """返回双平台身份、字段和 Skill 唯一性错误。"""
+
     root = root.resolve()
     errors: list[str] = []
     try:

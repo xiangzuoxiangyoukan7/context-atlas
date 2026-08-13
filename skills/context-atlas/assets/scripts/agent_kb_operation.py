@@ -1,3 +1,5 @@
+"""为 Agent 提供非交互式知识库结构化操作命令。"""
+
 from __future__ import annotations
 
 import argparse
@@ -14,6 +16,8 @@ from scripts.project_kb.agent_operation import execute_initialize
 
 
 def _default_assets_root() -> Path:
+    """根据脚本位于源码仓库还是发布资产中推导默认资源根目录。"""
+
     scripts_parent = Path(__file__).resolve().parents[1]
     if (scripts_parent / "templates" / "core" / "doc-project").is_dir():
         return scripts_parent
@@ -21,6 +25,8 @@ def _default_assets_root() -> Path:
 
 
 def _parser() -> argparse.ArgumentParser:
+    """创建只接受已确认结构化参数的命令行解析器。"""
+
     parser = argparse.ArgumentParser(description="执行已确认的 Context Atlas 结构化操作")
     subparsers = parser.add_subparsers(dest="operation", required=True)
     initialize = subparsers.add_parser("initialize")
@@ -33,6 +39,8 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """执行初始化操作并输出不含会话内容的 JSON 报告。"""
+
     parser = _parser()
     try:
         args = parser.parse_args(list(argv) if argv is not None else None)

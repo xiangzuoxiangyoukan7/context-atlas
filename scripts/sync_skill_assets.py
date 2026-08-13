@@ -1,3 +1,5 @@
+"""把仓库权威源按清单同步到 Context Atlas Skill 资产。"""
+
 from __future__ import annotations
 
 import argparse
@@ -11,6 +13,8 @@ TEXT_SUFFIXES = frozenset({".json", ".md", ".py", ".yaml", ".yml"})
 
 
 def _safe_child(root: Path, relative_text: str) -> Path:
+    """解析并拒绝绝对路径、父级跳转和根目录逃逸。"""
+
     relative = Path(relative_text)
     if relative.is_absolute() or ".." in relative.parts:
         raise ValueError(f"unsafe manifest path: {relative_text}")
@@ -21,6 +25,8 @@ def _safe_child(root: Path, relative_text: str) -> Path:
 
 
 def _normalized(path: Path) -> bytes:
+    """读取文件并统一文本换行以便跨平台比较。"""
+
     data = path.read_bytes()
     if path.suffix.lower() not in TEXT_SUFFIXES:
         return data
@@ -29,10 +35,14 @@ def _normalized(path: Path) -> bytes:
 
 
 def _digest(data: bytes) -> str:
+    """返回资产内容的 SHA-256 摘要。"""
+
     return hashlib.sha256(data).hexdigest()
 
 
 def _manifest_files(skill_root: Path) -> list[str]:
+    """读取并验证有序且唯一的 Skill 资产清单。"""
+
     path = skill_root / "assets" / "manifest.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
     files = payload.get("files") if isinstance(payload, dict) else None
@@ -44,6 +54,8 @@ def _manifest_files(skill_root: Path) -> list[str]:
 
 
 def sync_assets(source_root: Path, skill_root: Path, check: bool = False) -> list[str]:
+    """同步清单文件并返回不一致的相对路径。"""
+
     source_root = source_root.resolve()
     skill_root = skill_root.resolve()
     assets_root = skill_root / "assets"
@@ -72,6 +84,8 @@ def sync_assets(source_root: Path, skill_root: Path, check: bool = False) -> lis
 
 
 def _parser() -> argparse.ArgumentParser:
+    """创建资产同步命令的参数解析器。"""
+
     parser = argparse.ArgumentParser(description="Synchronize canonical project knowledge assets")
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--source-root", type=Path, default=Path.cwd())
@@ -84,6 +98,8 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """执行同步或只读一致性检查并返回退出码。"""
+
     args = _parser().parse_args(list(argv) if argv is not None else None)
     mismatches = sync_assets(args.source_root, args.skill_root, check=args.check)
     if mismatches:

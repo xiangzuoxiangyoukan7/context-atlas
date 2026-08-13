@@ -1,3 +1,5 @@
+"""test_invalid_fixtures 自动化测试。"""
+
 from pathlib import Path
 import unittest
 
@@ -18,7 +20,11 @@ FIXTURES = {
 
 
 class InvalidFixtureTests(unittest.TestCase):
+    """验证 InvalidFixtureTests 相关行为。"""
+
     def test_each_fixture_has_one_exact_intended_error(self) -> None:
+        """验证 each_fixture_has_one_exact_intended_error 场景。"""
+
         config = ValidationConfig(schema_root=Path("schemas"))
         for name, expected_code in FIXTURES.items():
             with self.subTest(name=name):

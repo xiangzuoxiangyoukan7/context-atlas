@@ -1,3 +1,5 @@
+"""test_traceability 自动化测试。"""
+
 from pathlib import Path
 
 from scripts.project_kb.validator import ValidationConfig, validate
@@ -5,12 +7,18 @@ from tests.helpers import TempDirectoryTestCase, make_valid_knowledge_base, writ
 
 
 class TraceabilityTests(TempDirectoryTestCase):
+    """验证 TraceabilityTests 相关行为。"""
+
     def setUp(self) -> None:
+        """初始化当前测试所需的隔离环境。"""
+
         super().setUp()
         self.knowledge_base = make_valid_knowledge_base(self.root / "doc-example")
         self.config = ValidationConfig(schema_root=Path("schemas"))
 
     def test_feature_reference_to_unknown_contract_is_rejected(self) -> None:
+        """验证 feature_reference_to_unknown_contract_is_rejected 场景。"""
+
         write_record(
             self.knowledge_base / "01-功能基线" / "F01.md",
             {
@@ -44,6 +52,8 @@ class TraceabilityTests(TempDirectoryTestCase):
         )
 
     def test_source_reference_must_resolve(self) -> None:
+        """验证 source_reference_must_resolve 场景。"""
+
         write_record(
             self.knowledge_base / "01-功能基线" / "knowledge.md",
             {
@@ -62,6 +72,8 @@ class TraceabilityTests(TempDirectoryTestCase):
         self.assertIn("KB_SOURCE_UNKNOWN", codes)
 
     def test_task_feature_reference_must_resolve(self) -> None:
+        """验证 task_feature_reference_must_resolve 场景。"""
+
         write_record(
             self.knowledge_base / "03-实施与验收/任务包/TASK-F99-001.md",
             {
@@ -84,6 +96,8 @@ class TraceabilityTests(TempDirectoryTestCase):
         self.assertIn("unknown feature reference: F99", messages)
 
     def test_domain_references_must_resolve(self) -> None:
+        """验证 domain_references_must_resolve 场景。"""
+
         write_record(
             self.knowledge_base / "01-功能基线/F01.md",
             {

@@ -2,6 +2,12 @@
   "format_version": 1,
   "rules": [
     {
+      "id": "RULE-CODE-001",
+      "name_zh": "Python 代码必须具有说明和类型标注",
+      "authority": "[[rules/知识治理规则#RULE-CODE-001|RULE-CODE-001]]",
+      "enforced_by": ["acceptance", "validator"]
+    },
+    {
       "id": "RULE-AGENT-001",
       "name_zh": "正式写入必须基于已确认提案",
       "authority": "[[rules/知识治理规则#RULE-AGENT-001|RULE-AGENT-001]]",

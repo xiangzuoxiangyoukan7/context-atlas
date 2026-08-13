@@ -1,3 +1,5 @@
+"""test_initialization_safety 自动化测试。"""
+
 from pathlib import Path
 import re
 import tempfile
@@ -8,7 +10,11 @@ from scripts.project_kb.links import LINK_PATTERN
 
 
 class InitializationSafetyTests(unittest.TestCase):
+    """验证 InitializationSafetyTests 相关行为。"""
+
     def test_initialization_refuses_existing_target_without_changes(self) -> None:
+        """验证 initialization_refuses_existing_target_without_changes 场景。"""
+
         from scripts.project_kb.initializer import initialize_from_assets
 
         with tempfile.TemporaryDirectory() as directory:
@@ -24,6 +30,8 @@ class InitializationSafetyTests(unittest.TestCase):
             self.assertEqual(sentinel.read_text(encoding="utf-8"), "unchanged")
 
     def test_examples_have_no_adapters_secrets_or_external_relative_links(self) -> None:
+        """验证 examples_have_no_adapters_secrets_or_external_relative_links 场景。"""
+
         for root in (Path("examples") / name for name in ("single-stack", "multi-stack")):
             self.assertFalse((root / "AGENTS.md").exists(), root)
             self.assertFalse((root / "CLAUDE.md").exists(), root)

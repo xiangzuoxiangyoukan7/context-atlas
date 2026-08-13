@@ -1,3 +1,5 @@
+"""test_plugin_contract 自动化测试。"""
+
 from __future__ import annotations
 
 import re
@@ -14,7 +16,11 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class PluginContractTests(unittest.TestCase):
+    """验证 PluginContractTests 相关行为。"""
+
     def test_two_platform_manifests_share_identity(self) -> None:
+        """验证 two_platform_manifests_share_identity 场景。"""
+
         claude, codex = load_plugin_manifests(ROOT)
 
         for field in ("name", "version", "description"):
@@ -26,6 +32,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertEqual("./skills/", codex["skills"])
 
     def test_manifests_only_use_platform_supported_fields(self) -> None:
+        """验证 manifests_only_use_platform_supported_fields 场景。"""
+
         claude, codex = load_plugin_manifests(ROOT)
 
         self.assertLessEqual(
@@ -48,6 +56,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertTrue(codex["interface"]["defaultPrompt"])
 
     def test_shared_skill_is_the_only_context_atlas_skill(self) -> None:
+        """验证 shared_skill_is_the_only_context_atlas_skill 场景。"""
+
         skill_files = sorted(ROOT.rglob("SKILL.md"))
         named = [
             path
@@ -60,6 +70,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertFalse((ROOT / ".codex-plugin" / "skills").exists())
 
     def test_repository_contract_has_no_errors(self) -> None:
+        """验证 repository_contract_has_no_errors 场景。"""
+
         self.assertEqual([], validate_plugin_contract(ROOT))
 
 

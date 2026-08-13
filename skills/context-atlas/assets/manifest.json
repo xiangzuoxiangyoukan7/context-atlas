@@ -27,6 +27,7 @@
     "scripts/__init__.py",
     "scripts/agent_kb_operation.py",
     "scripts/check_knowledge_base.py",
+    "scripts/check_python_documentation.py",
     "scripts/check_rule_coverage.py",
     "scripts/project_kb/__init__.py",
     "scripts/project_kb/agent_operation.py",

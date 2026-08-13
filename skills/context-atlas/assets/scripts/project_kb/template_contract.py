@@ -1,3 +1,5 @@
+"""定义核心知识库模板必须包含的稳定路径。"""
+
 from pathlib import Path
 from typing import Sequence
 
@@ -15,6 +17,8 @@ TEMPLATE_MARKERS = frozenset(
 
 
 def required_template_paths() -> Sequence[Path]:
+    """返回初始化产物必须具备的文件路径集合。"""
+
     return tuple(
         Path(path)
         for path in (

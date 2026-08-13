@@ -1,3 +1,5 @@
+"""test_skill_package 自动化测试。"""
+
 import json
 from pathlib import Path
 import re
@@ -16,7 +18,11 @@ REFERENCES = (
 
 
 class SkillPackageTests(unittest.TestCase):
+    """验证 SkillPackageTests 相关行为。"""
+
     def test_skill_has_required_progressive_disclosure_files(self) -> None:
+        """验证 skill_has_required_progressive_disclosure_files 场景。"""
+
         self.assertTrue((SKILL_ROOT / "SKILL.md").is_file())
         self.assertTrue((SKILL_ROOT / "agents/openai.yaml").is_file())
         for name in REFERENCES:
@@ -24,6 +30,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertFalse((SKILL_ROOT / "README.md").exists())
 
     def test_installed_skill_contains_all_runtime_assets(self) -> None:
+        """验证 installed_skill_contains_all_runtime_assets 场景。"""
+
         assets = SKILL_ROOT / "assets"
         manifest = json.loads((assets / "manifest.json").read_text(encoding="utf-8"))
         missing = [path for path in manifest["files"] if not (assets / path).is_file()]
@@ -31,6 +39,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertEqual(missing, [])
 
     def test_skill_assets_match_canonical_sources(self) -> None:
+        """验证 skill_assets_match_canonical_sources 场景。"""
+
         from scripts.sync_skill_assets import sync_assets
 
         mismatches = sync_assets(Path.cwd(), SKILL_ROOT, check=True)
@@ -38,6 +48,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertEqual(mismatches, [])
 
     def test_skill_declares_required_behavior_boundaries(self) -> None:
+        """验证 skill_declares_required_behavior_boundaries 场景。"""
+
         content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
         required = (
             "doc-<项目目录名>",
@@ -55,6 +67,8 @@ class SkillPackageTests(unittest.TestCase):
             self.assertIn(phrase, content)
 
     def test_skill_state_machine_has_confirmation_and_revision_gates(self) -> None:
+        """验证 skill_state_machine_has_confirmation_and_revision_gates 场景。"""
+
         content = (SKILL_ROOT / "references" / "执行状态机.md").read_text(
             encoding="utf-8"
         )
@@ -76,6 +90,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertIn("不决定外部任务是否执行", content)
 
     def test_proposal_and_report_references_use_state_machine_contract(self) -> None:
+        """验证 proposal_and_report_references_use_state_machine_contract 场景。"""
+
         proposal = (SKILL_ROOT / "references" / "知识采集与确认.md").read_text(
             encoding="utf-8"
         )
@@ -90,6 +106,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertIn("not_validated", report)
 
     def test_skill_ui_metadata_is_readable_and_legacy_assets_are_absent(self) -> None:
+        """验证 skill_ui_metadata_is_readable_and_legacy_assets_are_absent 场景。"""
+
         metadata = (SKILL_ROOT / "agents/openai.yaml").read_text(encoding="utf-8")
         manifest = json.loads(
             (SKILL_ROOT / "assets/manifest.json").read_text(encoding="utf-8")
@@ -102,6 +120,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertFalse(any(path.startswith("profiles/") for path in manifest["files"]))
 
     def test_skill_frontmatter_matches_official_constraints(self) -> None:
+        """验证 skill_frontmatter_matches_official_constraints 场景。"""
+
         content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
         match = re.match(r"^---\n(.*?)\n---", content, re.DOTALL)
 
@@ -124,6 +144,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertLess(len(content.splitlines()), 500)
 
     def test_sync_rejects_escape_and_preserves_undeclared_files(self) -> None:
+        """验证 sync_rejects_escape_and_preserves_undeclared_files 场景。"""
+
         from scripts.sync_skill_assets import sync_assets
 
         with tempfile.TemporaryDirectory() as directory:
@@ -151,6 +173,8 @@ class SkillPackageTests(unittest.TestCase):
             self.assertTrue(extra.is_file())
 
     def test_sync_treats_crlf_target_as_matching_lf_canonical_text(self) -> None:
+        """验证 sync_treats_crlf_target_as_matching_lf_canonical_text 场景。"""
+
         from scripts.sync_skill_assets import sync_assets
 
         with tempfile.TemporaryDirectory() as directory:
@@ -169,6 +193,8 @@ class SkillPackageTests(unittest.TestCase):
             self.assertEqual(sync_assets(source, skill, check=True), [])
 
     def test_sync_handles_invalid_utf8_text_target_as_mismatch(self) -> None:
+        """验证 sync_handles_invalid_utf8_text_target_as_mismatch 场景。"""
+
         from scripts.sync_skill_assets import sync_assets
 
         with tempfile.TemporaryDirectory() as directory:

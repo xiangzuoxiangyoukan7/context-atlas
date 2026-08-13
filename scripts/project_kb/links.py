@@ -1,3 +1,5 @@
+"""验证知识库 Markdown 相对链接的安全性与完整性。"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -16,6 +18,8 @@ def validate_links(
     root: Path,
     excluded_directories: Iterable[str],
 ) -> list[Issue]:
+    """检查链接目标存在并忽略允许的外部协议。"""
+
     issues: list[Issue] = []
     for path in sorted(root.rglob("*.md")):
         if is_excluded(path, root, excluded_directories):

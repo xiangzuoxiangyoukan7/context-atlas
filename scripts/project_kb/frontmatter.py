@@ -1,3 +1,5 @@
+"""解析知识文档使用的受限 YAML 文档头。"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,10 +8,12 @@ from .model import DocumentRecord
 
 
 class FrontMatterError(ValueError):
-    pass
+    """表示文档头缺失、截断或字段格式不受支持。"""
 
 
 def _parse_scalar(value: str) -> str | list[str]:
+    """把受支持的标量或行内列表转换为 Python 值。"""
+
     if value.startswith("[") and value.endswith("]"):
         body = value[1:-1].strip()
         return [] if not body else [item.strip() for item in body.split(",")]
@@ -17,6 +21,8 @@ def _parse_scalar(value: str) -> str | list[str]:
 
 
 def parse_document(path: Path) -> DocumentRecord:
+    """读取 Markdown 文件并分离元数据和正文。"""
+
     lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
     if not lines or lines[0].rstrip("\r\n") != "---":
         return DocumentRecord(path=path, metadata={}, body="".join(lines))

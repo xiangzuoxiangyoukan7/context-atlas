@@ -1,3 +1,5 @@
+"""检查权威规则引用、执行覆盖与规则变化影响。"""
+
 from __future__ import annotations
 
 # context-atlas-rules: [[rules/知识治理规则#RULE-GOV-002|RULE-GOV-002]]
@@ -14,6 +16,8 @@ from project_kb.rule_catalog import (
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """运行规则覆盖检查并按需打印反向索引或变化影响。"""
+
     parser = argparse.ArgumentParser(description="检查 Context Atlas 规则覆盖")
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--print-index", action="store_true")

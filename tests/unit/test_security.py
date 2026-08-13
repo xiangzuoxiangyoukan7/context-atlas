@@ -1,3 +1,5 @@
+"""test_security 自动化测试。"""
+
 from pathlib import Path
 
 from scripts.project_kb.reporting import render_text
@@ -6,7 +8,11 @@ from tests.helpers import TempDirectoryTestCase, make_valid_knowledge_base, writ
 
 
 class SecurityTests(TempDirectoryTestCase):
+    """验证 SecurityTests 相关行为。"""
+
     def test_token_assignment_is_reported_without_echoing_secret(self) -> None:
+        """验证 token_assignment_is_reported_without_echoing_secret 场景。"""
+
         knowledge_base = make_valid_knowledge_base(self.root / "doc-example")
         write_record(
             knowledge_base / "05-开发指南" / "unsafe.md",
@@ -32,6 +38,8 @@ class SecurityTests(TempDirectoryTestCase):
         self.assertNotIn("super-secret-value", security_issues[0].message)
 
     def test_environment_placeholder_is_allowed(self) -> None:
+        """验证 environment_placeholder_is_allowed 场景。"""
+
         knowledge_base = make_valid_knowledge_base(self.root / "doc-example")
         write_record(
             knowledge_base / "05-开发指南" / "safe.md",
@@ -58,6 +66,8 @@ class SecurityTests(TempDirectoryTestCase):
         self.assertNotIn("KB_SENSITIVE_VALUE", codes)
 
     def test_sensitive_front_matter_value_is_reported_without_echo(self) -> None:
+        """验证 sensitive_front_matter_value_is_reported_without_echo 场景。"""
+
         knowledge_base = make_valid_knowledge_base(self.root / "doc-example")
         path = knowledge_base / "00-项目总览/secret.md"
         write_record(

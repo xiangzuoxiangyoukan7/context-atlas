@@ -1,3 +1,5 @@
+"""test_rule_catalog 自动化测试。"""
+
 from __future__ import annotations
 
 # context-atlas-rules: [[rules/知识治理规则#RULE-AGENT-001|RULE-AGENT-001]] [[rules/知识治理规则#RULE-DB-001|RULE-DB-001]] [[rules/知识治理规则#RULE-GOV-001|RULE-GOV-001]] [[rules/知识治理规则#RULE-GOV-002|RULE-GOV-002]] [[rules/知识治理规则#RULE-GOV-003|RULE-GOV-003]] [[rules/知识治理规则#RULE-IMPACT-001|RULE-IMPACT-001]] [[rules/知识治理规则#RULE-REL-001|RULE-REL-001]] [[rules/知识治理规则#RULE-SRC-001|RULE-SRC-001]]
@@ -21,7 +23,11 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class RuleCatalogTests(unittest.TestCase):
+    """验证 RuleCatalogTests 相关行为。"""
+
     def test_authorities_resolve_to_existing_markdown_anchors(self) -> None:
+        """验证 authorities_resolve_to_existing_markdown_anchors 场景。"""
+
         catalog = load_rule_catalog(ROOT)
 
         self.assertGreaterEqual(len(catalog), 8)
@@ -31,6 +37,8 @@ class RuleCatalogTests(unittest.TestCase):
             self.assertIn(f'<a id="{rule.id}"></a>', body, rule.id)
 
     def test_standard_operations_exist_and_only_reference_known_rules(self) -> None:
+        """验证 standard_operations_exist_and_only_reference_known_rules 场景。"""
+
         catalog = load_rule_catalog(ROOT)
         operations = load_operations(ROOT)
 
@@ -41,6 +49,8 @@ class RuleCatalogTests(unittest.TestCase):
             self.assertLessEqual(operation.rules, frozenset(catalog), operation.id)
 
     def test_consumers_form_a_complete_reverse_index(self) -> None:
+        """验证 consumers_form_a_complete_reverse_index 场景。"""
+
         catalog = load_rule_catalog(ROOT)
         reverse_index = build_reverse_index(ROOT)
 
@@ -54,6 +64,8 @@ class RuleCatalogTests(unittest.TestCase):
         )
 
     def test_unknown_consumer_rule_is_rejected(self) -> None:
+        """验证 unknown_consumer_rule_is_rejected 场景。"""
+
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             shutil.copytree(ROOT / "rules", root / "rules")
@@ -70,6 +82,8 @@ class RuleCatalogTests(unittest.TestCase):
         self.assertTrue(any(issue.code == "RULE_REFERENCE_UNKNOWN" for issue in issues))
 
     def test_rule_change_impact_classifies_consumers(self) -> None:
+        """验证 rule_change_impact_classifies_consumers 场景。"""
+
         impacts = build_rule_change_impact(ROOT, {"RULE-GOV-002"})
 
         self.assertTrue(any(item.action == "must_handle" for item in impacts))

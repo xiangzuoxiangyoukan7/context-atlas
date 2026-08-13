@@ -1,3 +1,5 @@
+"""加载权威规则与标准操作，并计算规则消费者覆盖。"""
+
 from __future__ import annotations
 
 # context-atlas-rules: [[rules/知识治理规则#RULE-GOV-001|RULE-GOV-001]] [[rules/知识治理规则#RULE-GOV-002|RULE-GOV-002]]
@@ -29,6 +31,8 @@ RULE_LINK_RE = re.compile(
 
 @dataclass(frozen=True)
 class Rule:
+    """表示规则目录中的权威规则索引。"""
+
     id: str
     name_zh: str
     authority: str
@@ -38,6 +42,8 @@ class Rule:
 
 @dataclass(frozen=True)
 class Operation:
+    """表示一个平台无关的标准知识库操作。"""
+
     id: str
     name_zh: str
     rules: frozenset[str]
@@ -46,12 +52,16 @@ class Operation:
 
 @dataclass(frozen=True)
 class RuleConsumer:
+    """表示主动引用权威规则的实现文件。"""
+
     path: Path
     kind: str
 
 
 @dataclass(frozen=True)
 class RuleIssue:
+    """表示规则目录或执行覆盖问题。"""
+
     code: str
     path: Path
     message: str
@@ -59,16 +69,22 @@ class RuleIssue:
 
 @dataclass(frozen=True)
 class RuleImpact:
+    """表示规则变化对单个消费者的处理要求。"""
+
     rule_id: str
     consumer: RuleConsumer
     action: str
 
 
 def _read_json(path: Path) -> object:
+    """读取 UTF-8 JSON 文件。"""
+
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _authority_parts(root: Path, authority: str) -> tuple[str, Path]:
+    """解析权威 Obsidian 链接中的规则编号和文件路径。"""
+
     match = RULE_LINK_RE.fullmatch(authority)
     if not match:
         raise ValueError(f"invalid rule authority link: {authority}")
@@ -77,6 +93,8 @@ def _authority_parts(root: Path, authority: str) -> tuple[str, Path]:
 
 
 def load_rule_catalog(root: Path) -> dict[str, Rule]:
+    """加载并验证编号唯一的权威规则目录。"""
+
     root = root.resolve()
     payload = _read_json(root / "rules" / "catalog.json")
     if not isinstance(payload, dict) or payload.get("format_version") != 1:
@@ -113,6 +131,8 @@ def load_rule_catalog(root: Path) -> dict[str, Rule]:
 
 
 def load_operations(root: Path) -> dict[str, Operation]:
+    """加载标准操作并验证基础字段结构。"""
+
     result: dict[str, Operation] = {}
     for path in sorted((root / "operations").glob("*.json")):
         payload = _read_json(path)
@@ -137,6 +157,8 @@ def load_operations(root: Path) -> dict[str, Operation]:
 
 
 def _consumer_kind(root: Path, path: Path) -> str:
+    """根据仓库相对位置判定规则消费者类型。"""
+
     relative = path.resolve().relative_to(root.resolve())
     first = relative.parts[0]
     if first == "skills":
@@ -155,6 +177,8 @@ def _consumer_kind(root: Path, path: Path) -> str:
 
 
 def _consumer_files(root: Path) -> list[Path]:
+    """返回可能主动声明规则引用的权威源文件。"""
+
     paths: list[Path] = []
     scan_roots = (
         root / "skills" / "context-atlas",
@@ -177,6 +201,8 @@ def _consumer_files(root: Path) -> list[Path]:
 
 
 def build_reverse_index(root: Path) -> dict[str, tuple[RuleConsumer, ...]]:
+    """扫描正向规则引用并生成不落盘的反向索引。"""
+
     root = root.resolve()
     catalog = load_rule_catalog(root)
     found: dict[str, set[RuleConsumer]] = {rule_id: set() for rule_id in catalog}
@@ -197,6 +223,8 @@ def build_reverse_index(root: Path) -> dict[str, tuple[RuleConsumer, ...]]:
 
 
 def validate_rule_coverage(root: Path) -> list[RuleIssue]:
+    """验证规则权威链接、引用编号和最低消费者覆盖。"""
+
     root = root.resolve()
     catalog = load_rule_catalog(root)
     operations = load_operations(root)
@@ -238,6 +266,8 @@ def validate_rule_coverage(root: Path) -> list[RuleIssue]:
 
 
 def build_rule_change_impact(root: Path, changed_rule_ids: set[str]) -> list[RuleImpact]:
+    """把变化规则的消费者分类为必须处理或人工复核。"""
+
     catalog = load_rule_catalog(root)
     unknown = changed_rule_ids - set(catalog)
     if unknown:
