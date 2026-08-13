@@ -1,5 +1,7 @@
 # 数据库知识
 
+<!-- context-atlas-rules: [[rules/知识治理规则#RULE-DB-001|RULE-DB-001]] -->
+
 | 对象编号 | 类型 | 名称 | 所有者模块 | 关键约束 | 迁移方式 | 来源 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | DB-001 | table | example_table | MOD-001 | 主键非空 | 待确认 | SRC-001 | proposed |

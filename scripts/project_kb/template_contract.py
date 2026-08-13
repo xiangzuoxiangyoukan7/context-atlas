@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Sequence
 
+# context-atlas-rules: [[rules/知识治理规则#RULE-GOV-003|RULE-GOV-003]]
+
 
 TEMPLATE_MARKERS = frozenset(
     {

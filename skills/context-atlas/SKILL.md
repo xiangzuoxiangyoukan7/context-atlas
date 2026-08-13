@@ -3,6 +3,8 @@ name: context-atlas
 description: Use when a user asks an AI Agent to initialize, inspect, explain, update, migrate, or validate a self-contained project knowledge base, including doc-* directories and optional Java or Python project knowledge.
 ---
 
+<!-- context-atlas-rules: [[rules/知识治理规则#RULE-AGENT-001|RULE-AGENT-001]] [[rules/知识治理规则#RULE-IMPACT-001|RULE-IMPACT-001]] -->
+
 # Context Atlas
 
 ## Overview
@@ -41,4 +43,4 @@ For combined requests, read every referenced file before writing.
 
 ## Assets
 
-Use `assets/templates/core/doc-project/` as the only source. Discover and record every confirmed technology in the shared `技术栈与版本.md`; do not ask the user to select a language or stack-specific template. Copy `assets/scripts/` and `assets/schemas/` into the target `.project-kb/` validation bundle during initialization. Do not use undeclared assets.
+Use `assets/templates/core/doc-project/` as the only source. Discover and record every confirmed technology in the shared `技术栈与版本.md`; do not ask the user to select a language or stack-specific template. Read the generated rule copy under `assets/rules/` and standard operations under `assets/operations/` as needed. Copy `assets/scripts/` and `assets/schemas/` into the target `.project-kb/` validation bundle during initialization. Do not use undeclared assets.
