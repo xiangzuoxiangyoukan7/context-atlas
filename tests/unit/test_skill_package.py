@@ -8,6 +8,7 @@ import unittest
 SKILL_ROOT = Path("skills/context-atlas")
 REFERENCES = (
     "初始化协议.md",
+    "执行状态机.md",
     "知识采集与确认.md",
     "更新冲突与归档.md",
     "验证与结果报告.md",
@@ -45,12 +46,48 @@ class SkillPackageTests(unittest.TestCase):
             "AGENTS.md",
             "CLAUDE.md",
             "references/初始化协议.md",
+            "references/执行状态机.md",
             "references/知识采集与确认.md",
             "references/更新冲突与归档.md",
             "references/验证与结果报告.md",
         )
         for phrase in required:
             self.assertIn(phrase, content)
+
+    def test_skill_state_machine_has_confirmation_and_revision_gates(self) -> None:
+        content = (SKILL_ROOT / "references" / "执行状态机.md").read_text(
+            encoding="utf-8"
+        )
+        states = (
+            "inspect",
+            "propose",
+            "await_confirmation",
+            "apply",
+            "validate",
+            "report",
+        )
+
+        for state in states:
+            self.assertIn(state, content)
+        self.assertIn("proposal_revision == confirmed_revision", content)
+        self.assertIn("zero formal writes", content)
+        self.assertIn("目标已存在", content)
+        self.assertIn("更新流程", content)
+        self.assertIn("不决定外部任务是否执行", content)
+
+    def test_proposal_and_report_references_use_state_machine_contract(self) -> None:
+        proposal = (SKILL_ROOT / "references" / "知识采集与确认.md").read_text(
+            encoding="utf-8"
+        )
+        report = (SKILL_ROOT / "references" / "验证与结果报告.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("proposal_revision", proposal)
+        self.assertIn("confirmed_revision", proposal)
+        self.assertIn("Confirmation state", report)
+        self.assertIn("Validation result", report)
+        self.assertIn("not_validated", report)
 
     def test_skill_ui_metadata_is_readable_and_legacy_assets_are_absent(self) -> None:
         metadata = (SKILL_ROOT / "agents/openai.yaml").read_text(encoding="utf-8")

@@ -15,6 +15,7 @@ Operate a tool-neutral project knowledge base on the user's behalf. Treat reposi
 
 | Request | Required references |
 | --- | --- |
+| Any operation that can write formal knowledge | Read [执行状态机](references/执行状态机.md) first. |
 | Initialize a knowledge base | Read [初始化协议](references/初始化协议.md) and [知识采集与确认](references/知识采集与确认.md). |
 | Inspect or explain one | Read its root README and `knowledge-base.yaml`, then [知识采集与确认](references/知识采集与确认.md). |
 | Update, resolve conflict, or supersede knowledge | Read [知识采集与确认](references/知识采集与确认.md) and [更新冲突与归档](references/更新冲突与归档.md). |
@@ -24,13 +25,7 @@ For combined requests, read every referenced file before writing.
 
 ## Core workflow
 
-1. Resolve and verify the user-selected project root.
-2. Inspect the repository and existing knowledge base without changing either.
-3. Separate confirmed facts, repository observations, AI inference, unknowns, and conflicts.
-4. Present the exact target paths and a Proposal; obtain explicit confirmation（显式确认）before formal writes.
-5. Materialize or update only the confirmed scope using bundled `assets/`.
-6. Run the bundled deterministic validator.
-7. Return the report contract from [验证与结果报告](references/验证与结果报告.md).
+Follow `inspect -> propose -> await_confirmation -> apply -> validate -> report` from [执行状态机](references/执行状态机.md). Present exact target paths and a revisioned Proposal; obtain explicit confirmation（显式确认）of that revision before formal writes. Return the report contract from [验证与结果报告](references/验证与结果报告.md).
 
 ## Non-negotiable boundaries
 
@@ -40,6 +35,7 @@ For combined requests, read every referenced file before writing.
 - Never create or maintain `AGENTS.md`, `CLAUDE.md`, or another Agent-specific adapter. Explain this knowledge base so each Agent can create its own adapter if needed.
 - Never store passwords, tokens, private keys, or unredacted personal data.
 - Never treat validator success as content approval.
+- Govern knowledge writes only. Never use the knowledge base to decide whether another plugin's development task may execute.
 
 ## Assets
 
