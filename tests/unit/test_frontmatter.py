@@ -36,6 +36,41 @@ class FrontMatterTests(TempDirectoryTestCase):
         ):
             parse_document(path)
 
+    def test_parse_document_accepts_quoted_relation_block_list(self) -> None:
+        """关系字段应解析两空格缩进的带引号 Wikilink 列表。"""
+
+        path = self.root / "relation.md"
+        path.write_text(
+            "---\n"
+            "id: FEATURE-001\n"
+            "rel_implements:\n"
+            '  - "[[01-功能/需求#REQ-001 下单|REQ-001]]"\n'
+            "---\n",
+            encoding="utf-8",
+        )
+
+        record = parse_document(path)
+
+        self.assertEqual(
+            ["[[01-功能/需求#REQ-001 下单|REQ-001]]"],
+            record.metadata["rel_implements"],
+        )
+
+    def test_parse_document_rejects_mapping_inside_block_list(self) -> None:
+        """块列表仍不得借机引入嵌套映射。"""
+
+        path = self.root / "relation-mapping.md"
+        path.write_text(
+            "---\nrel_implements:\n  - target: REQ-001\n---\n",
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(
+            FrontMatterError,
+            "nested metadata is unsupported",
+        ):
+            parse_document(path)
+
     def test_parse_document_rejects_duplicate_keys(self) -> None:
         """验证 parse_document_rejects_duplicate_keys 场景。"""
 
