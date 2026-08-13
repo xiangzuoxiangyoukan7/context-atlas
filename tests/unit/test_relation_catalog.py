@@ -23,6 +23,7 @@ CORE_RELATIONS = {
     "rel_logical_parent",
     "rel_evidenced_by",
     "rel_executes",
+    "rel_belongs_to",
 }
 
 
