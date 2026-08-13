@@ -1,6 +1,6 @@
 # 统一关系引用与影响分析 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 实现 `rel_<type>` Obsidian 文件链接、受控关系目录、反向索引和三级影响分析，为需求、功能、接口、数据表、任务和验收证据联动提供确定性底座。
 
@@ -33,7 +33,7 @@
 - Consumes: Markdown UTF-8 文档。
 - Produces: `parse_document(path: Path) -> DocumentRecord`，支持行内列表和两空格缩进的 `- "[[...]]"` 字符串列表。
 
-- [ ] **Step 1: 写块列表成功与嵌套对象拒绝测试**
+- [x] **Step 1: 写块列表成功与嵌套对象拒绝测试**
 
 ```python
 def test_frontmatter_parses_quoted_relation_block_list(self) -> None:
@@ -54,21 +54,21 @@ def test_frontmatter_still_rejects_nested_mapping(self) -> None:
         parse_document(document)
 ```
 
-- [ ] **Step 2: 运行测试确认旧解析器因 `nested metadata is unsupported` 失败**
+- [x] **Step 2: 运行测试确认旧解析器因 `nested metadata is unsupported` 失败**
 
 Run: `py -m unittest tests.unit.test_frontmatter -v`
 
-- [ ] **Step 3: 最小实现标量列表状态机**
+- [x] **Step 3: 最小实现标量列表状态机**
 
 实现 `_unquote_scalar(value: str) -> str`，只去除成对单/双引号；`parse_document` 允许空值键后连续的两个空格加 `- ` 列表项，拒绝混用标量、空列表项、三层缩进和映射项。
 
-- [ ] **Step 4: 运行 Front Matter 与全量测试**
+- [x] **Step 4: 运行 Front Matter 与全量测试**
 
 Run: `py -m unittest tests.unit.test_frontmatter -v`
 
 Run: `py -m unittest discover -s tests -p 'test_*.py'`
 
-- [ ] **Step 5: 同步资产并提交**
+- [x] **Step 5: 同步资产并提交**
 
 ```powershell
 py scripts/sync_skill_assets.py
@@ -91,7 +91,7 @@ git commit -m "解析：支持关系链接列表"
 - Produces: `RelationCatalog.get(field: str) -> RelationDefinition | None`。
 - Produces: `RelationCatalog.impact_level(field: str, change_type: str) -> str`。
 
-- [ ] **Step 1: 写目录完整性失败测试**
+- [x] **Step 1: 写目录完整性失败测试**
 
 ```python
 def test_catalog_declares_required_core_relations(self) -> None:
@@ -109,11 +109,11 @@ def test_catalog_declares_required_core_relations(self) -> None:
 
 另写反例：缺中文名、非法状态、空起点、未知影响等级和重复字段必须抛出 `ValueError`。
 
-- [ ] **Step 2: 运行测试确认模块或目录缺失**
+- [x] **Step 2: 运行测试确认模块或目录缺失**
 
 Run: `py -m unittest tests.unit.test_relation_catalog -v`
 
-- [ ] **Step 3: 创建目录和加载器**
+- [x] **Step 3: 创建目录和加载器**
 
 JSON 每条关系必须包含 `field`、`name_zh`、`source_prefixes`、`target_prefixes`、`direction: forward_only`、`status: active`、`impact_rules` 和 `default_impact: review_required`。明确变化规则至少覆盖：
 
@@ -124,13 +124,13 @@ JSON 每条关系必须包含 `field`、`name_zh`、`source_prefixes`、`target_
 - `rel_conforms_to + rule_changed -> review_required`
 - `formatting_only/file_moved -> informational`
 
-- [ ] **Step 4: 运行目录测试、注释检查和全量测试**
+- [x] **Step 4: 运行目录测试、注释检查和全量测试**
 
 Run: `py -m unittest tests.unit.test_relation_catalog -v`
 
 Run: `py scripts/check_python_documentation.py --root .`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```powershell
 git add schemas/relation-catalog.json scripts/project_kb/relation_catalog.py tests/unit/test_relation_catalog.py
@@ -153,7 +153,7 @@ git commit -m "规范：建立受控关系目录"
 - Produces: `RelationIndex.outgoing(identifier: str) -> tuple[RelationEdge, ...]`。
 - Produces: `RelationIndex.incoming(identifier: str) -> tuple[RelationEdge, ...]`。
 
-- [ ] **Step 1: 写合法索引和精确错误码测试**
+- [x] **Step 1: 写合法索引和精确错误码测试**
 
 使用临时知识库验证：
 
@@ -172,11 +172,11 @@ self.assertEqual("FEATURE-001", index.incoming("REQ-001")[0].source.identifier)
 - `KB_REL_DIRECTION`
 - `KB_REL_DUPLICATE`
 
-- [ ] **Step 2: 运行测试确认 `relations` 模块缺失**
+- [x] **Step 2: 运行测试确认 `relations` 模块缺失**
 
 Run: `py -m unittest tests.unit.test_relations -v`
 
-- [ ] **Step 3: 实现 Wikilink 与索引**
+- [x] **Step 3: 实现 Wikilink 与索引**
 
 只接受：
 
@@ -186,11 +186,11 @@ Run: `py -m unittest tests.unit.test_relations -v`
 
 路径相对知识库根且隐含 `.md`；禁止绝对路径、`..`、空显示 ID。目标 ID 可以来自目标文件 Front Matter `id`，也可以来自正文标题 `## TARGET-ID 中文名`；聚合文件关系必须带标题锚点，锚点在目标文件中必须唯一。
 
-- [ ] **Step 4: 运行测试和安全路径反例**
+- [x] **Step 4: 运行测试和安全路径反例**
 
 Run: `py -m unittest tests.unit.test_relations -v`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```powershell
 git add scripts/project_kb/model.py scripts/project_kb/relations.py tests/unit/test_relations.py
@@ -213,7 +213,7 @@ git commit -m "检查：建立关系与反向索引"
 - `ValidationConfig` 增加 `relation_catalog_path: Path | None = None`。
 - `validate(root: Path, config: ValidationConfig) -> list[Issue]` 自动使用 `schema_root/relation-catalog.json`。
 
-- [ ] **Step 1: 写三个端到端失败夹具测试**
+- [x] **Step 1: 写三个端到端失败夹具测试**
 
 ```python
 def test_invalid_relation_fixtures_have_exact_codes(self) -> None:
@@ -224,19 +224,19 @@ def test_invalid_relation_fixtures_have_exact_codes(self) -> None:
     }
 ```
 
-- [ ] **Step 2: 运行确认夹具被旧验证器错误接受**
+- [x] **Step 2: 运行确认夹具被旧验证器错误接受**
 
 Run: `py -m unittest tests.unit.test_validator -v`
 
-- [ ] **Step 3: 在 Schema 验证后、追溯验证前接入关系索引**
+- [x] **Step 3: 在 Schema 验证后、追溯验证前接入关系索引**
 
 关系目录缺失或格式错误必须返回稳定问题 `KB_REL_CATALOG`，不能用 Python traceback 代替用户错误。
 
-- [ ] **Step 4: 验证文本和 JSON 报告都能定位关系字段**
+- [x] **Step 4: 验证文本和 JSON 报告都能定位关系字段**
 
 Run: `py scripts/check_knowledge_base.py tests/fixtures/invalid/relation-broken-target --schema-root schemas --format json`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```powershell
 git add scripts/project_kb/validator.py scripts/check_knowledge_base.py tests/fixtures/invalid tests/unit/test_validator.py
@@ -258,7 +258,7 @@ git commit -m "检查：验证类型化文档关系"
 - Produces: `analyze_impact(index: RelationIndex, catalog: RelationCatalog, changed_id: str, change_type: str, max_depth: int = 2) -> list[ImpactItem]`。
 - CLI: `py scripts/analyze_knowledge_impact.py ROOT --schema-root SCHEMAS --changed-id ID --change-type TYPE --format {text,json}`。
 
-- [ ] **Step 1: 写直接、间接和未知变化测试**
+- [x] **Step 1: 写直接、间接和未知变化测试**
 
 ```python
 self.assertEqual("required", impacts[0].level)
@@ -269,21 +269,21 @@ self.assertEqual(2, impacts[1].depth)
 
 未知变化类型不得猜测为 `required`，统一降级为 `review_required`；`formatting_only` 为 `informational`。
 
-- [ ] **Step 2: 运行测试确认接口缺失**
+- [x] **Step 2: 运行测试确认接口缺失**
 
 Run: `py -m unittest tests.unit.test_impact tests.integration.test_impact_cli -v`
 
-- [ ] **Step 3: 实现反向遍历和稳定排序**
+- [x] **Step 3: 实现反向遍历和稳定排序**
 
 直接影响使用目录规则；间接影响最高只能继承为 `review_required`，不得把不确定传播升级为 `required`。结果按等级、深度、受影响 ID 排序并同时包含来源与受影响文件路径。
 
-- [ ] **Step 4: 验证 CLI 只读且退出码稳定**
+- [x] **Step 4: 验证 CLI 只读且退出码稳定**
 
 - 成功完成分析：0。
 - changed ID 不存在、关系目录无效：2。
 - 不因存在 `required` 影响返回失败；影响结果是 Proposal 输入，不是任务执行门禁。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```powershell
 git add scripts/project_kb/impact.py scripts/analyze_knowledge_impact.py tests/unit/test_impact.py tests/integration/test_impact_cli.py
@@ -312,19 +312,19 @@ git commit -m "分析：增加文档变化影响清单"
 - 模板关系只使用 `rel_<type>` Wikilink。
 - 影响分析模板字段包含来源、变化类型、受影响项、等级、深度、处理状态、确认人和证据链接。
 
-- [ ] **Step 1: 写资产和样例失败测试**
+- [x] **Step 1: 写资产和样例失败测试**
 
 测试必须运行检查器，而不是只搜索文本；两套样例至少形成 `REQ -> FEATURE -> TABLE/API -> AC/EVIDENCE` 的可计算关系链，并验证反向影响输出。
 
-- [ ] **Step 2: 运行测试确认模板与 Skill 引用缺失**
+- [x] **Step 2: 运行测试确认模板与 Skill 引用缺失**
 
 Run: `py -m unittest tests.unit.test_skill_package tests.integration.test_examples -v`
 
-- [ ] **Step 3: 更新权威资产和中文使用契约**
+- [x] **Step 3: 更新权威资产和中文使用契约**
 
 说明必须明确：关系的写法、读取方式、禁止反向手填、文件移动处理、三级影响含义、人工确认边界和 Obsidian 图谱粒度。
 
-- [ ] **Step 4: 同步并验证自包含产物**
+- [x] **Step 4: 同步并验证自包含产物**
 
 ```powershell
 py scripts/sync_skill_assets.py
@@ -333,7 +333,7 @@ py scripts/check_knowledge_base.py examples/single-stack --schema-root schemas
 py scripts/check_knowledge_base.py examples/multi-stack --schema-root schemas
 ```
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```powershell
 git add rules templates skills examples tests
@@ -355,7 +355,7 @@ git commit -m "文档：落地关系与影响分析规范"
 - 新增 `KB-AC-31`：反向索引和三级影响结果。
 - 新增 `KB-AC-32`：模板、Skill、黄金样例和自包含检查一致。
 
-- [ ] **Step 1: 运行全量门禁**
+- [x] **Step 1: 运行全量门禁**
 
 ```powershell
 $env:PYTHONDONTWRITEBYTECODE='1'
@@ -369,7 +369,7 @@ py scripts/check_knowledge_base.py doc-atlas --schema-root schemas
 git diff --check
 ```
 
-- [ ] **Step 2: 运行代表性影响分析并记录脱敏摘要**
+- [x] **Step 2: 运行代表性影响分析并记录脱敏摘要**
 
 ```powershell
 py scripts/analyze_knowledge_impact.py examples/multi-stack --schema-root schemas --changed-id TABLE-ORDER-001 --change-type enum_value_removed --format json
@@ -377,11 +377,11 @@ py scripts/analyze_knowledge_impact.py examples/multi-stack --schema-root schema
 
 证据只保存 ID、关系、等级、深度、文件相对路径和退出码，不保存项目外路径或模型正文。
 
-- [ ] **Step 3: 更新任务包和验收矩阵**
+- [x] **Step 3: 更新任务包和验收矩阵**
 
 只有链接格式、关系方向、反向索引、影响等级、Skill 同步和两套样例全部有成功证据时，`KB-AC-30`～`32` 才能标记 `passed`。
 
-- [ ] **Step 4: 最终检查并提交**
+- [x] **Step 4: 最终检查并提交**
 
 ```powershell
 py scripts/check_knowledge_base.py doc-atlas --schema-root schemas
