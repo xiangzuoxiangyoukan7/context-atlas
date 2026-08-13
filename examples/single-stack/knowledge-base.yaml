@@ -3,6 +3,8 @@ schema_version: 1.0
 project_id: single-stack
 project_name: single-stack
 knowledge_base_name: doc-single-stack
+project_version: 0.1.0
+format_version: 2
 revision: 1
 initialized_at: 2026-08-10
 authority:

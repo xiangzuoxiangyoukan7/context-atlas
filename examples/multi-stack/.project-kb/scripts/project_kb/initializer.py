@@ -78,6 +78,10 @@ def initialize_from_assets(
         )
         shutil.copytree(assets_root / "scripts", staging / ".project-kb" / "scripts")
         shutil.copytree(schema_root, staging / ".project-kb" / "schemas")
+        shutil.copy2(
+            assets_root / "compatibility.json",
+            staging / ".project-kb" / "compatibility.json",
+        )
         issues = validate(staging, ValidationConfig(schema_root=staging / ".project-kb" / "schemas"))
         if issues:
             codes = ", ".join(issue.code for issue in issues)

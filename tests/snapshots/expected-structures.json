@@ -1,6 +1,7 @@
 {
   "single-stack": [
     ".project-kb/README.md",
+    ".project-kb/compatibility.json",
     ".project-kb/schemas/README.md",
     ".project-kb/schemas/acceptance.schema.json",
     ".project-kb/schemas/catalog.json",
@@ -32,6 +33,7 @@
     ".project-kb/scripts/project_kb/__pycache__/relation_catalog.cpython-314.pyc",
     ".project-kb/scripts/project_kb/__pycache__/relations.cpython-314.pyc",
     ".project-kb/scripts/project_kb/agent_operation.py",
+    ".project-kb/scripts/project_kb/compatibility.py",
     ".project-kb/scripts/project_kb/database.py",
     ".project-kb/scripts/project_kb/discovery.py",
     ".project-kb/scripts/project_kb/frontmatter.py",
@@ -113,6 +115,7 @@
   ],
   "multi-stack": [
     ".project-kb/README.md",
+    ".project-kb/compatibility.json",
     ".project-kb/schemas/README.md",
     ".project-kb/schemas/acceptance.schema.json",
     ".project-kb/schemas/catalog.json",
@@ -144,6 +147,7 @@
     ".project-kb/scripts/project_kb/__pycache__/relation_catalog.cpython-314.pyc",
     ".project-kb/scripts/project_kb/__pycache__/relations.cpython-314.pyc",
     ".project-kb/scripts/project_kb/agent_operation.py",
+    ".project-kb/scripts/project_kb/compatibility.py",
     ".project-kb/scripts/project_kb/database.py",
     ".project-kb/scripts/project_kb/discovery.py",
     ".project-kb/scripts/project_kb/frontmatter.py",
