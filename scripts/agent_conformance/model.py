@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 
@@ -15,3 +16,16 @@ class ScenarioResult:
     after: set[str]
     messages: list[str]
     command_exit_codes: list[int]
+
+
+@dataclass(frozen=True)
+class AgentTurn:
+    """保存一次 Agent 命令的运行结果，原始内容不得直接作为发布证据。"""
+
+    session_id: str | None
+    exit_code: int
+    result_text: str
+    structured_output: object | None
+    stderr: str
+    started_at: datetime
+    finished_at: datetime
