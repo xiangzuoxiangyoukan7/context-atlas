@@ -1,5 +1,9 @@
+"""定义核心知识库模板必须包含的稳定路径。"""
+
 from pathlib import Path
 from typing import Sequence
+
+# context-atlas-rules: [[rules/知识治理规则#RULE-GOV-003|RULE-GOV-003]]
 
 
 TEMPLATE_MARKERS = frozenset(
@@ -13,6 +17,8 @@ TEMPLATE_MARKERS = frozenset(
 
 
 def required_template_paths() -> Sequence[Path]:
+    """返回初始化产物必须具备的文件路径集合。"""
+
     return tuple(
         Path(path)
         for path in (
@@ -38,7 +44,7 @@ def required_template_paths() -> Sequence[Path]:
             "02-架构与契约/原型/README.md",
             "02-架构与契约/外部依赖/README.md",
             "03-实施与验收/README.md",
-            "03-实施与验收/CURRENT.md",
+            "03-实施与验收/当前变更.md",
             "03-实施与验收/执行看板.md",
             "03-实施与验收/验收矩阵.md",
             "03-实施与验收/任务包/README.md",

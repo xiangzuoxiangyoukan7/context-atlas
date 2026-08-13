@@ -1,3 +1,5 @@
+"""发现知识记录中疑似未脱敏的敏感值。"""
+
 from __future__ import annotations
 
 import re
@@ -15,6 +17,8 @@ SAFE_VALUES = {"example", "redacted", "placeholder", "changeme"}
 
 
 def _is_safe_placeholder(value: str) -> bool:
+    """判断命中值是否只是允许保存的占位符。"""
+
     normalized = value.strip().strip("'\"")
     if normalized.lower() in SAFE_VALUES:
         return True
@@ -22,6 +26,8 @@ def _is_safe_placeholder(value: str) -> bool:
 
 
 def validate_security(records: Iterable[DocumentRecord]) -> list[Issue]:
+    """扫描正文并报告疑似令牌、密码或私钥内容。"""
+
     issues: list[Issue] = []
     for record in records:
         if PRIVATE_KEY_PATTERN.search(record.body):

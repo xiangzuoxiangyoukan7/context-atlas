@@ -1,3 +1,5 @@
+"""加载简化 JSON Schema 目录并验证知识元数据。"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -11,11 +13,15 @@ from .model import Issue
 
 @dataclass(frozen=True)
 class SchemaCatalog:
+    """保存按知识类型索引的受控 Schema 定义。"""
+
     root: Path
     schemas: dict[str, dict[str, object]]
 
     @classmethod
     def load(cls, root: Path) -> SchemaCatalog:
+        """从目录文件加载所有已登记 Schema。"""
+
         resolved_root = root.resolve()
         catalog_path = resolved_root / "catalog.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
@@ -39,6 +45,8 @@ class SchemaCatalog:
         metadata: Mapping[str, object],
         path: Path,
     ) -> list[Issue]:
+        """按必填、枚举、模式和列表约束验证元数据。"""
+
         schema = self.schemas.get(kind)
         if schema is None:
             return [Issue("KB_SCHEMA_KIND", path, f"unknown schema kind: {kind}")]

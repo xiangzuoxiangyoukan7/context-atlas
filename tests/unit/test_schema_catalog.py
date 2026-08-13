@@ -1,3 +1,5 @@
+"""test_schema_catalog 自动化测试。"""
+
 import json
 
 from tests.helpers import TempDirectoryTestCase
@@ -5,7 +7,11 @@ from scripts.project_kb.schema_catalog import SchemaCatalog
 
 
 class SchemaCatalogTests(TempDirectoryTestCase):
+    """验证 SchemaCatalogTests 相关行为。"""
+
     def write_catalog(self, schema: dict[str, object]) -> None:
+        """提供 write_catalog 测试辅助行为。"""
+
         (self.root / "catalog.json").write_text(
             json.dumps({"feature": "feature.schema.json"}),
             encoding="utf-8",
@@ -16,6 +22,8 @@ class SchemaCatalogTests(TempDirectoryTestCase):
         )
 
     def test_catalog_reports_invalid_enum(self) -> None:
+        """验证 catalog_reports_invalid_enum 场景。"""
+
         self.write_catalog(
             {
                 "required": ["id", "status"],
@@ -32,6 +40,8 @@ class SchemaCatalogTests(TempDirectoryTestCase):
         self.assertEqual([issue.code for issue in issues], ["KB_SCHEMA_ENUM"])
 
     def test_catalog_reports_all_supported_constraint_failures(self) -> None:
+        """验证 catalog_reports_all_supported_constraint_failures 场景。"""
+
         self.write_catalog(
             {
                 "required": ["id", "status", "sources"],
@@ -58,6 +68,8 @@ class SchemaCatalogTests(TempDirectoryTestCase):
         )
 
     def test_catalog_reports_missing_required_field(self) -> None:
+        """验证 catalog_reports_missing_required_field 场景。"""
+
         self.write_catalog({"required": ["id", "status"]})
 
         issues = SchemaCatalog.load(self.root).validate(
@@ -69,6 +81,8 @@ class SchemaCatalogTests(TempDirectoryTestCase):
         self.assertEqual([issue.code for issue in issues], ["KB_SCHEMA_REQUIRED"])
 
     def test_catalog_reports_invalid_list_enum_member(self) -> None:
+        """验证 catalog_reports_invalid_list_enum_member 场景。"""
+
         self.write_catalog(
             {
                 "required": ["source_types"],
@@ -85,6 +99,8 @@ class SchemaCatalogTests(TempDirectoryTestCase):
         self.assertEqual([issue.code for issue in issues], ["KB_SCHEMA_ENUM"])
 
     def test_catalog_reports_list_enum_field_with_non_list_value(self) -> None:
+        """验证 catalog_reports_list_enum_field_with_non_list_value 场景。"""
+
         self.write_catalog(
             {
                 "required": ["source_types"],
@@ -101,6 +117,8 @@ class SchemaCatalogTests(TempDirectoryTestCase):
         self.assertEqual([issue.code for issue in issues], ["KB_SCHEMA_LIST"])
 
     def test_catalog_rejects_schema_path_outside_root(self) -> None:
+        """验证 catalog_rejects_schema_path_outside_root 场景。"""
+
         outside = self.root.parent / "outside.json"
         outside.write_text("{}", encoding="utf-8")
         (self.root / "catalog.json").write_text(

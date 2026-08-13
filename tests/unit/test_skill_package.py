@@ -1,3 +1,5 @@
+"""test_skill_package 自动化测试。"""
+
 import json
 from pathlib import Path
 import re
@@ -8,14 +10,23 @@ import unittest
 SKILL_ROOT = Path("skills/context-atlas")
 REFERENCES = (
     "初始化协议.md",
+    "执行状态机.md",
     "知识采集与确认.md",
     "更新冲突与归档.md",
     "验证与结果报告.md",
+    "关系与影响分析.md",
+    "数据库知识.md",
+    "兼容与迁移.md",
+    "身份与主动采集.md",
 )
 
 
 class SkillPackageTests(unittest.TestCase):
+    """验证 SkillPackageTests 相关行为。"""
+
     def test_skill_has_required_progressive_disclosure_files(self) -> None:
+        """验证 skill_has_required_progressive_disclosure_files 场景。"""
+
         self.assertTrue((SKILL_ROOT / "SKILL.md").is_file())
         self.assertTrue((SKILL_ROOT / "agents/openai.yaml").is_file())
         for name in REFERENCES:
@@ -23,6 +34,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertFalse((SKILL_ROOT / "README.md").exists())
 
     def test_installed_skill_contains_all_runtime_assets(self) -> None:
+        """验证 installed_skill_contains_all_runtime_assets 场景。"""
+
         assets = SKILL_ROOT / "assets"
         manifest = json.loads((assets / "manifest.json").read_text(encoding="utf-8"))
         missing = [path for path in manifest["files"] if not (assets / path).is_file()]
@@ -30,6 +43,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertEqual(missing, [])
 
     def test_skill_assets_match_canonical_sources(self) -> None:
+        """验证 skill_assets_match_canonical_sources 场景。"""
+
         from scripts.sync_skill_assets import sync_assets
 
         mismatches = sync_assets(Path.cwd(), SKILL_ROOT, check=True)
@@ -37,6 +52,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertEqual(mismatches, [])
 
     def test_skill_declares_required_behavior_boundaries(self) -> None:
+        """验证 skill_declares_required_behavior_boundaries 场景。"""
+
         content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
         required = (
             "doc-<项目目录名>",
@@ -45,14 +62,144 @@ class SkillPackageTests(unittest.TestCase):
             "AGENTS.md",
             "CLAUDE.md",
             "references/初始化协议.md",
+            "references/执行状态机.md",
             "references/知识采集与确认.md",
             "references/更新冲突与归档.md",
             "references/验证与结果报告.md",
+            "references/关系与影响分析.md",
+            "references/兼容与迁移.md",
+            "references/身份与主动采集.md",
         )
         for phrase in required:
             self.assertIn(phrase, content)
 
+    def test_relation_and_impact_reference_explains_human_decision_boundary(self) -> None:
+        """Skill 必须解释统一链接、三级结果和人工确认边界。"""
+
+        content = (SKILL_ROOT / "references" / "关系与影响分析.md").read_text(
+            encoding="utf-8"
+        )
+
+        for phrase in (
+            "rel_<type>",
+            "[[相对/目标文件#可选锚点|TARGET-ID]]",
+            "必须处理",
+            "需要复核",
+            "仅供参考",
+            "不得控制开发任务是否执行",
+        ):
+            self.assertIn(phrase, content)
+
+    def test_relation_and_impact_templates_are_packaged(self) -> None:
+        """初始化资产必须包含关系目录和影响分析记录模板。"""
+
+        assets = SKILL_ROOT / "assets" / "templates" / "core" / "doc-project"
+
+        self.assertTrue((assets / "02-架构与契约/关系目录.md").is_file())
+        self.assertTrue((assets / "03-实施与验收/影响分析/TEMPLATE.md").is_file())
+
+    def test_database_reference_and_four_entity_templates_are_packaged(self) -> None:
+        """Skill 必须解释数据库产品层级并包含四类实体模板。"""
+
+        reference = (SKILL_ROOT / "references" / "数据库知识.md").read_text(
+            encoding="utf-8"
+        )
+        for phrase in (
+            "Oracle",
+            "KingbaseES",
+            "PostgreSQL",
+            "MySQL",
+            "逻辑外键",
+            "物理外键",
+            "值域",
+            "数据库作为基础知识",
+        ):
+            self.assertIn(phrase, reference)
+        database_root = (
+            SKILL_ROOT / "assets/templates/core/doc-project/02-架构与契约/数据库"
+        )
+        for relative in (
+            "数据源/TEMPLATE.md",
+            "数据库单元/TEMPLATE.md",
+            "数据命名空间/TEMPLATE.md",
+            "数据表/TEMPLATE.md",
+        ):
+            self.assertTrue((database_root / relative).is_file(), relative)
+
+    def test_skill_state_machine_has_confirmation_and_revision_gates(self) -> None:
+        """验证 skill_state_machine_has_confirmation_and_revision_gates 场景。"""
+
+        content = (SKILL_ROOT / "references" / "执行状态机.md").read_text(
+            encoding="utf-8"
+        )
+        states = (
+            "inspect",
+            "propose",
+            "await_confirmation",
+            "apply",
+            "validate",
+            "report",
+        )
+
+        for state in states:
+            self.assertIn(state, content)
+        self.assertIn("proposal_revision == confirmed_revision", content)
+        self.assertIn("zero formal writes", content)
+        self.assertIn("目标已存在", content)
+        self.assertIn("更新流程", content)
+        self.assertIn("不决定外部任务是否执行", content)
+
+    def test_identity_capture_and_migration_references_explain_runtime_protocol(self) -> None:
+        """Skill 必须给 Agent 明确的身份、检查点和轻量迁移调用协议。"""
+
+        identity = (SKILL_ROOT / "references" / "身份与主动采集.md").read_text(
+            encoding="utf-8"
+        )
+        migration = (SKILL_ROOT / "references" / "兼容与迁移.md").read_text(
+            encoding="utf-8"
+        )
+        for phrase in (
+            "Git 邮箱摘要",
+            "PERSON-UNKNOWN",
+            "user_decision",
+            "before_delivery",
+            "session_end",
+            "status: proposed",
+            "不控制开发任务",
+            "agent_kb_operation.py capture",
+            "identify-contributor",
+        ):
+            self.assertIn(phrase, identity)
+        for phrase in (
+            "format_version",
+            "project_version",
+            "migrate-propose",
+            "migrate-apply",
+            "proposal_revision",
+            "旧字段",
+            "rel_supported_by",
+        ):
+            self.assertIn(phrase, migration)
+
+    def test_proposal_and_report_references_use_state_machine_contract(self) -> None:
+        """验证 proposal_and_report_references_use_state_machine_contract 场景。"""
+
+        proposal = (SKILL_ROOT / "references" / "知识采集与确认.md").read_text(
+            encoding="utf-8"
+        )
+        report = (SKILL_ROOT / "references" / "验证与结果报告.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("proposal_revision", proposal)
+        self.assertIn("confirmed_revision", proposal)
+        self.assertIn("Confirmation state", report)
+        self.assertIn("Validation result", report)
+        self.assertIn("not_validated", report)
+
     def test_skill_ui_metadata_is_readable_and_legacy_assets_are_absent(self) -> None:
+        """验证 skill_ui_metadata_is_readable_and_legacy_assets_are_absent 场景。"""
+
         metadata = (SKILL_ROOT / "agents/openai.yaml").read_text(encoding="utf-8")
         manifest = json.loads(
             (SKILL_ROOT / "assets/manifest.json").read_text(encoding="utf-8")
@@ -65,6 +212,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertFalse(any(path.startswith("profiles/") for path in manifest["files"]))
 
     def test_skill_frontmatter_matches_official_constraints(self) -> None:
+        """验证 skill_frontmatter_matches_official_constraints 场景。"""
+
         content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
         match = re.match(r"^---\n(.*?)\n---", content, re.DOTALL)
 
@@ -87,6 +236,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertLess(len(content.splitlines()), 500)
 
     def test_sync_rejects_escape_and_preserves_undeclared_files(self) -> None:
+        """验证 sync_rejects_escape_and_preserves_undeclared_files 场景。"""
+
         from scripts.sync_skill_assets import sync_assets
 
         with tempfile.TemporaryDirectory() as directory:
@@ -114,6 +265,8 @@ class SkillPackageTests(unittest.TestCase):
             self.assertTrue(extra.is_file())
 
     def test_sync_treats_crlf_target_as_matching_lf_canonical_text(self) -> None:
+        """验证 sync_treats_crlf_target_as_matching_lf_canonical_text 场景。"""
+
         from scripts.sync_skill_assets import sync_assets
 
         with tempfile.TemporaryDirectory() as directory:
@@ -132,6 +285,8 @@ class SkillPackageTests(unittest.TestCase):
             self.assertEqual(sync_assets(source, skill, check=True), [])
 
     def test_sync_handles_invalid_utf8_text_target_as_mismatch(self) -> None:
+        """验证 sync_handles_invalid_utf8_text_target_as_mismatch 场景。"""
+
         from scripts.sync_skill_assets import sync_assets
 
         with tempfile.TemporaryDirectory() as directory:

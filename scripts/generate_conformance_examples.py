@@ -1,3 +1,5 @@
+"""从权威模板生成一致性示例、无效夹具和结构快照。"""
+
 from __future__ import annotations
 
 import json
@@ -17,11 +19,15 @@ EXAMPLE_NAMES = ("single-stack", "multi-stack")
 
 
 def _write(path: Path, content: str) -> None:
+    """以统一 UTF-8 换行写入生成文件。"""
+
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content.rstrip() + "\n", encoding="utf-8", newline="\n")
 
 
 def _record(path: Path, metadata: dict[str, object], body: str) -> None:
+    """生成带简化 YAML 文档头的知识记录。"""
+
     lines = ["---"]
     for key, value in metadata.items():
         if isinstance(value, list):
@@ -33,6 +39,8 @@ def _record(path: Path, metadata: dict[str, object], body: str) -> None:
 
 
 def _source(root: Path, identifier: str, source_type: str, reference: str) -> None:
+    """在示例知识库中生成可引用的来源实体。"""
+
     _record(
         root / "00-项目总览" / f"{identifier}.md",
         {
@@ -48,6 +56,8 @@ def _source(root: Path, identifier: str, source_type: str, reference: str) -> No
 
 
 def _approved_item(root: Path, relative: str, identifier: str, title: str, body: str) -> None:
+    """生成具有完整确认信息的已批准知识项。"""
+
     _record(
         root / relative,
         {
@@ -68,6 +78,8 @@ def _approved_item(root: Path, relative: str, identifier: str, title: str, body:
 
 
 def _approved_data_asset(root: Path, name: str) -> None:
+    """生成满足数据资产治理字段要求的已批准资产。"""
+
     source_types = ["database"] if name == "single-stack" else ["database", "api", "file"]
     mappings = """| 来源类型 | 名称 | 流向 | 用途 | 技术契约 |
 | --- | --- | --- | --- | --- |
@@ -123,6 +135,8 @@ def _approved_data_asset(root: Path, name: str) -> None:
 
 
 def _populate_example(root: Path, name: str) -> None:
+    """向物化模板填充单技术栈或多技术栈示例内容。"""
+
     _source(root, "SRC-001", "user_statement", "fictional example-owner confirmation")
     _source(root, "SRC-002", "repository_file", "README.example")
     _write(
@@ -240,14 +254,6 @@ def _populate_example(root: Path, name: str) -> None:
         "# TASK-F01-001\n\n这是未执行的示例任务，不代表业务实现完成。",
     )
     _write(
-        root / "03-实施与验收/CURRENT.md",
-        """# 当前任务
-
-- 任务编号：TASK-F01-001
-- 任务包：[TASK-F01-001](./任务包/TASK-F01-001.md)
-""",
-    )
-    _write(
         root / "03-实施与验收/验收矩阵.md",
         """# 验收矩阵
 
@@ -266,9 +272,10 @@ def _populate_example(root: Path, name: str) -> None:
 
 
 def _minimal_fixture(root: Path, expected_code: str) -> None:
+    """生成便于定向破坏的最小有效知识库夹具。"""
+
     root.mkdir(parents=True)
     _write(root / "README.md", f"# Invalid fixture\n\nexpected_code: {expected_code}")
-    _write(root / "03-实施与验收/CURRENT.md", "# 当前状态\n\n- 当前任务：无可执行开发任务")
     _write(
         root / "03-实施与验收/验收矩阵.md",
         "# 验收矩阵\n\n| 验收编号 | 对象 | 条件摘要 | 结果 | 证据位置 | 对应版本 |\n| --- | --- | --- | --- | --- | --- |",
@@ -278,6 +285,8 @@ def _minimal_fixture(root: Path, expected_code: str) -> None:
 
 
 def _generate_invalid_fixtures(root: Path) -> None:
+    """生成每类规则各自可复现的无效知识库夹具。"""
+
     if root.exists():
         raise FileExistsError(root)
     cases = {
@@ -367,6 +376,8 @@ def _generate_invalid_fixtures(root: Path) -> None:
 
 
 def generate() -> None:
+    """重新生成全部示例、无效夹具和结构快照。"""
+
     examples = Path("examples")
     fixtures = Path("tests/fixtures/invalid")
     snapshot = Path("tests/snapshots/expected-structures.json")

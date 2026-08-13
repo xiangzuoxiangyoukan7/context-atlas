@@ -3,13 +3,14 @@ schema_version: 1.0
 project_id: single-stack
 project_name: single-stack
 knowledge_base_name: doc-single-stack
+project_version: 0.1.0
+format_version: 2
 revision: 1
 initialized_at: 2026-08-10
 authority:
   overview: 00-项目总览/README.md
   features: 01-功能基线/README.md
   architecture: 02-架构与契约/README.md
-  current: 03-实施与验收/CURRENT.md
   acceptance: 03-实施与验收/验收矩阵.md
   decisions: 04-决策记录/README.md
   collaboration: 05-开发指南/AI知识采集协议.md

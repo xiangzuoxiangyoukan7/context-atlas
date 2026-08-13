@@ -1,6 +1,6 @@
 # multi-stack 项目知识库
 
-本目录是 `doc-multi-stack`，由 AI Agent 与项目责任人协作维护。先读本页，再读 [AI 知识采集协议](./05-开发指南/AI知识采集协议.md) 和 [CURRENT](./03-实施与验收/CURRENT.md)。机器入口为 `knowledge-base.yaml`。
+本目录是 `doc-multi-stack`，由 AI Agent 与项目责任人协作维护。先读本页，再读 [AI 知识采集协议](./05-开发指南/AI知识采集协议.md)。[当前变更](./03-实施与验收/当前变更.md)只记录知识库已知的变化，不控制用户或其他插件执行任务。机器入口为 `knowledge-base.yaml`。
 
 ## 权威入口
 

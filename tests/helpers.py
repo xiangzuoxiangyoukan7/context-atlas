@@ -1,3 +1,5 @@
+"""测试辅助模块。"""
+
 from pathlib import Path
 import shutil
 import tempfile
@@ -11,6 +13,8 @@ def write_record(
     metadata: dict[str, object],
     body: str = "# Document\n",
 ) -> Path:
+    """提供 write_record 测试辅助行为。"""
+
     lines = ["---"]
     for key, value in metadata.items():
         if isinstance(value, list):
@@ -24,6 +28,8 @@ def write_record(
 
 
 def make_valid_knowledge_base(root: Path) -> Path:
+    """提供 make_valid_knowledge_base 测试辅助行为。"""
+
     (root / "03-实施与验收").mkdir(parents=True, exist_ok=True)
     (root / "03-实施与验收" / "CURRENT.md").write_text(
         "# 当前状态\n\n- 当前任务：无可执行开发任务\n",
@@ -54,6 +60,8 @@ def materialize_core_template(
     target: Path,
     project_name: str,
 ) -> Path:
+    """提供 materialize_core_template 测试辅助行为。"""
+
     source = Path("templates/core/doc-project")
     knowledge_base = target / f"doc-{project_name}"
     shutil.copytree(source, knowledge_base)
@@ -74,9 +82,15 @@ def materialize_core_template(
 
 
 class TempDirectoryTestCase(unittest.TestCase):
+    """验证 TempDirectoryTestCase 相关行为。"""
+
     def setUp(self) -> None:
+        """初始化当前测试所需的隔离环境。"""
+
         self.temporary_directory = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary_directory.name)
 
     def tearDown(self) -> None:
+        """清理当前测试创建的隔离资源。"""
+
         self.temporary_directory.cleanup()

@@ -1,3 +1,5 @@
+"""以暂存目录和原子替换方式安全初始化知识库。"""
+
 from __future__ import annotations
 
 from datetime import date
@@ -12,6 +14,8 @@ MARKER_PATTERN = re.compile(r"{{[A-Z][A-Z0-9_]*}}")
 
 
 def _safe_project_name(name: str) -> str:
+    """验证项目名只能形成一个安全目录段。"""
+
     normalized = name.strip()
     if not normalized or normalized in {".", ".."} or "/" in normalized or "\\" in normalized:
         raise ValueError("project name must be one safe directory segment")
@@ -19,6 +23,8 @@ def _safe_project_name(name: str) -> str:
 
 
 def _replace_markers(root: Path, values: dict[str, str]) -> None:
+    """替换模板变量并拒绝任何未解析标记。"""
+
     unresolved: list[str] = []
     for path in root.rglob("*"):
         if not path.is_file():
@@ -41,6 +47,8 @@ def initialize_from_assets(
     assets_root: Path = Path("skills/context-atlas/assets"),
     initialized_at: str | None = None,
 ) -> Path:
+    """从 Skill 资产创建自包含且已验证的新知识库。"""
+
     project_root = project_root.resolve()
     if not project_root.is_dir():
         raise ValueError("project root must be an existing directory")
@@ -55,6 +63,7 @@ def initialize_from_assets(
     if not template.is_dir() or not schema_root.is_dir():
         raise ValueError("Skill assets are incomplete")
 
+    # 先在同一文件系统完成复制和验证，最后原子改名，避免暴露半成品目标。
     staging = Path(tempfile.mkdtemp(prefix=f".{target.name}.initializing-", dir=project_root))
     try:
         shutil.copytree(template, staging, dirs_exist_ok=True)
@@ -69,6 +78,10 @@ def initialize_from_assets(
         )
         shutil.copytree(assets_root / "scripts", staging / ".project-kb" / "scripts")
         shutil.copytree(schema_root, staging / ".project-kb" / "schemas")
+        shutil.copy2(
+            assets_root / "compatibility.json",
+            staging / ".project-kb" / "compatibility.json",
+        )
         issues = validate(staging, ValidationConfig(schema_root=staging / ".project-kb" / "schemas"))
         if issues:
             codes = ", ".join(issue.code for issue in issues)
