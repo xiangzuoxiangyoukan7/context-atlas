@@ -153,7 +153,7 @@ class ClaudeRunner:
             text=True,
             encoding="utf-8",
             errors="replace",
-            timeout=300,
+            timeout=600,
         )
         finished_at = self.now()
         try:

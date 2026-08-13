@@ -204,7 +204,7 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertTrue(kwargs["text"])
         self.assertEqual("utf-8", kwargs["encoding"])
         self.assertEqual("replace", kwargs["errors"])
-        self.assertEqual(300, kwargs["timeout"])
+        self.assertEqual(600, kwargs["timeout"])
         self.assertEqual("session-1", turn.session_id)
         self.assertEqual("完成", turn.result_text)
         self.assertEqual({"state": "report"}, turn.structured_output)
