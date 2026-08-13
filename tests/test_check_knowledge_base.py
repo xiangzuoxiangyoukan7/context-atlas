@@ -96,17 +96,17 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
         self.assertIn("KB_MATRIX_IDS", codes)
         self.assertIn("KB_MATRIX_DUPLICATE", codes)
 
-    def test_rejects_missing_current_and_mixed_current_states(self) -> None:
+    def test_current_is_optional_and_does_not_control_task_execution(self) -> None:
         self.valid_feature()
         self.matrix("| F01-AC-01 | Feature | condition | not_started | — | — |\n")
-        self.assertIn("KB_CURRENT_REQUIRED", self.codes(validate(self.root)))
+        self.assertNotIn("KB_CURRENT_REQUIRED", self.codes(validate(self.root)))
 
         self.valid_current()
         self.write(
             "03-实施与验收/CURRENT.md",
             "- 当前任务：无可执行开发任务\n- 任务包：[task](./任务包/TASK-F01-001.md)\n",
         )
-        self.assertIn("KB_CURRENT_STATE", self.codes(validate(self.root)))
+        self.assertNotIn("KB_CURRENT_STATE", self.codes(validate(self.root)))
 
     def test_rejects_broken_relative_link(self) -> None:
         self.valid_current()

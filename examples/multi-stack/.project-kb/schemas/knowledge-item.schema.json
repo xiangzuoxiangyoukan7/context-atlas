@@ -1,0 +1,14 @@
+{
+  "required": ["id", "type", "title", "status", "version", "sources", "last_updated"],
+  "enums": {
+    "type": ["knowledge_item"],
+    "status": ["missing", "proposed", "approved", "conflicted", "stale", "superseded", "archived"]
+  },
+  "patterns": {
+    "id": "[A-Z][A-Z0-9_-]*",
+    "version": "\\d+\\.\\d+\\.\\d+",
+    "last_updated": "\\d{4}-\\d{2}-\\d{2}"
+  },
+  "non_empty_lists": ["sources"],
+  "unique_lists": ["sources"]
+}

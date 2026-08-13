@@ -38,7 +38,7 @@ def required_template_paths() -> Sequence[Path]:
             "02-架构与契约/原型/README.md",
             "02-架构与契约/外部依赖/README.md",
             "03-实施与验收/README.md",
-            "03-实施与验收/CURRENT.md",
+            "03-实施与验收/当前变更.md",
             "03-实施与验收/执行看板.md",
             "03-实施与验收/验收矩阵.md",
             "03-实施与验收/任务包/README.md",

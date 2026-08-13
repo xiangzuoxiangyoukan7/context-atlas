@@ -9,6 +9,20 @@ from tests.helpers import TempDirectoryTestCase, materialize_core_template
 
 
 class CoreTemplateTests(TempDirectoryTestCase):
+    def test_current_change_is_optional_knowledge_not_an_execution_gate(self) -> None:
+        root = Path("templates/core/doc-project")
+        current_change = root / "03-实施与验收/当前变更.md"
+        manifest = (root / "knowledge-base.yaml").read_text(encoding="utf-8")
+        collaboration = (
+            root / "05-开发指南/AI知识采集协议.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertTrue(current_change.is_file())
+        self.assertFalse((root / "03-实施与验收/CURRENT.md").exists())
+        self.assertNotIn("current:", manifest)
+        self.assertIn("不构成任务执行许可", current_change.read_text(encoding="utf-8"))
+        self.assertNotIn("无可执行开发任务", collaboration)
+
     def test_data_asset_readme_has_inventory_columns_and_valid_card_template_link(
         self,
     ) -> None:

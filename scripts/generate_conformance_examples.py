@@ -240,14 +240,6 @@ def _populate_example(root: Path, name: str) -> None:
         "# TASK-F01-001\n\n这是未执行的示例任务，不代表业务实现完成。",
     )
     _write(
-        root / "03-实施与验收/CURRENT.md",
-        """# 当前任务
-
-- 任务编号：TASK-F01-001
-- 任务包：[TASK-F01-001](./任务包/TASK-F01-001.md)
-""",
-    )
-    _write(
         root / "03-实施与验收/验收矩阵.md",
         """# 验收矩阵
 
@@ -268,7 +260,6 @@ def _populate_example(root: Path, name: str) -> None:
 def _minimal_fixture(root: Path, expected_code: str) -> None:
     root.mkdir(parents=True)
     _write(root / "README.md", f"# Invalid fixture\n\nexpected_code: {expected_code}")
-    _write(root / "03-实施与验收/CURRENT.md", "# 当前状态\n\n- 当前任务：无可执行开发任务")
     _write(
         root / "03-实施与验收/验收矩阵.md",
         "# 验收矩阵\n\n| 验收编号 | 对象 | 条件摘要 | 结果 | 证据位置 | 对应版本 |\n| --- | --- | --- | --- | --- | --- |",

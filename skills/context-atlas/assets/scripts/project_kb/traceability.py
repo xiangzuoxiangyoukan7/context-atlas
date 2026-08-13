@@ -289,29 +289,6 @@ def _validate_matrix(root: Path, records: Iterable[DocumentRecord]) -> list[Issu
     return issues
 
 
-def _validate_current(root: Path, ids: Mapping[str, DocumentRecord]) -> list[Issue]:
-    current = root / "03-实施与验收" / "CURRENT.md"
-    if not current.exists():
-        return [Issue("KB_CURRENT_REQUIRED", current, "CURRENT.md is required")]
-    content = current.read_text(encoding="utf-8")
-    no_task = re.findall(r"(?m)^-\s*当前任务：\s*无可执行开发任务\s*$", content)
-    task_ids = re.findall(r"(?m)^-\s*任务编号：\s*(.*?)\s*$", content)
-    package_links = re.findall(r"(?m)^-\s*任务包：\s*\[[^\]]+\]\(([^)]+)\)\s*$", content)
-    if len(no_task) == 1 and not task_ids and not package_links:
-        return []
-    if len(no_task) or len(task_ids) != 1 or len(package_links) != 1:
-        return [
-            Issue(
-                "KB_CURRENT_STATE",
-                current,
-                "CURRENT must declare one task/package or one explicit no-task state",
-            )
-        ]
-    if task_ids[0] not in ids:
-        return [Issue("KB_CURRENT_TASK", current, f"CURRENT references unknown task: {task_ids[0]}")]
-    return []
-
-
 def validate_traceability(root: Path, records: Iterable[DocumentRecord]) -> list[Issue]:
     materialized = list(records)
     issues: list[Issue] = []
@@ -319,5 +296,4 @@ def validate_traceability(root: Path, records: Iterable[DocumentRecord]) -> list
     issues.extend(_validate_lifecycle(materialized, ids))
     issues.extend(_validate_references(materialized, ids))
     issues.extend(_validate_matrix(root, materialized))
-    issues.extend(_validate_current(root, ids))
     return issues
