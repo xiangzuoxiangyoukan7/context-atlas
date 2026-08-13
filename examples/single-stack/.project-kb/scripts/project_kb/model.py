@@ -23,3 +23,22 @@ class DocumentRecord:
     path: Path
     metadata: dict[str, object]
     body: str
+
+
+@dataclass(frozen=True)
+class KnowledgeTarget:
+    """表示可被关系链接精确定位的文档或聚合文档知识项。"""
+
+    identifier: str
+    path: Path
+    anchor: str | None
+    kind: str
+
+
+@dataclass(frozen=True)
+class RelationEdge:
+    """表示从使用方知识指向基础知识的单条权威正向关系。"""
+
+    field: str
+    source: KnowledgeTarget
+    target: KnowledgeTarget

@@ -3,7 +3,7 @@ name: context-atlas
 description: Use when a user asks an AI Agent to initialize, inspect, explain, update, migrate, or validate a self-contained project knowledge base, including doc-* directories and optional Java or Python project knowledge.
 ---
 
-<!-- context-atlas-rules: [[rules/知识治理规则#RULE-AGENT-001|RULE-AGENT-001]] [[rules/知识治理规则#RULE-IMPACT-001|RULE-IMPACT-001]] -->
+<!-- context-atlas-rules: [[rules/知识治理规则#RULE-AGENT-001|RULE-AGENT-001]] [[rules/知识治理规则#RULE-IMPACT-001|RULE-IMPACT-001]] [[rules/知识治理规则#RULE-IMPACT-002|RULE-IMPACT-002]] [[rules/知识治理规则#RULE-REL-002|RULE-REL-002]] -->
 
 # Context Atlas
 
@@ -20,6 +20,7 @@ Operate a tool-neutral project knowledge base on the user's behalf. Treat reposi
 | Inspect or explain one | Read its root README and `knowledge-base.yaml`, then [知识采集与确认](references/知识采集与确认.md). |
 | Update, resolve conflict, or supersede knowledge | Read [知识采集与确认](references/知识采集与确认.md) and [更新冲突与归档](references/更新冲突与归档.md). |
 | Validate or report results | Read [验证与结果报告](references/验证与结果报告.md). |
+| Add relations, find consumers, or analyze change impact | Read [关系与影响分析](references/关系与影响分析.md). |
 
 For combined requests, read every referenced file before writing.
 

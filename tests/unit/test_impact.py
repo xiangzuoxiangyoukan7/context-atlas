@@ -1,5 +1,7 @@
 """验证三级关系影响分析的直接传播、间接传播和安全降级。"""
 
+# context-atlas-rules: [[rules/知识治理规则#RULE-IMPACT-002|RULE-IMPACT-002]]
+
 from __future__ import annotations
 
 from pathlib import Path

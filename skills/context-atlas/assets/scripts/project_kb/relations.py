@@ -1,5 +1,7 @@
 """校验 Obsidian 关系链接并构造可查询的正向与反向索引。"""
 
+# context-atlas-rules: [[rules/知识治理规则#RULE-REL-002|RULE-REL-002]]
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -25,6 +27,8 @@ def _identifier_family(identifier: str) -> str:
     if acceptance:
         family = acceptance.group("family")
         return "F" if family.startswith("F") else family
+    if re.fullmatch(r"F\d+", identifier):
+        return "F"
     return identifier.split("-", 1)[0]
 
 

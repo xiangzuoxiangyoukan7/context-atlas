@@ -1,5 +1,7 @@
 """验证 Obsidian 关系链接、端点类型和正反向索引。"""
 
+# context-atlas-rules: [[rules/知识治理规则#RULE-REL-002|RULE-REL-002]]
+
 from __future__ import annotations
 
 from pathlib import Path

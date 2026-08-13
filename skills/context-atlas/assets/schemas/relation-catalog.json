@@ -24,7 +24,7 @@
     {
       "field": "rel_implements",
       "name_zh": "实现该需求",
-      "source_prefixes": ["FEATURE", "RULE"],
+      "source_prefixes": ["F", "FEATURE", "RULE"],
       "target_prefixes": ["REQ"],
       "direction": "forward_only",
       "status": "active",
@@ -34,7 +34,7 @@
     {
       "field": "rel_exposes",
       "name_zh": "对外提供该契约",
-      "source_prefixes": ["FEATURE", "MODULE"],
+      "source_prefixes": ["F", "FEATURE", "MODULE"],
       "target_prefixes": ["API", "EVENT"],
       "direction": "forward_only",
       "status": "active",
@@ -44,7 +44,7 @@
     {
       "field": "rel_reads",
       "name_zh": "读取该数据",
-      "source_prefixes": ["FEATURE", "MODULE", "TASK"],
+      "source_prefixes": ["F", "FEATURE", "MODULE", "TASK"],
       "target_prefixes": ["TABLE", "DATA"],
       "direction": "forward_only",
       "status": "active",
@@ -54,7 +54,7 @@
     {
       "field": "rel_writes",
       "name_zh": "写入该数据",
-      "source_prefixes": ["FEATURE", "MODULE", "TASK"],
+      "source_prefixes": ["F", "FEATURE", "MODULE", "TASK"],
       "target_prefixes": ["TABLE", "DATA"],
       "direction": "forward_only",
       "status": "active",
@@ -64,7 +64,7 @@
     {
       "field": "rel_depends_on",
       "name_zh": "运行或业务上依赖",
-      "source_prefixes": ["FEATURE", "MODULE", "API", "TASK"],
+      "source_prefixes": ["F", "FEATURE", "MODULE", "API", "TASK"],
       "target_prefixes": ["MODULE", "DEP"],
       "direction": "forward_only",
       "status": "active",
@@ -74,7 +74,7 @@
     {
       "field": "rel_verified_by",
       "name_zh": "由该验收项证明",
-      "source_prefixes": ["REQ", "FEATURE", "RULE", "API"],
+      "source_prefixes": ["REQ", "F", "FEATURE", "RULE", "API"],
       "target_prefixes": ["AC", "F", "KB"],
       "direction": "forward_only",
       "status": "active",

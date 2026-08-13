@@ -14,6 +14,7 @@ REFERENCES = (
     "知识采集与确认.md",
     "更新冲突与归档.md",
     "验证与结果报告.md",
+    "关系与影响分析.md",
 )
 
 
@@ -62,9 +63,35 @@ class SkillPackageTests(unittest.TestCase):
             "references/知识采集与确认.md",
             "references/更新冲突与归档.md",
             "references/验证与结果报告.md",
+            "references/关系与影响分析.md",
         )
         for phrase in required:
             self.assertIn(phrase, content)
+
+    def test_relation_and_impact_reference_explains_human_decision_boundary(self) -> None:
+        """Skill 必须解释统一链接、三级结果和人工确认边界。"""
+
+        content = (SKILL_ROOT / "references" / "关系与影响分析.md").read_text(
+            encoding="utf-8"
+        )
+
+        for phrase in (
+            "rel_<type>",
+            "[[相对/目标文件#可选锚点|TARGET-ID]]",
+            "必须处理",
+            "需要复核",
+            "仅供参考",
+            "不得控制开发任务是否执行",
+        ):
+            self.assertIn(phrase, content)
+
+    def test_relation_and_impact_templates_are_packaged(self) -> None:
+        """初始化资产必须包含关系目录和影响分析记录模板。"""
+
+        assets = SKILL_ROOT / "assets" / "templates" / "core" / "doc-project"
+
+        self.assertTrue((assets / "02-架构与契约/关系目录.md").is_file())
+        self.assertTrue((assets / "03-实施与验收/影响分析/TEMPLATE.md").is_file())
 
     def test_skill_state_machine_has_confirmation_and_revision_gates(self) -> None:
         """验证 skill_state_machine_has_confirmation_and_revision_gates 场景。"""

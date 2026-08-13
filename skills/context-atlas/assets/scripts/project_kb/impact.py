@@ -1,5 +1,7 @@
 """沿关系反向索引生成只读的三级知识变化影响清单。"""
 
+# context-atlas-rules: [[rules/知识治理规则#RULE-IMPACT-002|RULE-IMPACT-002]]
+
 from __future__ import annotations
 
 from collections import deque

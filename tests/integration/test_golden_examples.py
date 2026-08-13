@@ -110,6 +110,41 @@ class GoldenExampleTests(unittest.TestCase):
         multi = relative_files(Path("examples") / "multi-stack")
         self.assertEqual(single, multi)
 
+    def test_examples_expose_computable_relation_impact(self) -> None:
+        """两套样例都应能从数据库表反向得到模块和功能影响。"""
+
+        for name in EXAMPLES:
+            with self.subTest(name=name):
+                root = Path("examples") / name
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        str(root / ".project-kb/scripts/analyze_knowledge_impact.py"),
+                        str(root),
+                        "--schema-root",
+                        str(root / ".project-kb/schemas"),
+                        "--changed-id",
+                        "TABLE-KNOWLEDGE-001",
+                        "--change-type",
+                        "field_removed",
+                        "--format",
+                        "json",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    check=False,
+                )
+                self.assertEqual(0, result.returncode, result.stderr)
+                payload = json.loads(result.stdout)
+                impacts = {
+                    (item["affected_id"], item["level"], item["depth"])
+                    for item in payload["impacts"]
+                }
+                self.assertIn(("MODULE-QUERY-001", "required", 1), impacts)
+                self.assertIn(("F01", "review_required", 2), impacts)
+
 
 if __name__ == "__main__":
     unittest.main()
