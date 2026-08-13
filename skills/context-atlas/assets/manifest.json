@@ -45,6 +45,7 @@
     "scripts/project_kb/impact.py",
     "scripts/project_kb/initializer.py",
     "scripts/project_kb/links.py",
+    "scripts/project_kb/migration.py",
     "scripts/project_kb/model.py",
     "scripts/project_kb/relation_catalog.py",
     "scripts/project_kb/relations.py",
