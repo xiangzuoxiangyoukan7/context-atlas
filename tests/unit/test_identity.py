@@ -99,6 +99,32 @@ class IdentityTests(TempDirectoryTestCase):
         )
         self.assertNotIn("fixture@example.com", repr(identity))
 
+    def test_repository_identity_can_be_matched_without_returning_plaintext_email(self) -> None:
+        """仓库身份发现与人员匹配应合并执行且报告中不泄露邮箱。"""
+
+        from scripts.project_kb.identity import discover_identity_match, email_digest
+
+        people = self._people(
+            f"| PERSON-001 | Fixture | 测试组 | active | fixture | "
+            f"{email_digest('fixture@example.com')} |\n"
+        )
+        subprocess.run(["git", "init", "--quiet"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "--local", "user.name", "fixture"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "--local", "user.email", "fixture@example.com"],
+            cwd=self.root,
+            check=True,
+        )
+
+        result = discover_identity_match(self.root, people)
+
+        self.assertEqual("PERSON-001", result.person_id)
+        self.assertNotIn("fixture@example.com", repr(result))
+
     def test_malformed_people_rows_are_reported(self) -> None:
         """重复人员编号和明文邮箱不能被静默接受。"""
 

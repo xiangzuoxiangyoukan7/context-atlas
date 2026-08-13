@@ -167,6 +167,7 @@ class SkillPackageTests(unittest.TestCase):
             "status: proposed",
             "不控制开发任务",
             "agent_kb_operation.py capture",
+            "identify-contributor",
         ):
             self.assertIn(phrase, identity)
         for phrase in (

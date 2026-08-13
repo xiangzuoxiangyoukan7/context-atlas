@@ -79,6 +79,43 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
         self.assertTrue(proposal.is_file())
         self.assertIn("status: proposed", proposal.read_text(encoding="utf-8"))
 
+    def test_identify_contributor_returns_stable_person_candidate(self) -> None:
+        """身份命令应使用知识库人员表，并仅返回邮箱摘要。"""
+
+        import subprocess
+
+        from scripts.project_kb.identity import email_digest
+
+        people_dir = self.root / "doc-example/00-项目总览"
+        people_dir.mkdir(parents=True)
+        (people_dir / "协作人员.md").write_text(
+            "# 协作人员\n\n"
+            "| 人员编号 | 显示名称 | 所属团队 | 状态 | Git 用户名别名 | Git 邮箱摘要 |\n"
+            "| --- | --- | --- | --- | --- | --- |\n"
+            f"| PERSON-001 | Fixture | 测试组 | active | fixture | "
+            f"{email_digest('fixture@example.com')} |\n",
+            encoding="utf-8",
+        )
+        subprocess.run(["git", "init", "--quiet"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "--local", "user.name", "fixture"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "--local", "user.email", "fixture@example.com"],
+            cwd=self.root,
+            check=True,
+        )
+
+        exit_code, payload = self._run(
+            "identify-contributor", str(self.root), str(self.root / "doc-example")
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("PERSON-001", payload["person_id"])
+        self.assertNotIn("fixture@example.com", json.dumps(payload))
+
     def test_migration_requires_same_confirmed_revision(self) -> None:
         """迁移应用命令必须使用只读提案返回的同一修订号。"""
 

@@ -167,6 +167,14 @@ def discover_git_identity(root: Path) -> GitIdentity:
     return GitIdentity(name=name, email_hash=email_digest(email))
 
 
+def discover_identity_match(root: Path, people_path: Path) -> IdentityMatch:
+    """读取仓库生效 Git 身份并直接匹配，返回值不保留明文邮箱。"""
+
+    name = _git_config(root.resolve(), "user.name")
+    email = _git_config(root.resolve(), "user.email")
+    return match_git_identity(people_path.resolve(), name, email)
+
+
 def validate_people(root: Path) -> list[Issue]:
     """当固定协作人员入口存在时验证其人员编号和隐私边界。"""
 

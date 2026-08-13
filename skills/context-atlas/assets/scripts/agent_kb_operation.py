@@ -16,6 +16,7 @@ from scripts.project_kb.agent_operation import execute_initialize
 from scripts.project_kb.capture import CaptureCandidate, capture_candidate
 from scripts.project_kb.compatibility import CompatibilityPolicy
 from scripts.project_kb.discovery import discover_records
+from scripts.project_kb.identity import discover_identity_match
 from scripts.project_kb.migration import apply_migration, build_migration_proposal
 
 
@@ -67,6 +68,10 @@ def _parser() -> argparse.ArgumentParser:
     capture.add_argument("--operated-by", required=True)
     capture.add_argument("--project-version", required=True)
     capture.add_argument("--captured-at", required=True)
+
+    identify = subparsers.add_parser("identify-contributor")
+    identify.add_argument("repository_root", type=Path)
+    identify.add_argument("knowledge_base_root", type=Path)
 
     for operation in ("migrate-propose", "migrate-apply"):
         migration = subparsers.add_parser(operation)
@@ -131,6 +136,11 @@ def _execute(args: argparse.Namespace) -> tuple[object, int]:
             ),
             0,
         )
+    if args.operation == "identify-contributor":
+        people_path = (
+            args.knowledge_base_root.resolve() / "00-项目总览" / "协作人员.md"
+        )
+        return discover_identity_match(args.repository_root, people_path), 0
     proposal = _migration_proposal(
         args.knowledge_base_root, args.compatibility
     )
