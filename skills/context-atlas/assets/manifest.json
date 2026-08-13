@@ -38,6 +38,7 @@
     "scripts/project_kb/links.py",
     "scripts/project_kb/model.py",
     "scripts/project_kb/relation_catalog.py",
+    "scripts/project_kb/relations.py",
     "scripts/project_kb/reporting.py",
     "scripts/project_kb/rule_catalog.py",
     "scripts/project_kb/schema_catalog.py",
