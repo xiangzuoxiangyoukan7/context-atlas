@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
 import re
 from typing import Iterable
 
 from .model import DocumentRecord, Issue
+from .relations import RELATION_LINK, RelationIndex
 
 
 FIELD_COLUMNS = (
@@ -29,6 +31,8 @@ DOMAIN_TYPES = frozenset({"枚举", "范围", "格式", "任意", "未知"})
 ENFORCEMENT_TYPES = frozenset({"数据库约束", "应用规则", "仅文档", "未知"})
 FIELD_ID_PATTERN = re.compile(r"FIELD-[A-Z0-9-]+$")
 SOURCE_LINK_PATTERN = re.compile(r"\[\[[^\]|#]+(?:#[^\]|]+)?\|SRC-[A-Z0-9-]+\]\]$")
+RELATION_COLUMNS = ("关系编号", "子字段编号", "主表与字段", "物理约束", "约束名称")
+FOREIGN_KEY_ID_PATTERN = re.compile(r"FK-[A-Z0-9-]+$")
 
 
 @dataclass(frozen=True)
@@ -48,6 +52,17 @@ class DatabaseField:
     enforcement: str
     source: str
     anchor: str
+
+
+@dataclass(frozen=True)
+class ForeignKeyMapping:
+    """表示子表字段到主表字段的逻辑关系和实际物理约束状态。"""
+
+    identifier: str
+    child_field_id: str
+    parent_field_link: str
+    physical_constraint: str
+    constraint_name: str
 
 
 def _cells(line: str) -> list[str]:
@@ -82,13 +97,13 @@ def _cells(line: str) -> list[str]:
     return cells
 
 
-def _field_section(body: str) -> list[str] | None:
-    """返回字段定义二级标题下、下一个同级标题前的正文行。"""
+def _named_section(body: str, title: str) -> list[str] | None:
+    """返回指定二级标题下、下一个同级标题前的正文行。"""
 
     lines = body.splitlines()
     start: int | None = None
     for index, line in enumerate(lines):
-        if line.strip() == "## 字段定义":
+        if line.strip() == f"## {title}":
             start = index + 1
             break
     if start is None:
@@ -99,6 +114,12 @@ def _field_section(body: str) -> list[str] | None:
             break
         section.append(line)
     return section
+
+
+def _field_section(body: str) -> list[str] | None:
+    """返回字段定义二级标题内的正文行。"""
+
+    return _named_section(body, "字段定义")
 
 
 def _table_lines(section: list[str]) -> list[str]:
@@ -234,4 +255,155 @@ def validate_database_fields(records: Iterable[DocumentRecord]) -> list[Issue]:
             continue
         _, field_issues = parse_database_fields(record)
         issues.extend(field_issues)
+    return issues
+
+
+def _parse_foreign_key_mappings(
+    record: DocumentRecord,
+) -> tuple[list[ForeignKeyMapping], list[Issue]]:
+    """解析主子表关系表并验证列数、编号和物理约束填写方式。"""
+
+    section = _named_section(record.body, "主子表关系")
+    if section is None:
+        return [], []
+    table = _table_lines(section)
+    if len(table) < 3 or tuple(_cells(table[0])) != RELATION_COLUMNS:
+        return [], [
+            Issue("KB_DB_PARENT_COLUMNS", record.path, "主子表关系表必须使用统一列")
+        ]
+    mappings: list[ForeignKeyMapping] = []
+    issues: list[Issue] = []
+    seen: set[str] = set()
+    for row_number, line in enumerate(table[2:], start=1):
+        values = _cells(line)
+        location = f"主子表关系第 {row_number} 行"
+        if len(values) != len(RELATION_COLUMNS):
+            issues.append(
+                Issue("KB_DB_PARENT_COLUMNS", record.path, "主子表关系行列数不正确", location)
+            )
+            continue
+        mapping = ForeignKeyMapping(*values)
+        if FOREIGN_KEY_ID_PATTERN.fullmatch(mapping.identifier) is None:
+            issues.append(
+                Issue("KB_DB_PARENT_ID", record.path, f"关系编号不合法：{mapping.identifier}", location)
+            )
+        if mapping.identifier in seen:
+            issues.append(
+                Issue("KB_DB_PARENT_DUPLICATE", record.path, f"关系编号重复：{mapping.identifier}", location)
+            )
+        seen.add(mapping.identifier)
+        if mapping.physical_constraint not in {"是", "否"}:
+            issues.append(
+                Issue("KB_DB_PHYSICAL_FK", record.path, "物理约束只能填写“是”或“否”", location)
+            )
+        elif mapping.physical_constraint == "是" and mapping.constraint_name in {
+            "",
+            "—",
+            "-",
+        }:
+            issues.append(
+                Issue("KB_DB_PHYSICAL_FK", record.path, "已有物理外键必须记录真实约束名称", location)
+            )
+        elif mapping.physical_constraint == "否" and mapping.constraint_name not in {
+            "—",
+            "-",
+        }:
+            issues.append(
+                Issue("KB_DB_PHYSICAL_FK", record.path, "无物理约束时约束名称应填写破折号", location)
+            )
+        mappings.append(mapping)
+    return mappings, issues
+
+
+def _linked_field_target(
+    root: Path,
+    link: str,
+    index: RelationIndex,
+) -> tuple[str, Path] | None:
+    """解析主字段 Wikilink，并确认文件、块锚点和显示编号指向同一字段。"""
+
+    match = RELATION_LINK.fullmatch(link)
+    if match is None:
+        return None
+    relative = Path(match.group("path"))
+    if relative.is_absolute() or ".." in relative.parts:
+        return None
+    if relative.suffix == "":
+        relative = relative.with_suffix(".md")
+    resolved_root = root.resolve()
+    path = (resolved_root / relative).resolve()
+    try:
+        path.relative_to(resolved_root)
+    except ValueError:
+        return None
+    identifier = match.group("identifier")
+    anchor = match.group("anchor")
+    candidates = index.targets.get(identifier, ())
+    if not any(target.path == path and target.anchor == anchor for target in candidates):
+        return None
+    if not identifier.startswith("FIELD-"):
+        return None
+    return identifier, path
+
+
+def validate_database_relations(
+    root: Path,
+    records: Iterable[DocumentRecord],
+    index: RelationIndex,
+) -> list[Issue]:
+    """验证逻辑外键字段映射、统一父表关系和已有物理外键名称。"""
+
+    record_list = list(records)
+    table_records = [
+        record for record in record_list if record.metadata.get("type") == "database_table"
+    ]
+    table_ids_by_path = {
+        record.path.resolve(): str(record.metadata.get("id")) for record in table_records
+    }
+    issues: list[Issue] = []
+    for record in table_records:
+        table_id = record.metadata.get("id")
+        if not isinstance(table_id, str):
+            continue
+        fields, _ = parse_database_fields(record)
+        child_fields = {field.identifier for field in fields}
+        mappings, mapping_issues = _parse_foreign_key_mappings(record)
+        issues.extend(mapping_issues)
+        parent_edges = {
+            edge.target.identifier
+            for edge in index.outgoing(table_id)
+            if edge.field == "rel_logical_parent"
+        }
+        if parent_edges and _named_section(record.body, "主子表关系") is None:
+            issues.append(
+                Issue("KB_DB_PARENT_MAPPING_REQUIRED", record.path, "逻辑父表关系必须具有字段映射表")
+            )
+        mapped_parent_ids: set[str] = set()
+        for mapping in mappings:
+            if mapping.child_field_id not in child_fields:
+                issues.append(
+                    Issue("KB_DB_CHILD_FIELD", record.path, f"子字段不存在：{mapping.child_field_id}")
+                )
+            linked = _linked_field_target(root, mapping.parent_field_link, index)
+            if linked is None:
+                issues.append(
+                    Issue("KB_DB_PARENT_FIELD", record.path, f"主字段链接无效：{mapping.parent_field_link}")
+                )
+                continue
+            _, parent_path = linked
+            parent_table_id = table_ids_by_path.get(parent_path)
+            if parent_table_id is None:
+                issues.append(
+                    Issue("KB_DB_PARENT_FIELD", record.path, "主字段必须属于已登记的数据表")
+                )
+                continue
+            mapped_parent_ids.add(parent_table_id)
+            if parent_table_id not in parent_edges:
+                issues.append(
+                    Issue("KB_DB_PARENT_RELATION", record.path, f"缺少 rel_logical_parent：{parent_table_id}")
+                )
+        for parent_id in sorted(parent_edges - mapped_parent_ids):
+            issues.append(
+                Issue("KB_DB_PARENT_MAPPING_REQUIRED", record.path, f"父表缺少字段映射：{parent_id}")
+            )
     return issues
