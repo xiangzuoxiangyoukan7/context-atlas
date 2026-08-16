@@ -9,6 +9,16 @@
 - [核心 Schema](./schemas/README.md)
 - [知识库检查器](./scripts/check_knowledge_base.py)
 - [脉络地图 Skill](./skills/context-atlas/SKILL.md)
+- [Marketplace 安装与使用](./docs/marketplace-installation.md)
+
+## Marketplace 安装
+
+Context Atlas 是 Agent Skill/插件，不是 Python 包，不需要 `pip install`。将仓库中的
+`marketplaces/context-atlas` 作为 Marketplace 添加到 Codex 或 Claude Code，再安装
+`context-atlas`；安装完成后请新建会话，让 Agent 载入最新 Skill。目标项目中可使用自然语言
+或 `/context-atlas:context-atlas` 调用。初始化会先展示 Proposal，只有用户确认后才写入正式知识。
+
+完整的 Codex、Claude Code 操作步骤和当前验收状态见[Marketplace 安装与使用](./docs/marketplace-installation.md)。
 
 ## 原则
 

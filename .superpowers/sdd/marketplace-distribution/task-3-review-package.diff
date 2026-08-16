@@ -1,0 +1,333 @@
+diff --git a/scripts/agent_conformance/claude_runner.py b/scripts/agent_conformance/claude_runner.py
+index de07972..1078426 100644
+--- a/scripts/agent_conformance/claude_runner.py
++++ b/scripts/agent_conformance/claude_runner.py
+@@ -5,6 +5,7 @@ from __future__ import annotations
+ import json
+ import shutil
+ import subprocess
++import tempfile
+ from datetime import UTC, datetime
+ from pathlib import Path
+ from typing import Protocol
+@@ -106,16 +107,44 @@ class ClaudeRunner:
+     ) -> None:
+         """保存绝对插件路径、会话策略和可替换系统边界。"""
+ 
+-        self.plugin_root = plugin_root.resolve()
++        resolved_plugin_root = plugin_root.resolve()
++        if (
++            resolved_plugin_root.name == "context-atlas"
++            and resolved_plugin_root.parent.name == "marketplaces"
++        ):
++            resolved_plugin_root = resolved_plugin_root.parent.parent
++        self.plugin_root = resolved_plugin_root
+         self.persist_sessions = persist_sessions
+         self.process_runner = process_runner
+         self.now = now
+         self.executable = executable or resolve_claude_executable()
+ 
++    def _prepare_plugin_release(self, release_root: Path) -> Path:
++        """从 Marketplace 发布边界组装 Claude 的临时插件目录。"""
++
++        marketplace = (
++            self.plugin_root
++            / "marketplaces"
++            / "context-atlas"
++            / ".claude-plugin"
++            / "marketplace.json"
++        )
++        manifest = self.plugin_root / ".claude-plugin" / "plugin.json"
++        skills = self.plugin_root / "skills"
++        if not marketplace.is_file() or not manifest.is_file() or not skills.is_dir():
++            raise RuntimeError("Claude Marketplace 发布边界不完整")
++        claude_plugin = release_root / ".claude-plugin"
++        claude_plugin.mkdir(parents=True)
++        shutil.copy2(marketplace, claude_plugin / "marketplace.json")
++        shutil.copy2(manifest, claude_plugin / "plugin.json")
++        shutil.copytree(skills, release_root / "skills")
++        return release_root
++
+     def _build_command(
+         self,
+         prompt: str,
+         resume_session_id: str | None,
++        plugin_directory: Path,
+     ) -> list[str]:
+         """构造不包含危险权限绕过参数的 Claude 命令。"""
+ 
+@@ -124,7 +153,7 @@ class ClaudeRunner:
+             "--bare",
+             "-p",
+             "--plugin-dir",
+-            str(self.plugin_root),
++            str(plugin_directory),
+             "--permission-mode",
+             "acceptEdits",
+             "--output-format",
+@@ -146,24 +175,26 @@ class ClaudeRunner:
+         """运行一次 Claude 对话并返回解析后的内存结果。"""
+ 
+         started_at = self.now()
+-        command = self._build_command(prompt, resume_session_id)
+-        attempts = 2 if resume_session_id is None else 1
+-        for attempt in range(attempts):
+-            try:
+-                completed = self.process_runner(
+-                    command,
+-                    cwd=workspace,
+-                    capture_output=True,
+-                    text=True,
+-                    encoding="utf-8",
+-                    errors="replace",
+-                    timeout=600,
+-                )
+-                break
+-            except subprocess.TimeoutExpired:
+-                # 未续接轮按契约不得正式写入，可重试一次；确认后的写入轮必须立即上抛。
+-                if attempt + 1 >= attempts:
+-                    raise
++        with tempfile.TemporaryDirectory(prefix="context-atlas-claude-") as directory:
++            plugin_directory = self._prepare_plugin_release(Path(directory))
++            command = self._build_command(prompt, resume_session_id, plugin_directory)
++            attempts = 2 if resume_session_id is None else 1
++            for attempt in range(attempts):
++                try:
++                    completed = self.process_runner(
++                        command,
++                        cwd=workspace,
++                        capture_output=True,
++                        text=True,
++                        encoding="utf-8",
++                        errors="replace",
++                        timeout=600,
++                    )
++                    break
++                except subprocess.TimeoutExpired:
++                    # 未续接轮按契约不得正式写入，可重试一次；确认后的写入轮必须立即上抛。
++                    if attempt + 1 >= attempts:
++                        raise
+         finished_at = self.now()
+         try:
+             session_id, result_text, structured_output = _parse_payload(completed.stdout)
+diff --git a/scripts/agent_conformance/codex_runner.py b/scripts/agent_conformance/codex_runner.py
+index 5dfd494..a2e47ec 100644
+--- a/scripts/agent_conformance/codex_runner.py
++++ b/scripts/agent_conformance/codex_runner.py
+@@ -87,7 +87,13 @@ class CodexRunner:
+     ) -> None:
+         """保存插件源、临时主目录、会话策略和可替换系统边界。"""
+ 
+-        self.plugin_root = plugin_root.resolve()
++        resolved_plugin_root = plugin_root.resolve()
++        if (
++            resolved_plugin_root.name == "context-atlas"
++            and resolved_plugin_root.parent.name == "marketplaces"
++        ):
++            resolved_plugin_root = resolved_plugin_root.parent.parent
++        self.plugin_root = resolved_plugin_root
+         self.codex_home = codex_home.resolve()
+         self.persist_sessions = persist_sessions
+         self.process_runner = process_runner
+@@ -118,8 +124,25 @@ class CodexRunner:
+         if self.auth_source and self.auth_source.is_file():
+             shutil.copy2(self.auth_source, self.codex_home / "auth.json")
+ 
++        release_root = self.plugin_root / "marketplaces" / "context-atlas"
++        source_manifest = release_root / ".agents" / "plugins" / "marketplace.json"
+         marketplace = self.codex_home / "context-atlas-marketplace"
+-        packaged_plugin = marketplace / "plugins" / "context-atlas"
++        if marketplace.exists():
++            shutil.rmtree(marketplace)
++        shutil.copytree(release_root, marketplace)
++        manifest = marketplace / ".agents" / "plugins" / "marketplace.json"
++        try:
++            marketplace_payload = json.loads(manifest.read_text(encoding="utf-8"))
++            entry = marketplace_payload["plugins"][0]
++            source_path = entry["source"]["path"]
++            marketplace_name = marketplace_payload["name"]
++        except (IndexError, KeyError, TypeError, json.JSONDecodeError) as error:
++            raise RuntimeError(f"Codex Marketplace 索引无效：{source_manifest}") from error
++        if not isinstance(source_path, str) or source_path != "./plugins/context-atlas":
++            raise RuntimeError(f"Codex Marketplace 插件来源无效：{source_manifest}")
++        if not isinstance(marketplace_name, str) or not marketplace_name:
++            raise RuntimeError(f"Codex Marketplace 名称无效：{source_manifest}")
++        packaged_plugin = marketplace / source_path.removeprefix("./")
+         packaged_plugin.mkdir(parents=True, exist_ok=True)
+         for relative_path in (Path(".codex-plugin"), Path("skills")):
+             source = self.plugin_root / relative_path
+@@ -128,34 +151,6 @@ class CodexRunner:
+                 shutil.rmtree(destination)
+             shutil.copytree(source, destination)
+ 
+-        manifest = marketplace / ".agents" / "plugins" / "marketplace.json"
+-        manifest.parent.mkdir(parents=True, exist_ok=True)
+-        manifest.write_text(
+-            json.dumps(
+-                {
+-                    "name": "context-atlas-test",
+-                    "interface": {"displayName": "Context Atlas Test"},
+-                    "plugins": [
+-                        {
+-                            "name": "context-atlas",
+-                            "source": {
+-                                "source": "local",
+-                                "path": "./plugins/context-atlas",
+-                            },
+-                            "policy": {
+-                                "installation": "AVAILABLE",
+-                                "authentication": "ON_INSTALL",
+-                            },
+-                            "category": "Productivity",
+-                        }
+-                    ],
+-                },
+-                ensure_ascii=False,
+-                indent=2,
+-            )
+-            + "\n",
+-            encoding="utf-8",
+-        )
+         environment = self._environment()
+         commands = (
+             [
+@@ -170,7 +165,7 @@ class CodexRunner:
+                 self.executable,
+                 "plugin",
+                 "add",
+-                "context-atlas@context-atlas-test",
++                f"context-atlas@{marketplace_name}",
+                 "--json",
+             ],
+         )
+diff --git a/tests/unit/test_claude_runner.py b/tests/unit/test_claude_runner.py
+index 4feb915..e610996 100644
+--- a/tests/unit/test_claude_runner.py
++++ b/tests/unit/test_claude_runner.py
+@@ -43,11 +43,21 @@ class RecordingProcess:
+         self.returncode = returncode
+         self.stderr = stderr
+         self.calls = []
++        self.plugin_release_files: list[set[str]] = []
+ 
+     def __call__(self, command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+         """记录一次调用并返回预设完成结果。"""
+ 
+         self.calls.append((command, kwargs))
++        if "--plugin-dir" in command:
++            plugin_directory = Path(command[command.index("--plugin-dir") + 1])
++            self.plugin_release_files.append(
++                {
++                    path.relative_to(plugin_directory).as_posix()
++                    for path in plugin_directory.rglob("*")
++                    if path.is_file()
++                }
++            )
+         return subprocess.CompletedProcess(
+             args=command,
+             returncode=self.returncode,
+@@ -192,6 +202,15 @@ def _fixed_now() -> datetime:
+ class ClaudeRunnerTests(unittest.TestCase):
+     """验证真实 subprocess 边界之外的全部确定性行为。"""
+ 
++    def test_marketplace_directory_is_accepted_as_plugin_root(self) -> None:
++        """发布目录参数应归一化到仓库根目录。"""
++
++        api = _load_runner_api()
++        runner = api.ClaudeRunner(
++            plugin_root=ROOT / "marketplaces" / "context-atlas",
++        )
++        self.assertEqual(ROOT.resolve(), runner.plugin_root)
++
+     def test_single_turn_uses_safe_non_persistent_command(self) -> None:
+         """单轮命令必须加载当前插件并禁用会话持久化。"""
+ 
+@@ -217,7 +236,6 @@ class ClaudeRunnerTests(unittest.TestCase):
+             "--bare",
+             "-p",
+             "--plugin-dir",
+-            str(ROOT.resolve()),
+             "--permission-mode",
+             "acceptEdits",
+             "--output-format",
+@@ -227,6 +245,14 @@ class ClaudeRunnerTests(unittest.TestCase):
+             self.assertIn(required, command)
+         self.assertNotIn("bypassPermissions", command)
+         self.assertNotIn("--dangerously-skip-permissions", command)
++        plugin_directory = Path(command[command.index("--plugin-dir") + 1])
++        self.assertNotEqual(ROOT.resolve(), plugin_directory)
++        self.assertIn(".claude-plugin/plugin.json", process.plugin_release_files[0])
++        self.assertIn(".claude-plugin/marketplace.json", process.plugin_release_files[0])
++        self.assertIn("skills/context-atlas/SKILL.md", process.plugin_release_files[0])
++        self.assertNotIn("AGENTS.md", process.plugin_release_files[0])
++        self.assertNotIn("CLAUDE.md", process.plugin_release_files[0])
++        self.assertFalse(any(path.startswith("tests/") for path in process.plugin_release_files[0]))
+         self.assertEqual(workspace, kwargs["cwd"])
+         self.assertTrue(kwargs["capture_output"])
+         self.assertTrue(kwargs["text"])
+diff --git a/tests/unit/test_codex_runner.py b/tests/unit/test_codex_runner.py
+index 130c66a..fcf15b2 100644
+--- a/tests/unit/test_codex_runner.py
++++ b/tests/unit/test_codex_runner.py
+@@ -3,6 +3,7 @@
+ from __future__ import annotations
+ 
+ import importlib
++import json
+ import subprocess
+ import tempfile
+ import unittest
+@@ -51,6 +52,17 @@ def _now() -> datetime:
+ class CodexRunnerTests(unittest.TestCase):
+     """验证临时安装、命令安全和结构化输出解析。"""
+ 
++    def test_marketplace_directory_is_accepted_as_plugin_root(self) -> None:
++        """发布目录参数应归一化到仓库根目录。"""
++
++        api = importlib.import_module("scripts.agent_conformance.codex_runner")
++        with tempfile.TemporaryDirectory() as directory:
++            runner = api.CodexRunner(
++                plugin_root=ROOT / "marketplaces" / "context-atlas",
++                codex_home=Path(directory),
++            )
++            self.assertEqual(ROOT.resolve(), runner.plugin_root)
++
+     def test_runner_installs_into_temporary_home_and_executes_safely(self) -> None:
+         """运行器不得修改用户配置，且执行命令不得包含危险绕过参数。"""
+ 
+@@ -75,6 +87,12 @@ class CodexRunnerTests(unittest.TestCase):
+ 
+             turn = runner.run_turn(workspace, "$context-atlas 检查知识库", None)
+             temporary_config = (home / "config.toml").read_text(encoding="utf-8")
++            marketplace = home / "context-atlas-marketplace"
++            installed_manifest = json.loads(
++                (marketplace / ".agents/plugins/marketplace.json").read_text(
++                    encoding="utf-8"
++                )
++            )
+ 
+         commands = [call[0] for call in process.calls]
+         self.assertIn("marketplace", commands[0])
+@@ -94,6 +112,22 @@ class CodexRunnerTests(unittest.TestCase):
+         self.assertEqual(str(home), process.calls[2][1]["env"]["CODEX_HOME"])
+         self.assertEqual(600, process.calls[2][1]["timeout"])
+         self.assertEqual('[windows]\nsandbox = "unelevated"\n', temporary_config)
++        self.assertEqual(
++            json.loads(
++                (ROOT / "marketplaces/context-atlas/.agents/plugins/marketplace.json").read_text(
++                    encoding="utf-8"
++                )
++            ),
++            installed_manifest,
++        )
++        self.assertTrue(
++            (marketplace / "plugins/context-atlas/.codex-plugin/plugin.json").is_file()
++        )
++        self.assertTrue(
++            (marketplace / "plugins/context-atlas/skills/context-atlas/SKILL.md").is_file()
++        )
++        self.assertFalse((marketplace / "plugins/context-atlas/AGENTS.md").exists())
++        self.assertFalse((marketplace / "plugins/context-atlas/tests").exists())
+         self.assertTrue(
+             all(call[1].get("encoding") == "utf-8" for call in process.calls)
+         )

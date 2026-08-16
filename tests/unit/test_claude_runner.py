@@ -43,11 +43,21 @@ class RecordingProcess:
         self.returncode = returncode
         self.stderr = stderr
         self.calls = []
+        self.plugin_release_files: list[set[str]] = []
 
     def __call__(self, command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
         """记录一次调用并返回预设完成结果。"""
 
         self.calls.append((command, kwargs))
+        if "--plugin-dir" in command:
+            plugin_directory = Path(command[command.index("--plugin-dir") + 1])
+            self.plugin_release_files.append(
+                {
+                    path.relative_to(plugin_directory).as_posix()
+                    for path in plugin_directory.rglob("*")
+                    if path.is_file()
+                }
+            )
         return subprocess.CompletedProcess(
             args=command,
             returncode=self.returncode,
@@ -192,6 +202,15 @@ def _fixed_now() -> datetime:
 class ClaudeRunnerTests(unittest.TestCase):
     """验证真实 subprocess 边界之外的全部确定性行为。"""
 
+    def test_marketplace_directory_is_accepted_as_plugin_root(self) -> None:
+        """发布目录参数应归一化到仓库根目录。"""
+
+        api = _load_runner_api()
+        runner = api.ClaudeRunner(
+            plugin_root=ROOT / "marketplaces" / "context-atlas",
+        )
+        self.assertEqual(ROOT.resolve(), runner.plugin_root)
+
     def test_single_turn_uses_safe_non_persistent_command(self) -> None:
         """单轮命令必须加载当前插件并禁用会话持久化。"""
 
@@ -217,7 +236,6 @@ class ClaudeRunnerTests(unittest.TestCase):
             "--bare",
             "-p",
             "--plugin-dir",
-            str(ROOT.resolve()),
             "--permission-mode",
             "acceptEdits",
             "--output-format",
@@ -227,6 +245,14 @@ class ClaudeRunnerTests(unittest.TestCase):
             self.assertIn(required, command)
         self.assertNotIn("bypassPermissions", command)
         self.assertNotIn("--dangerously-skip-permissions", command)
+        plugin_directory = Path(command[command.index("--plugin-dir") + 1])
+        self.assertNotEqual(ROOT.resolve(), plugin_directory)
+        self.assertIn(".claude-plugin/plugin.json", process.plugin_release_files[0])
+        self.assertIn(".claude-plugin/marketplace.json", process.plugin_release_files[0])
+        self.assertIn("skills/context-atlas/SKILL.md", process.plugin_release_files[0])
+        self.assertNotIn("AGENTS.md", process.plugin_release_files[0])
+        self.assertNotIn("CLAUDE.md", process.plugin_release_files[0])
+        self.assertFalse(any(path.startswith("tests/") for path in process.plugin_release_files[0]))
         self.assertEqual(workspace, kwargs["cwd"])
         self.assertTrue(kwargs["capture_output"])
         self.assertTrue(kwargs["text"])

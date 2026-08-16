@@ -87,7 +87,12 @@ class CodexRunner:
     ) -> None:
         """保存插件源、临时主目录、会话策略和可替换系统边界。"""
 
-        self.plugin_root = plugin_root.resolve()
+        resolved_plugin_root = plugin_root.resolve()
+        marketplace_index = resolved_plugin_root / ".agents" / "plugins" / "marketplace.json"
+        candidate_source_root = resolved_plugin_root.parent.parent
+        if marketplace_index.is_file() and (candidate_source_root / ".codex-plugin").is_dir():
+            resolved_plugin_root = candidate_source_root
+        self.plugin_root = resolved_plugin_root
         self.codex_home = codex_home.resolve()
         self.persist_sessions = persist_sessions
         self.process_runner = process_runner
@@ -118,8 +123,25 @@ class CodexRunner:
         if self.auth_source and self.auth_source.is_file():
             shutil.copy2(self.auth_source, self.codex_home / "auth.json")
 
+        release_root = self.plugin_root / "marketplaces" / "context-atlas"
+        source_manifest = release_root / ".agents" / "plugins" / "marketplace.json"
         marketplace = self.codex_home / "context-atlas-marketplace"
-        packaged_plugin = marketplace / "plugins" / "context-atlas"
+        if marketplace.exists():
+            shutil.rmtree(marketplace)
+        shutil.copytree(release_root, marketplace)
+        manifest = marketplace / ".agents" / "plugins" / "marketplace.json"
+        try:
+            marketplace_payload = json.loads(manifest.read_text(encoding="utf-8"))
+            entry = marketplace_payload["plugins"][0]
+            source_path = entry["source"]["path"]
+            marketplace_name = marketplace_payload["name"]
+        except (IndexError, KeyError, TypeError, json.JSONDecodeError) as error:
+            raise RuntimeError(f"Codex Marketplace 索引无效：{source_manifest}") from error
+        if not isinstance(source_path, str) or source_path != "./plugins/context-atlas":
+            raise RuntimeError(f"Codex Marketplace 插件来源无效：{source_manifest}")
+        if not isinstance(marketplace_name, str) or not marketplace_name:
+            raise RuntimeError(f"Codex Marketplace 名称无效：{source_manifest}")
+        packaged_plugin = marketplace / source_path.removeprefix("./")
         packaged_plugin.mkdir(parents=True, exist_ok=True)
         for relative_path in (Path(".codex-plugin"), Path("skills")):
             source = self.plugin_root / relative_path
@@ -128,34 +150,6 @@ class CodexRunner:
                 shutil.rmtree(destination)
             shutil.copytree(source, destination)
 
-        manifest = marketplace / ".agents" / "plugins" / "marketplace.json"
-        manifest.parent.mkdir(parents=True, exist_ok=True)
-        manifest.write_text(
-            json.dumps(
-                {
-                    "name": "context-atlas-test",
-                    "interface": {"displayName": "Context Atlas Test"},
-                    "plugins": [
-                        {
-                            "name": "context-atlas",
-                            "source": {
-                                "source": "local",
-                                "path": "./plugins/context-atlas",
-                            },
-                            "policy": {
-                                "installation": "AVAILABLE",
-                                "authentication": "ON_INSTALL",
-                            },
-                            "category": "Productivity",
-                        }
-                    ],
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
         environment = self._environment()
         commands = (
             [
@@ -170,7 +164,7 @@ class CodexRunner:
                 self.executable,
                 "plugin",
                 "add",
-                "context-atlas@context-atlas-test",
+                f"context-atlas@{marketplace_name}",
                 "--json",
             ],
         )

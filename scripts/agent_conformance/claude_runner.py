@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Protocol
@@ -106,16 +107,43 @@ class ClaudeRunner:
     ) -> None:
         """保存绝对插件路径、会话策略和可替换系统边界。"""
 
-        self.plugin_root = plugin_root.resolve()
+        resolved_plugin_root = plugin_root.resolve()
+        marketplace_index = resolved_plugin_root / ".claude-plugin" / "marketplace.json"
+        candidate_source_root = resolved_plugin_root.parent.parent
+        if marketplace_index.is_file() and (candidate_source_root / "skills").is_dir():
+            resolved_plugin_root = candidate_source_root
+        self.plugin_root = resolved_plugin_root
         self.persist_sessions = persist_sessions
         self.process_runner = process_runner
         self.now = now
         self.executable = executable or resolve_claude_executable()
 
+    def _prepare_plugin_release(self, release_root: Path) -> Path:
+        """从 Marketplace 发布边界组装 Claude 的临时插件目录。"""
+
+        marketplace = (
+            self.plugin_root
+            / "marketplaces"
+            / "context-atlas"
+            / ".claude-plugin"
+            / "marketplace.json"
+        )
+        manifest = self.plugin_root / ".claude-plugin" / "plugin.json"
+        skills = self.plugin_root / "skills"
+        if not marketplace.is_file() or not manifest.is_file() or not skills.is_dir():
+            raise RuntimeError("Claude Marketplace 发布边界不完整")
+        claude_plugin = release_root / ".claude-plugin"
+        claude_plugin.mkdir(parents=True)
+        shutil.copy2(marketplace, claude_plugin / "marketplace.json")
+        shutil.copy2(manifest, claude_plugin / "plugin.json")
+        shutil.copytree(skills, release_root / "skills")
+        return release_root
+
     def _build_command(
         self,
         prompt: str,
         resume_session_id: str | None,
+        plugin_directory: Path,
     ) -> list[str]:
         """构造不包含危险权限绕过参数的 Claude 命令。"""
 
@@ -124,7 +152,7 @@ class ClaudeRunner:
             "--bare",
             "-p",
             "--plugin-dir",
-            str(self.plugin_root),
+            str(plugin_directory),
             "--permission-mode",
             "acceptEdits",
             "--output-format",
@@ -146,24 +174,26 @@ class ClaudeRunner:
         """运行一次 Claude 对话并返回解析后的内存结果。"""
 
         started_at = self.now()
-        command = self._build_command(prompt, resume_session_id)
-        attempts = 2 if resume_session_id is None else 1
-        for attempt in range(attempts):
-            try:
-                completed = self.process_runner(
-                    command,
-                    cwd=workspace,
-                    capture_output=True,
-                    text=True,
-                    encoding="utf-8",
-                    errors="replace",
-                    timeout=600,
-                )
-                break
-            except subprocess.TimeoutExpired:
-                # 未续接轮按契约不得正式写入，可重试一次；确认后的写入轮必须立即上抛。
-                if attempt + 1 >= attempts:
-                    raise
+        with tempfile.TemporaryDirectory(prefix="context-atlas-claude-") as directory:
+            plugin_directory = self._prepare_plugin_release(Path(directory))
+            command = self._build_command(prompt, resume_session_id, plugin_directory)
+            attempts = 2 if resume_session_id is None else 1
+            for attempt in range(attempts):
+                try:
+                    completed = self.process_runner(
+                        command,
+                        cwd=workspace,
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        errors="replace",
+                        timeout=600,
+                    )
+                    break
+                except subprocess.TimeoutExpired:
+                    # 未续接轮按契约不得正式写入，可重试一次；确认后的写入轮必须立即上抛。
+                    if attempt + 1 >= attempts:
+                        raise
         finished_at = self.now()
         try:
             session_id, result_text, structured_output = _parse_payload(completed.stdout)

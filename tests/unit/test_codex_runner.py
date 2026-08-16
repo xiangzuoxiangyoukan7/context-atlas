@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import json
 import subprocess
 import tempfile
 import unittest
@@ -51,6 +52,17 @@ def _now() -> datetime:
 class CodexRunnerTests(unittest.TestCase):
     """验证临时安装、命令安全和结构化输出解析。"""
 
+    def test_marketplace_directory_is_accepted_as_plugin_root(self) -> None:
+        """发布目录参数应归一化到仓库根目录。"""
+
+        api = importlib.import_module("scripts.agent_conformance.codex_runner")
+        with tempfile.TemporaryDirectory() as directory:
+            runner = api.CodexRunner(
+                plugin_root=ROOT / "marketplaces" / "context-atlas",
+                codex_home=Path(directory),
+            )
+            self.assertEqual(ROOT.resolve(), runner.plugin_root)
+
     def test_runner_installs_into_temporary_home_and_executes_safely(self) -> None:
         """运行器不得修改用户配置，且执行命令不得包含危险绕过参数。"""
 
@@ -75,6 +87,20 @@ class CodexRunnerTests(unittest.TestCase):
 
             turn = runner.run_turn(workspace, "$context-atlas 检查知识库", None)
             temporary_config = (home / "config.toml").read_text(encoding="utf-8")
+            marketplace = home / "context-atlas-marketplace"
+            installed_manifest = json.loads(
+                (marketplace / ".agents/plugins/marketplace.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertTrue(
+                (marketplace / "plugins/context-atlas/.codex-plugin/plugin.json").is_file()
+            )
+            self.assertTrue(
+                (marketplace / "plugins/context-atlas/skills/context-atlas/SKILL.md").is_file()
+            )
+            self.assertFalse((marketplace / "plugins/context-atlas/AGENTS.md").exists())
+            self.assertFalse((marketplace / "plugins/context-atlas/tests").exists())
 
         commands = [call[0] for call in process.calls]
         self.assertIn("marketplace", commands[0])
@@ -94,6 +120,14 @@ class CodexRunnerTests(unittest.TestCase):
         self.assertEqual(str(home), process.calls[2][1]["env"]["CODEX_HOME"])
         self.assertEqual(600, process.calls[2][1]["timeout"])
         self.assertEqual('[windows]\nsandbox = "unelevated"\n', temporary_config)
+        self.assertEqual(
+            json.loads(
+                (ROOT / "marketplaces/context-atlas/.agents/plugins/marketplace.json").read_text(
+                    encoding="utf-8"
+                )
+            ),
+            installed_manifest,
+        )
         self.assertTrue(
             all(call[1].get("encoding") == "utf-8" for call in process.calls)
         )

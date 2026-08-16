@@ -22,14 +22,20 @@ CLAUDE_FIELDS = frozenset(
     }
 )
 COMMON_FIELDS = ("name", "version", "description")
+MARKETPLACE_ROOT = Path("marketplaces") / "context-atlas"
+CODEX_MARKETPLACE = MARKETPLACE_ROOT / ".agents" / "plugins" / "marketplace.json"
+CLAUDE_MARKETPLACE = MARKETPLACE_ROOT / ".claude-plugin" / "marketplace.json"
 
 
 def _load_object(path: Path) -> dict[str, object]:
     """读取并确认插件清单根节点是 JSON 对象。"""
 
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise ValueError(f"JSON 无法解析：{path}: {error.msg}") from error
     if not isinstance(payload, dict):
-        raise ValueError(f"插件清单必须是 JSON 对象：{path}")
+        raise ValueError(f"JSON 根节点必须是对象：{path}")
     return payload
 
 
@@ -40,6 +46,76 @@ def load_plugin_manifests(root: Path) -> tuple[dict[str, object], dict[str, obje
     claude = _load_object(root / ".claude-plugin" / "plugin.json")
     codex = _load_object(root / ".codex-plugin" / "plugin.json")
     return claude, codex
+
+
+def load_marketplace_manifests(root: Path) -> tuple[dict[str, object], dict[str, object]]:
+    """读取 Codex 与 Claude Marketplace 索引。"""
+
+    root = root.resolve()
+    codex = _load_object(root / CODEX_MARKETPLACE)
+    claude = _load_object(root / CLAUDE_MARKETPLACE)
+    return codex, claude
+
+
+def _validate_marketplace(label: str, marketplace: dict[str, object], plugin: dict[str, object]) -> list[str]:
+    errors: list[str] = []
+    required_fields = {"name", "interface", "plugins"}
+    required_entry_fields = {"name", "source", "policy", "category"}
+    for field in ("name", "interface", "plugins"):
+        if field not in marketplace:
+            errors.append(f"{label} Marketplace 缺少字段：{field}")
+    unexpected_fields = sorted(set(marketplace) - required_fields)
+    if unexpected_fields:
+        errors.append(f"{label} Marketplace 含非标准字段：{unexpected_fields}")
+    if not isinstance(marketplace.get("name"), str) or not marketplace.get("name"):
+        errors.append(f"{label} Marketplace 的 name 必须是非空字符串")
+    if not isinstance(marketplace.get("interface"), dict):
+        errors.append(f"{label} Marketplace 的 interface 必须是对象")
+    elif not marketplace["interface"].get("displayName"):
+        errors.append(f"{label} Marketplace 的 interface.displayName 必须是非空字符串")
+    plugins = marketplace.get("plugins")
+    if not isinstance(plugins, list):
+        errors.append(f"{label} Marketplace 的 plugins 必须是数组")
+        return errors
+    if not plugins:
+        errors.append(f"{label} Marketplace 的 plugins 不能为空")
+        return errors
+    entry = plugins[0]
+    if not isinstance(entry, dict):
+        errors.append(f"{label} Marketplace 的第一条插件必须是对象")
+        return errors
+    for field in ("name", "source", "policy", "category"):
+        if field not in entry:
+            errors.append(f"{label} Marketplace 插件条目缺少字段：{field}")
+    unexpected_entry_fields = sorted(set(entry) - required_entry_fields)
+    if unexpected_entry_fields:
+        errors.append(f"{label} Marketplace 插件条目含非标准字段：{unexpected_entry_fields}")
+    if entry.get("name") != "context-atlas":
+        errors.append(f"{label} Marketplace 第一条插件名称必须是 context-atlas")
+    if entry.get("name") != plugin.get("name"):
+        errors.append(f"{label} Marketplace 插件 name 必须与插件清单一致")
+    source = entry.get("source")
+    if not isinstance(source, dict):
+        errors.append(f"{label} Marketplace 插件 source 必须是对象")
+    else:
+        if source.get("source") != "local":
+            errors.append(f"{label} Marketplace 插件 source.source 必须是 local")
+        if source.get("path") != "./plugins/context-atlas":
+            errors.append(f"{label} Marketplace 插件来源必须是 ./plugins/context-atlas")
+    policy = entry.get("policy")
+    if not isinstance(policy, dict):
+        errors.append(f"{label} Marketplace 插件 policy 必须是对象")
+    else:
+        for field in ("installation", "authentication"):
+            if field not in policy:
+                errors.append(f"{label} Marketplace 插件 policy 缺少字段：{field}")
+        if policy.get("installation") not in {"NOT_AVAILABLE", "AVAILABLE", "INSTALLED_BY_DEFAULT"}:
+            errors.append(f"{label} Marketplace installation 策略值无效")
+        if policy.get("authentication") not in {"ON_INSTALL", "ON_USE"}:
+            errors.append(f"{label} Marketplace authentication 策略值无效")
+    if entry.get("category") != "Productivity":
+        errors.append(f"{label} Marketplace 插件 category 必须是 Productivity")
+    return errors
 
 
 def _safe_skill_path(value: object) -> bool:
@@ -55,6 +131,24 @@ def _author_name(manifest: dict[str, object]) -> object:
     return author.get("name") if isinstance(author, dict) else None
 
 
+def _validate_release_boundary(root: Path) -> list[str]:
+    """拒绝仅允许出现在开发工作区中的发布包内容。"""
+
+    if (root / ".git").exists():
+        return []
+    errors: list[str] = []
+    for filename in ("AGENTS.md", "CLAUDE.md"):
+        if (root / filename).exists():
+            errors.append(f"发布包不得包含开发入口：{filename}")
+    tests = root / "tests"
+    if tests.exists():
+        errors.append("发布包不得包含测试夹具：tests/fixtures")
+    worktrees = root / ".worktrees"
+    if worktrees.exists():
+        errors.append("发布包不得包含开发工作区：.worktrees")
+    return errors
+
+
 def validate_plugin_contract(root: Path) -> list[str]:
     """返回双平台身份、字段和 Skill 唯一性错误。"""
 
@@ -64,6 +158,16 @@ def validate_plugin_contract(root: Path) -> list[str]:
         claude, codex = load_plugin_manifests(root)
     except (FileNotFoundError, json.JSONDecodeError, UnicodeDecodeError, ValueError) as error:
         return [str(error)]
+
+    try:
+        codex_marketplace, claude_marketplace = load_marketplace_manifests(root)
+    except (FileNotFoundError, json.JSONDecodeError, UnicodeDecodeError, ValueError) as error:
+        return [str(error)]
+
+    errors: list[str] = []
+    errors.extend(_validate_marketplace("Codex", codex_marketplace, codex))
+    errors.extend(_validate_marketplace("Claude", claude_marketplace, claude))
+    errors.extend(_validate_release_boundary(root))
 
     if claude.get("name") != "context-atlas":
         errors.append("Claude 插件名称必须是 context-atlas")
@@ -102,7 +206,7 @@ def validate_plugin_contract(root: Path) -> list[str]:
     canonical_skill = root / "skills" / "context-atlas" / "SKILL.md"
     named_skills: list[Path] = []
     for path in root.rglob("SKILL.md"):
-        if ".worktrees" in path.relative_to(root).parts:
+        if (root / ".git").exists() and ".worktrees" in path.relative_to(root).parts:
             continue
         try:
             if "name: context-atlas" in path.read_text(encoding="utf-8"):
