@@ -25,6 +25,25 @@ Codex Marketplace 位于 `.agents/plugins/marketplace.json`，Claude Code Market
 
 完整的 Codex、Claude Code 操作步骤和当前验收状态见[Marketplace 安装与使用](./docs/marketplace-installation.md)。
 
+### 项目级卸载
+
+Codex 必须在当初安装插件的目标项目中执行，并保持相同的项目级 `CODEX_HOME`：
+
+```powershell
+$env:CODEX_HOME = (Join-Path $PWD ".codex")
+codex plugin remove context-atlas@context-atlas
+codex plugin marketplace remove context-atlas
+```
+
+Claude Code 从项目作用域卸载开发仓库中的插件和 Marketplace：
+
+```powershell
+claude plugin uninstall --scope project context-atlas@context-atlas-dev
+claude plugin marketplace remove --scope project context-atlas-dev
+```
+
+不要直接删除目标项目的整个 `.codex/` 或 `.claude/` 目录，其中可能还有该项目的其他配置和插件。
+
 Plugin 发布包由根目录源码构建，不直接发布开发仓库。构建命令为：
 
 ```powershell
