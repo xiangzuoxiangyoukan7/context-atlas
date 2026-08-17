@@ -13,8 +13,16 @@ Operate a tool-neutral project knowledge base on the user's behalf. Treat reposi
 
 ## Choose the operation
 
-面向用户的正式入口是显式命令：`/context-atlas:init` 和 `/context-atlas:update`。自然语言只能用于补充
-需求和确认内容；Skill 不得把自然语言本身当作写入命令，也不得要求用户手填底层 revision 或文件参数。
+正式写入只接受以下平台命令：
+
+| Platform | Initialize | Update |
+| --- | --- | --- |
+| Codex | `$context-atlas init` | `$context-atlas update` |
+| Claude Code | `/context-atlas:init` | `/context-atlas:update` |
+
+将 `init` 和 `update` 视为固定操作符，而不是自然语言。没有固定操作符的自然语言只能用于检查、补充需求和
+确认内容，不得触发正式写入。不得要求用户手填底层 revision、文件或 content 参数；Skill 在确认后调用内置
+结构化执行器。未知操作符必须停止并列出上述有效命令，不得猜测或降级为写入操作。
 
 | Request | Required references |
 | --- | --- |

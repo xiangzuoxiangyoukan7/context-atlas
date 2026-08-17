@@ -530,7 +530,7 @@ class ClaudeRunnerTests(unittest.TestCase):
 
         self.assertTrue(
             orchestration.EXPLICIT_INITIALIZE_PROMPT.startswith(
-                "/context-atlas:context-atlas"
+                "/context-atlas:init"
             )
         )
 

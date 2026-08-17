@@ -18,6 +18,11 @@ Codex Marketplace 位于 `.agents/plugins/marketplace.json`，Claude Code Market
 `.claude-plugin/marketplace.json`。安装 `context-atlas` 后请新建会话，让 Agent 载入最新 Skill。正式写入必须通过
 `init` 或 `update` 命令完成；Skill 只能生成 Proposal 并调用命令，不能直接写入知识库。
 
+插件只支持安装到目标项目：Claude Code 必须使用 `--scope project`；Codex 当前没有原生 scope 参数，
+必须把 `CODEX_HOME` 指向目标项目的 `.codex/`，并在同一环境下安装和启动 Codex。不要省略项目隔离参数。
+安装后，Codex 使用 `$context-atlas init|update`，Claude Code 使用
+`/context-atlas:init|update`；没有固定操作符的自然语言不得触发知识库写入。
+
 完整的 Codex、Claude Code 操作步骤和当前验收状态见[Marketplace 安装与使用](./docs/marketplace-installation.md)。
 
 Plugin 发布包由根目录源码构建，不直接发布开发仓库。构建命令为：

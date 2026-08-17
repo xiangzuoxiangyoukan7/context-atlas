@@ -29,10 +29,14 @@ def resolve_codex_executable() -> str:
 def _adapt_prompt(prompt: str) -> str:
     """将 Claude 显式技能命令转换为 Codex 的技能调用语法。"""
 
-    prefix = "/context-atlas:context-atlas\n"
-    if prompt.startswith(prefix):
-        return "$context-atlas\n" + prompt[len(prefix) :]
-    return prompt.replace("/context-atlas:context-atlas", "$context-atlas")
+    mappings = {
+        "/context-atlas:init": "$context-atlas init",
+        "/context-atlas:update": "$context-atlas update",
+    }
+    adapted = prompt
+    for claude_command, codex_command in mappings.items():
+        adapted = adapted.replace(claude_command, codex_command)
+    return adapted
 
 
 def _parse_json_lines(stdout: str) -> tuple[str | None, str, object]:
@@ -217,7 +221,7 @@ class CodexRunner:
             initial_prompt, proposal_revision = previous_context
             # Codex 0.147.0 原生 resume 会恢复为只读沙箱；内存重放保持工作流语义与写权限。
             adapted_prompt = (
-                "$context-atlas\n"
+                "$context-atlas init\n"
                 "继续同一知识治理流程。首轮用户请求如下：\n"
                 f"{initial_prompt}\n\n"
                 "首轮已完成只读检查、展示 Proposal，且没有正式写入。\n"

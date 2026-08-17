@@ -123,6 +123,8 @@ def _validate_marketplace(label: str, marketplace: dict[str, object], plugin: di
             errors.append(f"{label} Marketplace 插件 category 必须是 Productivity")
     elif source != "./":
         errors.append(f"{label} Marketplace 插件来源必须是 ./")
+    if platform == "claude" and entry.get("version") != plugin.get("version"):
+        errors.append(f"{label} Marketplace 插件 version 必须与插件清单一致")
     return errors
 
 
@@ -214,7 +216,7 @@ def validate_plugin_contract(root: Path) -> list[str]:
     canonical_skill = root / "skills" / "context-atlas" / "SKILL.md"
     named_skills: list[Path] = []
     for path in root.rglob("SKILL.md"):
-        if (root / ".git").exists() and ({".worktrees", "build"} & set(path.relative_to(root).parts)):
+        if (root / ".git").exists() and ({".worktrees", ".codex", "build"} & set(path.relative_to(root).parts)):
             continue
         try:
             if "name: context-atlas" in path.read_text(encoding="utf-8"):

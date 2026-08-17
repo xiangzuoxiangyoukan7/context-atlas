@@ -163,7 +163,7 @@ class PluginContractTests(unittest.TestCase):
         skill_files = sorted(
             path
             for path in ROOT.rglob("SKILL.md")
-            if not {".worktrees", "build"}.intersection(path.relative_to(ROOT).parts)
+            if not {".worktrees", ".codex", "build"}.intersection(path.relative_to(ROOT).parts)
         )
         named = [
             path
@@ -194,15 +194,23 @@ class PluginContractTests(unittest.TestCase):
             "不是 Python 包",
             "不需要 `pip install`",
             ".agents/plugins/marketplace.json",
-            "/plugins",
             "context-atlas",
             "新建会话",
-            "/context-atlas:context-atlas",
+            "$context-atlas init",
+            "$context-atlas update",
+            "/context-atlas:init",
+            "/context-atlas:update",
             "Proposal",
             "用户确认",
             "partial",
             "实际克隆路径",
-            "发布仓库或构建产物",
+            "发布仓库对应的 URL",
+            "只支持项目级安装",
+            "$env:CODEX_HOME",
+            'Join-Path $PWD ".codex"',
+            "claude plugin marketplace add --scope project",
+            "claude plugin install --scope project",
+            "默认 scope 是 `user`",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, combined)

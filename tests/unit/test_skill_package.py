@@ -73,6 +73,16 @@ class SkillPackageTests(unittest.TestCase):
         for phrase in required:
             self.assertIn(phrase, content)
 
+        for command in (
+            "$context-atlas init",
+            "$context-atlas update",
+            "/context-atlas:init",
+            "/context-atlas:update",
+            "固定操作符",
+            "不得触发正式写入",
+        ):
+            self.assertIn(command, content)
+
     def test_relation_and_impact_reference_explains_human_decision_boundary(self) -> None:
         """Skill 必须解释统一链接、三级结果和人工确认边界。"""
 
@@ -206,7 +216,7 @@ class SkillPackageTests(unittest.TestCase):
         )
 
         self.assertIn('display_name: "脉络地图"', metadata)
-        self.assertIn("$context-atlas", metadata)
+        self.assertIn("$context-atlas init", metadata)
         self.assertFalse(Path("skills/project-knowledge-context").exists())
         self.assertFalse(Path("profiles").exists())
         self.assertFalse(any(path.startswith("profiles/") for path in manifest["files"]))
