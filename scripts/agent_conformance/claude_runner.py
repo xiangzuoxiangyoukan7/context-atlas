@@ -121,13 +121,7 @@ class ClaudeRunner:
     def _prepare_plugin_release(self, release_root: Path) -> Path:
         """从 Marketplace 发布边界组装 Claude 的临时插件目录。"""
 
-        marketplace = (
-            self.plugin_root
-            / "marketplaces"
-            / "context-atlas"
-            / ".claude-plugin"
-            / "marketplace.json"
-        )
+        marketplace = self.plugin_root / ".claude-plugin" / "marketplace.json"
         manifest = self.plugin_root / ".claude-plugin" / "plugin.json"
         skills = self.plugin_root / "skills"
         if not marketplace.is_file() or not manifest.is_file() or not skills.is_dir():

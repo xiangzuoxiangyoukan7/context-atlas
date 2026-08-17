@@ -4,4 +4,7 @@ __pycache__/
 .pytest_cache/
 .worktrees/
 .agent-conformance-runs/
+build/
+.context-atlas-claude-*/
+.context-atlas-codex-*/
 

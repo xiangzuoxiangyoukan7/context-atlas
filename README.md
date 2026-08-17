@@ -13,12 +13,19 @@
 
 ## Marketplace 安装
 
-Context Atlas 是 Agent Skill/插件，不是 Python 包，不需要 `pip install`。将仓库中的
-`marketplaces/context-atlas` 作为 Marketplace 添加到 Codex 或 Claude Code，再安装
-`context-atlas`；安装完成后请新建会话，让 Agent 载入最新 Skill。目标项目中可使用自然语言
-或 `/context-atlas:context-atlas` 调用。初始化会先展示 Proposal，只有用户确认后才写入正式知识。
+Context Atlas 是 Agent Skill/插件，不是 Python 包，不需要 `pip install`。仓库根目录就是唯一插件源码，
+Codex Marketplace 位于 `.agents/plugins/marketplace.json`，Claude Code Marketplace 位于
+`.claude-plugin/marketplace.json`。安装 `context-atlas` 后请新建会话，让 Agent 载入最新 Skill。正式写入必须通过
+`init` 或 `update` 命令完成；Skill 只能生成 Proposal 并调用命令，不能直接写入知识库。
 
 完整的 Codex、Claude Code 操作步骤和当前验收状态见[Marketplace 安装与使用](./docs/marketplace-installation.md)。
+
+Plugin 发布包由根目录源码构建，不直接发布开发仓库。构建命令为：
+
+```powershell
+py scripts/build_plugin.py claude --output build/claude/context-atlas
+py scripts/build_plugin.py codex --output build/codex/context-atlas.zip --archive
+```
 
 ## 原则
 

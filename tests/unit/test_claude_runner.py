@@ -202,12 +202,12 @@ def _fixed_now() -> datetime:
 class ClaudeRunnerTests(unittest.TestCase):
     """验证真实 subprocess 边界之外的全部确定性行为。"""
 
-    def test_marketplace_directory_is_accepted_as_plugin_root(self) -> None:
-        """发布目录参数应归一化到仓库根目录。"""
+    def test_repository_root_is_accepted_as_plugin_root(self) -> None:
+        """仓库根目录就是插件源码根。"""
 
         api = _load_runner_api()
         runner = api.ClaudeRunner(
-            plugin_root=ROOT / "marketplaces" / "context-atlas",
+            plugin_root=ROOT,
         )
         self.assertEqual(ROOT.resolve(), runner.plugin_root)
 

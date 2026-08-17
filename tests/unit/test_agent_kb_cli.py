@@ -43,6 +43,51 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
         self.assertEqual("compatible", payload["status"])
         self.assertFalse(payload["write_blocked"])
 
+    def test_init_is_an_explicit_alias_for_initialize(self) -> None:
+        """init 命令应执行正式初始化并返回结构化报告。"""
+
+        exit_code, payload = self._run(
+            "init",
+            str(self.root),
+            "--proposal-revision",
+            "proposal-init-1",
+            "--confirmed-revision",
+            "proposal-init-1",
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("initialized", payload["operation"])
+        self.assertTrue((self.root / f"doc-{self.root.name}").exists())
+
+    def test_update_applies_confirmed_file_changes_and_validates(self) -> None:
+        """update 命令应只在同一修订号确认后应用文件变更。"""
+
+        from scripts.project_kb.initializer import initialize_from_assets
+
+        target = initialize_from_assets(
+            self.root,
+            assets_root=ROOT / "skills/context-atlas/assets",
+        )
+        content_file = self.root / "replacement.md"
+        content_file.write_text("# 已确认更新\n", encoding="utf-8")
+
+        exit_code, payload = self._run(
+            "update",
+            str(target),
+            "--proposal-revision",
+            "proposal-update-1",
+            "--confirmed-revision",
+            "proposal-update-1",
+            "--file",
+            "README.md",
+            "--content-file",
+            str(content_file),
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("updated", payload["operation"])
+        self.assertEqual("# 已确认更新\n", (target / "README.md").read_text(encoding="utf-8"))
+
     def test_capture_creates_proposed_knowledge_only(self) -> None:
         """捕获命令应写入待确认队列并返回提案路径。"""
 

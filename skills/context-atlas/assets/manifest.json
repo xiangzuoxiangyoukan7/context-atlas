@@ -58,6 +58,7 @@
     "scripts/project_kb/security.py",
     "scripts/project_kb/template_contract.py",
     "scripts/project_kb/traceability.py",
+    "scripts/project_kb/updater.py",
     "scripts/project_kb/validator.py",
     "templates/core/README.md",
     "templates/core/doc-project/.project-kb/README.md",

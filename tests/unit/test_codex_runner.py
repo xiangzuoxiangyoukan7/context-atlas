@@ -52,13 +52,13 @@ def _now() -> datetime:
 class CodexRunnerTests(unittest.TestCase):
     """验证临时安装、命令安全和结构化输出解析。"""
 
-    def test_marketplace_directory_is_accepted_as_plugin_root(self) -> None:
-        """发布目录参数应归一化到仓库根目录。"""
+    def test_repository_root_is_accepted_as_plugin_root(self) -> None:
+        """仓库根目录就是插件源码根。"""
 
         api = importlib.import_module("scripts.agent_conformance.codex_runner")
         with tempfile.TemporaryDirectory() as directory:
             runner = api.CodexRunner(
-                plugin_root=ROOT / "marketplaces" / "context-atlas",
+                plugin_root=ROOT,
                 codex_home=Path(directory),
             )
             self.assertEqual(ROOT.resolve(), runner.plugin_root)
@@ -94,13 +94,13 @@ class CodexRunnerTests(unittest.TestCase):
                 )
             )
             self.assertTrue(
-                (marketplace / "plugins/context-atlas/.codex-plugin/plugin.json").is_file()
+                (marketplace / ".codex-plugin/plugin.json").is_file()
             )
             self.assertTrue(
-                (marketplace / "plugins/context-atlas/skills/context-atlas/SKILL.md").is_file()
+                (marketplace / "skills/context-atlas/SKILL.md").is_file()
             )
-            self.assertFalse((marketplace / "plugins/context-atlas/AGENTS.md").exists())
-            self.assertFalse((marketplace / "plugins/context-atlas/tests").exists())
+            self.assertFalse((marketplace / "AGENTS.md").exists())
+            self.assertFalse((marketplace / "tests").exists())
 
         commands = [call[0] for call in process.calls]
         self.assertIn("marketplace", commands[0])
@@ -122,7 +122,7 @@ class CodexRunnerTests(unittest.TestCase):
         self.assertEqual('[windows]\nsandbox = "unelevated"\n', temporary_config)
         self.assertEqual(
             json.loads(
-                (ROOT / "marketplaces/context-atlas/.agents/plugins/marketplace.json").read_text(
+                (ROOT / ".agents/plugins/marketplace.json").read_text(
                     encoding="utf-8"
                 )
             ),

@@ -12,7 +12,7 @@ from typing import Iterable, Sequence
 
 
 EXCLUDED_PARTS = frozenset(
-    {".git", ".worktrees", "__pycache__", ".test-probe", ".test-run", ".test-tmp"}
+    {".git", ".worktrees", "build", "__pycache__", ".test-probe", ".test-run", ".test-tmp"}
 )
 
 

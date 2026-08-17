@@ -123,32 +123,40 @@ class CodexRunner:
         if self.auth_source and self.auth_source.is_file():
             shutil.copy2(self.auth_source, self.codex_home / "auth.json")
 
-        release_root = self.plugin_root / "marketplaces" / "context-atlas"
-        source_manifest = release_root / ".agents" / "plugins" / "marketplace.json"
+        release_root = self.plugin_root
         marketplace = self.codex_home / "context-atlas-marketplace"
         if marketplace.exists():
             shutil.rmtree(marketplace)
-        shutil.copytree(release_root, marketplace)
-        manifest = marketplace / ".agents" / "plugins" / "marketplace.json"
-        try:
-            marketplace_payload = json.loads(manifest.read_text(encoding="utf-8"))
-            entry = marketplace_payload["plugins"][0]
-            source_path = entry["source"]["path"]
-            marketplace_name = marketplace_payload["name"]
-        except (IndexError, KeyError, TypeError, json.JSONDecodeError) as error:
-            raise RuntimeError(f"Codex Marketplace 索引无效：{source_manifest}") from error
-        if not isinstance(source_path, str) or source_path != "./plugins/context-atlas":
-            raise RuntimeError(f"Codex Marketplace 插件来源无效：{source_manifest}")
-        if not isinstance(marketplace_name, str) or not marketplace_name:
-            raise RuntimeError(f"Codex Marketplace 名称无效：{source_manifest}")
-        packaged_plugin = marketplace / source_path.removeprefix("./")
-        packaged_plugin.mkdir(parents=True, exist_ok=True)
+        marketplace.mkdir(parents=True, exist_ok=True)
+        packaged_plugin = marketplace
+        marketplace_name = "context-atlas-dev"
         for relative_path in (Path(".codex-plugin"), Path("skills")):
             source = self.plugin_root / relative_path
             destination = packaged_plugin / relative_path
             if destination.exists():
                 shutil.rmtree(destination)
             shutil.copytree(source, destination)
+        marketplace_manifest = marketplace / ".agents" / "plugins" / "marketplace.json"
+        marketplace_manifest.parent.mkdir(parents=True, exist_ok=True)
+        marketplace_manifest.write_text(
+            json.dumps(
+                {
+                    "name": marketplace_name,
+                    "interface": {"displayName": "Context Atlas Dev"},
+                    "plugins": [
+                        {
+                            "name": "context-atlas",
+                            "source": {"source": "url", "url": "./"},
+                            "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+                            "category": "Productivity",
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
 
         environment = self._environment()
         commands = (

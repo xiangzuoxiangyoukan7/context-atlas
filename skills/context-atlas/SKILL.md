@@ -13,6 +13,9 @@ Operate a tool-neutral project knowledge base on the user's behalf. Treat reposi
 
 ## Choose the operation
 
+面向用户的正式入口是显式命令：`/context-atlas:init` 和 `/context-atlas:update`。自然语言只能用于补充
+需求和确认内容；Skill 不得把自然语言本身当作写入命令，也不得要求用户手填底层 revision 或文件参数。
+
 | Request | Required references |
 | --- | --- |
 | Any operation that can write formal knowledge | Read [执行状态机](references/执行状态机.md) first. |

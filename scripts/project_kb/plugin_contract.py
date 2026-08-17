@@ -22,9 +22,8 @@ CLAUDE_FIELDS = frozenset(
     }
 )
 COMMON_FIELDS = ("name", "version", "description")
-MARKETPLACE_ROOT = Path("marketplaces") / "context-atlas"
-CODEX_MARKETPLACE = MARKETPLACE_ROOT / ".agents" / "plugins" / "marketplace.json"
-CLAUDE_MARKETPLACE = MARKETPLACE_ROOT / ".claude-plugin" / "marketplace.json"
+CODEX_MARKETPLACE = Path(".agents") / "plugins" / "marketplace.json"
+CLAUDE_MARKETPLACE = Path(".claude-plugin") / "marketplace.json"
 
 
 def _load_object(path: Path) -> dict[str, object]:
@@ -57,11 +56,21 @@ def load_marketplace_manifests(root: Path) -> tuple[dict[str, object], dict[str,
     return codex, claude
 
 
-def _validate_marketplace(label: str, marketplace: dict[str, object], plugin: dict[str, object]) -> list[str]:
+def _validate_marketplace(label: str, marketplace: dict[str, object], plugin: dict[str, object], platform: str) -> list[str]:
+    """验证单个平台 Marketplace 根对象及插件条目。"""
+
     errors: list[str] = []
-    required_fields = {"name", "interface", "plugins"}
-    required_entry_fields = {"name", "source", "policy", "category"}
-    for field in ("name", "interface", "plugins"):
+    required_fields = (
+        {"name", "interface", "plugins"}
+        if platform == "codex"
+        else {"name", "description", "owner", "plugins"}
+    )
+    required_entry_fields = (
+        {"name", "source", "policy", "category"}
+        if platform == "codex"
+        else {"name", "description", "version", "source", "author"}
+    )
+    for field in ("name", "interface", "plugins") if platform == "codex" else ("name", "description", "owner", "plugins"):
         if field not in marketplace:
             errors.append(f"{label} Marketplace 缺少字段：{field}")
     unexpected_fields = sorted(set(marketplace) - required_fields)
@@ -69,10 +78,11 @@ def _validate_marketplace(label: str, marketplace: dict[str, object], plugin: di
         errors.append(f"{label} Marketplace 含非标准字段：{unexpected_fields}")
     if not isinstance(marketplace.get("name"), str) or not marketplace.get("name"):
         errors.append(f"{label} Marketplace 的 name 必须是非空字符串")
-    if not isinstance(marketplace.get("interface"), dict):
-        errors.append(f"{label} Marketplace 的 interface 必须是对象")
-    elif not marketplace["interface"].get("displayName"):
-        errors.append(f"{label} Marketplace 的 interface.displayName 必须是非空字符串")
+    if platform == "codex":
+        if not isinstance(marketplace.get("interface"), dict):
+            errors.append(f"{label} Marketplace 的 interface 必须是对象")
+        elif not marketplace["interface"].get("displayName"):
+            errors.append(f"{label} Marketplace 的 interface.displayName 必须是非空字符串")
     plugins = marketplace.get("plugins")
     if not isinstance(plugins, list):
         errors.append(f"{label} Marketplace 的 plugins 必须是数组")
@@ -84,7 +94,7 @@ def _validate_marketplace(label: str, marketplace: dict[str, object], plugin: di
     if not isinstance(entry, dict):
         errors.append(f"{label} Marketplace 的第一条插件必须是对象")
         return errors
-    for field in ("name", "source", "policy", "category"):
+    for field in required_entry_fields:
         if field not in entry:
             errors.append(f"{label} Marketplace 插件条目缺少字段：{field}")
     unexpected_entry_fields = sorted(set(entry) - required_entry_fields)
@@ -95,26 +105,24 @@ def _validate_marketplace(label: str, marketplace: dict[str, object], plugin: di
     if entry.get("name") != plugin.get("name"):
         errors.append(f"{label} Marketplace 插件 name 必须与插件清单一致")
     source = entry.get("source")
-    if not isinstance(source, dict):
-        errors.append(f"{label} Marketplace 插件 source 必须是对象")
-    else:
-        if source.get("source") != "local":
-            errors.append(f"{label} Marketplace 插件 source.source 必须是 local")
-        if source.get("path") != "./plugins/context-atlas":
-            errors.append(f"{label} Marketplace 插件来源必须是 ./plugins/context-atlas")
-    policy = entry.get("policy")
-    if not isinstance(policy, dict):
-        errors.append(f"{label} Marketplace 插件 policy 必须是对象")
-    else:
-        for field in ("installation", "authentication"):
-            if field not in policy:
-                errors.append(f"{label} Marketplace 插件 policy 缺少字段：{field}")
-        if policy.get("installation") not in {"NOT_AVAILABLE", "AVAILABLE", "INSTALLED_BY_DEFAULT"}:
-            errors.append(f"{label} Marketplace installation 策略值无效")
-        if policy.get("authentication") not in {"ON_INSTALL", "ON_USE"}:
-            errors.append(f"{label} Marketplace authentication 策略值无效")
-    if entry.get("category") != "Productivity":
-        errors.append(f"{label} Marketplace 插件 category 必须是 Productivity")
+    if platform == "codex":
+        if not isinstance(source, dict) or source.get("source") != "url" or source.get("url") != "./":
+            errors.append(f"{label} Marketplace 插件 source 必须是 url ./")
+        policy = entry.get("policy")
+        if not isinstance(policy, dict):
+            errors.append(f"{label} Marketplace 插件 policy 必须是对象")
+        else:
+            for field in ("installation", "authentication"):
+                if field not in policy:
+                    errors.append(f"{label} Marketplace policy 缺少字段：{field}")
+            if policy.get("installation") not in {"NOT_AVAILABLE", "AVAILABLE", "INSTALLED_BY_DEFAULT"}:
+                errors.append(f"{label} Marketplace installation 策略值无效")
+            if policy.get("authentication") not in {"ON_INSTALL", "ON_USE"}:
+                errors.append(f"{label} Marketplace authentication 策略值无效")
+        if entry.get("category") != "Productivity":
+            errors.append(f"{label} Marketplace 插件 category 必须是 Productivity")
+    elif source != "./":
+        errors.append(f"{label} Marketplace 插件来源必须是 ./")
     return errors
 
 
@@ -165,8 +173,8 @@ def validate_plugin_contract(root: Path) -> list[str]:
         return [str(error)]
 
     errors: list[str] = []
-    errors.extend(_validate_marketplace("Codex", codex_marketplace, codex))
-    errors.extend(_validate_marketplace("Claude", claude_marketplace, claude))
+    errors.extend(_validate_marketplace("Codex", codex_marketplace, codex, "codex"))
+    errors.extend(_validate_marketplace("Claude", claude_marketplace, claude, "claude"))
     errors.extend(_validate_release_boundary(root))
 
     if claude.get("name") != "context-atlas":
@@ -206,7 +214,7 @@ def validate_plugin_contract(root: Path) -> list[str]:
     canonical_skill = root / "skills" / "context-atlas" / "SKILL.md"
     named_skills: list[Path] = []
     for path in root.rglob("SKILL.md"):
-        if (root / ".git").exists() and ".worktrees" in path.relative_to(root).parts:
+        if (root / ".git").exists() and ({".worktrees", "build"} & set(path.relative_to(root).parts)):
             continue
         try:
             if "name: context-atlas" in path.read_text(encoding="utf-8"):

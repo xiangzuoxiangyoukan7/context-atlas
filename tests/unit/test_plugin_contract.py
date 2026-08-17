@@ -22,13 +22,15 @@ ROOT = Path(__file__).resolve().parents[2]
 class PluginContractTests(unittest.TestCase):
     """验证 PluginContractTests 相关行为。"""
 
-    MARKETPLACE_FILES = (
-        "marketplaces/context-atlas/.agents/plugins/marketplace.json",
-        "marketplaces/context-atlas/.claude-plugin/marketplace.json",
+    MARKETPLACE_FILES: tuple[str, str] = (
+        ".agents/plugins/marketplace.json",
+        ".claude-plugin/marketplace.json",
     )
 
     @staticmethod
     def _write_plugin_manifests(root: Path) -> None:
+        """写入用于错误场景的最小双平台插件清单。"""
+
         for relative in (".claude-plugin/plugin.json", ".codex-plugin/plugin.json"):
             path = root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -39,6 +41,8 @@ class PluginContractTests(unittest.TestCase):
 
     @staticmethod
     def _write_release_plugin(root: Path) -> None:
+        """写入一个满足发布契约的完整临时插件。"""
+
         codex_manifest = {
             "name": "context-atlas",
             "version": "0.1.0",
@@ -71,30 +75,50 @@ class PluginContractTests(unittest.TestCase):
             json.dumps(claude_manifest, ensure_ascii=False),
             encoding="utf-8",
         )
-        marketplace = {
-            "name": "context-atlas",
-            "interface": {"displayName": "脉络地图"},
-            "plugins": [{
-                "name": "context-atlas",
-                "source": {"source": "local", "path": "./plugins/context-atlas"},
-                "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
-                "category": "Productivity",
-            }],
-        }
-        for relative in PluginContractTests.MARKETPLACE_FILES:
-            path = root / relative
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(marketplace, ensure_ascii=False), encoding="utf-8")
+        PluginContractTests._write_valid_marketplaces(root)
         skill = root / "skills" / "context-atlas" / "SKILL.md"
         skill.parent.mkdir(parents=True, exist_ok=True)
         skill.write_text("---\nname: context-atlas\n---\n", encoding="utf-8")
 
     @staticmethod
     def _write_marketplaces(root: Path, payload: object) -> None:
+        """向两个平台位置写入同一测试载荷。"""
+
         for relative in PluginContractTests.MARKETPLACE_FILES:
             path = root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(payload), encoding="utf-8")
+
+    @staticmethod
+    def _write_valid_marketplaces(root: Path) -> None:
+        """写入分别符合 Codex 与 Claude 格式的 Marketplace。"""
+
+        codex = {
+            "name": "context-atlas-dev",
+            "interface": {"displayName": "Context Atlas Dev"},
+            "plugins": [{
+                "name": "context-atlas",
+                "source": {"source": "url", "url": "./"},
+                "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+                "category": "Productivity",
+            }],
+        }
+        claude = {
+            "name": "context-atlas-dev",
+            "description": "Development marketplace for Context Atlas",
+            "owner": {"name": "Context Atlas Maintainers"},
+            "plugins": [{
+                "name": "context-atlas",
+                "description": "通过统一协议维护项目知识库",
+                "version": "0.1.0",
+                "source": "./",
+                "author": {"name": "Context Atlas Maintainers"},
+            }],
+        }
+        for relative, payload in zip(PluginContractTests.MARKETPLACE_FILES, (codex, claude)):
+            path = root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
     def test_two_platform_manifests_share_identity(self) -> None:
         """验证 two_platform_manifests_share_identity 场景。"""
@@ -139,7 +163,7 @@ class PluginContractTests(unittest.TestCase):
         skill_files = sorted(
             path
             for path in ROOT.rglob("SKILL.md")
-            if ".worktrees" not in path.relative_to(ROOT).parts
+            if not {".worktrees", "build"}.intersection(path.relative_to(ROOT).parts)
         )
         named = [
             path
@@ -169,7 +193,7 @@ class PluginContractTests(unittest.TestCase):
         for phrase in (
             "不是 Python 包",
             "不需要 `pip install`",
-            "marketplaces/context-atlas",
+            ".agents/plugins/marketplace.json",
             "/plugins",
             "context-atlas",
             "新建会话",
@@ -177,8 +201,8 @@ class PluginContractTests(unittest.TestCase):
             "Proposal",
             "用户确认",
             "partial",
-            "仓库相对路径",
-            "实际克隆路径或 URL",
+            "实际克隆路径",
+            "发布仓库或构建产物",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, combined)
@@ -193,18 +217,9 @@ class PluginContractTests(unittest.TestCase):
         codex_marketplace, claude_marketplace = load_marketplace_manifests(ROOT)
         self.assertEqual("context-atlas", codex_marketplace["plugins"][0]["name"])
         self.assertEqual("context-atlas", claude_marketplace["plugins"][0]["name"])
-        self.assertEqual(
-            "./plugins/context-atlas",
-            codex_marketplace["plugins"][0]["source"]["path"],
-        )
-        self.assertEqual("local", codex_marketplace["plugins"][0]["source"]["source"])
-        self.assertEqual(
-            "./plugins/context-atlas",
-            claude_marketplace["plugins"][0]["source"]["path"],
-        )
-        self.assertEqual("local", claude_marketplace["plugins"][0]["source"]["source"])
+        self.assertEqual({"source": "url", "url": "./"}, codex_marketplace["plugins"][0]["source"])
+        self.assertEqual("./", claude_marketplace["plugins"][0]["source"])
         self.assertEqual("Productivity", codex_marketplace["plugins"][0]["category"])
-        self.assertEqual("Productivity", claude_marketplace["plugins"][0]["category"])
 
     def test_marketplace_type_errors_are_readable(self) -> None:
         """非法 Marketplace 根节点和字段类型应返回可读错误。"""
@@ -226,6 +241,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertTrue(any("plugins" in error for error in errors))
 
     def test_marketplace_missing_file_is_readable(self) -> None:
+        """Marketplace 文件缺失时应返回可读错误。"""
+
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self._write_plugin_manifests(root)
@@ -233,6 +250,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertTrue(any("marketplace.json" in error for error in errors))
 
     def test_marketplace_invalid_json_is_readable(self) -> None:
+        """Marketplace JSON 无效时应返回可读错误。"""
+
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self._write_plugin_manifests(root)
@@ -242,6 +261,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertTrue(any("marketplace.json" in error for error in errors))
 
     def test_marketplace_root_type_is_readable(self) -> None:
+        """Marketplace 根节点不是对象时应返回可读错误。"""
+
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self._write_plugin_manifests(root)
@@ -250,6 +271,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertTrue(any("marketplace.json" in error and "对象" in error for error in errors))
 
     def test_marketplace_source_and_policy_types_are_readable(self) -> None:
+        """source 与 policy 类型错误时应返回可读错误。"""
+
         payload = {
             "name": "context-atlas",
             "interface": {},
@@ -269,6 +292,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertTrue(any("policy" in error for error in errors))
 
     def test_marketplace_policy_missing_fields_are_readable(self) -> None:
+        """policy 缺少必填字段时应返回可读错误。"""
+
         payload = {
             "name": "context-atlas", "interface": {},
             "plugins": [{"name": "context-atlas", "source": {"source": "local", "path": "./plugins/context-atlas"},
@@ -283,6 +308,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertTrue(any("authentication" in error and "缺少" in error for error in errors))
 
     def test_marketplace_policy_enum_values_are_validated(self) -> None:
+        """policy 枚举值必须限制在 Codex 支持范围内。"""
+
         payload = {
             "name": "context-atlas", "interface": {},
             "plugins": [{"name": "context-atlas", "source": {"source": "local", "path": "./plugins/context-atlas"},
@@ -304,20 +331,7 @@ class PluginContractTests(unittest.TestCase):
             root = Path(directory)
             shutil.copytree(ROOT / ".claude-plugin", root / ".claude-plugin")
             shutil.copytree(ROOT / ".codex-plugin", root / ".codex-plugin")
-            marketplace = {
-                "name": "context-atlas",
-                "interface": {"displayName": "脉络地图"},
-                "plugins": [{
-                    "name": "context-atlas",
-                    "source": {"source": "local", "path": "./plugins/context-atlas"},
-                    "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
-                    "category": "Productivity",
-                }],
-            }
-            for relative in self.MARKETPLACE_FILES:
-                path = root / relative
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(json.dumps(marketplace), encoding="utf-8")
+            self._write_valid_marketplaces(root)
             canonical = root / "skills/context-atlas/SKILL.md"
             canonical.parent.mkdir(parents=True)
             canonical.write_text("---\nname: context-atlas\n---\n", encoding="utf-8")
