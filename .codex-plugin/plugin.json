@@ -5,7 +5,7 @@
   "author": {
     "name": "Context Atlas Maintainers"
   },
-  "repository": "https://gitee.com/nieshenglei/xiangmuzhishikumoban",
+  "repository": "https://github.com/xiangzuoxiangyoukan7/context-atlas",
   "keywords": ["knowledge-base", "project-context", "traceability"],
   "skills": "./skills/",
   "interface": {
