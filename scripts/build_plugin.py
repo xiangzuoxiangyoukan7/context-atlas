@@ -1,4 +1,4 @@
-"""Build platform-specific Context Atlas plugin payloads from the repository root."""
+"""从源码构建平台专属 Context Atlas 插件；用于本地验收和正式发布场景。"""
 
 from __future__ import annotations
 
@@ -45,7 +45,11 @@ def _copy_common(target: Path, platform: str) -> None:
 
 
 def build(output: Path, platform: str, archive: bool = False) -> Path:
-    """Create a clean release tree or zip archive for one platform."""
+    """构建干净的平台发布物。
+
+    输入平台、输出路径和归档开关；先验证插件契约并清理指定产物，再复制白名单内容，
+    需要归档时按稳定顺序生成 ZIP 和摘要，最后返回实际产物路径。
+    """
 
     if platform not in {"codex", "claude"}:
         raise ValueError("platform must be codex or claude")

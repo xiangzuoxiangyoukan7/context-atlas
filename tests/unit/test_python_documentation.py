@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-# context-atlas-rules: [[rules/知识治理规则#RULE-CODE-001|RULE-CODE-001]]
+# context-atlas-rules: [[rules/知识治理规则#RULE-CODE-001|RULE-CODE-001]] [[rules/知识治理规则#RULE-CODE-002|RULE-CODE-002]]
 
 import tempfile
 import unittest
@@ -37,6 +37,28 @@ class PythonDocumentationTests(unittest.TestCase):
         self.assertIn("PY_TYPE_ARGUMENT", codes)
         self.assertIn("PY_TYPE_RETURN", codes)
         self.assertIn("PY_TYPE_CLASS_ATTRIBUTE", codes)
+
+    def test_vague_documentation_and_important_logic_are_reported(self) -> None:
+        """空泛说明和未解释主要逻辑的重要方法必须报告。"""
+
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "vague.py"
+            source.write_text(
+                '"""工具。"""\n'
+                "def execute_update(value: int) -> int:\n"
+                '    """执行操作。"""\n'
+                "    if value > 0:\n        value += 1\n"
+                "    if value > 1:\n        value += 1\n"
+                "    if value > 2:\n        value += 1\n"
+                "    if value > 3:\n        value += 1\n"
+                "    return value\n",
+                encoding="utf-8",
+            )
+
+            codes = {issue.code for issue in validate_python_documentation(Path(directory))}
+
+        self.assertIn("PY_DOC_MODULE_DETAIL", codes)
+        self.assertIn("PY_DOC_IMPORTANT_LOGIC", codes)
 
     def test_every_tracked_python_file_conforms(self) -> None:
         """仓库中的全部已跟踪 Python 文件必须通过规范检查。"""

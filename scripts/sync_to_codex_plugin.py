@@ -11,6 +11,7 @@ from typing import Sequence
 
 
 ROOT = Path(__file__).resolve().parents[1]
+LOCAL_IGNORED_ROOTS = frozenset({".idea"})
 MANAGED_PATHS = (
     Path(".agents"),
     Path(".codex-plugin"),
@@ -100,6 +101,7 @@ def _write_release_manifest(destination: Path, version: str) -> None:
         for path in sorted(destination.rglob("*"))
         if path.is_file()
         and ".git" not in path.relative_to(destination).parts
+        and not (LOCAL_IGNORED_ROOTS & set(path.relative_to(destination).parts))
         and path.name != "release-manifest.json"
     }
     payload = {"plugin": "context-atlas", "version": version, "files": files}
@@ -148,7 +150,11 @@ def sync(destination: Path) -> list[str]:
     forbidden = sorted(name for name in FORBIDDEN_ROOTS if (destination / name).exists())
     if forbidden:
         raise ValueError(f"发布仓库包含禁止路径：{forbidden}")
-    unexpected = sorted(path.name for path in destination.iterdir() if path.name not in ALLOWED_ROOTS)
+    unexpected = sorted(
+        path.name
+        for path in destination.iterdir()
+        if path.name not in ALLOWED_ROOTS and path.name not in LOCAL_IGNORED_ROOTS
+    )
     if unexpected:
         raise ValueError(f"发布仓库包含非白名单根路径：{unexpected}")
     expected_skills = {
