@@ -8,7 +8,8 @@
 - [通用核心模板](./templates/core/README.md)
 - [核心 Schema](./schemas/README.md)
 - [知识库检查器](./scripts/check_knowledge_base.py)
-- [脉络地图 Skill](./skills/context-atlas/SKILL.md)
+- [初始化 Skill](./skills/context-atlas-init/SKILL.md)
+- [更新 Skill](./skills/context-atlas-update/SKILL.md)
 - [Marketplace 安装与使用](./docs/marketplace-installation.md)
 
 ## Marketplace 安装
@@ -20,8 +21,9 @@ Codex Marketplace 位于 `.agents/plugins/marketplace.json`，Claude Code Market
 
 插件只支持安装到目标项目：Claude Code 必须使用 `--scope project`；Codex 当前没有原生 scope 参数，
 必须把 `CODEX_HOME` 指向目标项目的 `.codex/`，并在同一环境下安装和启动 Codex。不要省略项目隔离参数。
-安装后，Codex 使用 `$context-atlas init|update`，Claude Code 使用
-`/context-atlas:init|update`；没有固定操作符的自然语言不得触发知识库写入。
+安装后，Codex 使用 `$context-atlas-init`、`$context-atlas-update`，Claude Code 使用
+`/context-atlas-init`、`/context-atlas-update`。两个平台共用同一组 Skills，不发布 `commands/`；
+没有明确调用对应 Skill 的自然语言不得触发知识库写入。
 
 完整的 Codex、Claude Code 操作步骤和当前验收状态见[Marketplace 安装与使用](./docs/marketplace-installation.md)。
 
@@ -50,6 +52,25 @@ Plugin 发布包由根目录源码构建，不直接发布开发仓库。构建�
 py scripts/build_plugin.py claude --output build/claude/context-atlas
 py scripts/build_plugin.py codex --output build/codex/context-atlas.zip --archive
 ```
+
+将 Codex 发布内容同步到独立发布仓库：
+
+```powershell
+py scripts/sync_to_codex_plugin.py `
+  --destination D:\loong-workspace-python\context-atlas-codex-plugin
+```
+
+校验后，在独立发布仓库中提交并推送：
+
+```powershell
+py C:\Users\Seven\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py `
+  D:\loong-workspace-python\context-atlas-codex-plugin
+git -C D:\loong-workspace-python\context-atlas-codex-plugin add --all
+git -C D:\loong-workspace-python\context-atlas-codex-plugin commit -m "release: context-atlas <版本号>"
+git -C D:\loong-workspace-python\context-atlas-codex-plugin push origin main
+```
+
+发布新版本时，再为同一提交创建并推送 `v<版本号>` 标签。发布仓库内容由同步脚本生成，不得直接维护。
 
 ## 原则
 

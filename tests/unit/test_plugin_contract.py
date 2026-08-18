@@ -76,9 +76,10 @@ class PluginContractTests(unittest.TestCase):
             encoding="utf-8",
         )
         PluginContractTests._write_valid_marketplaces(root)
-        skill = root / "skills" / "context-atlas" / "SKILL.md"
-        skill.parent.mkdir(parents=True, exist_ok=True)
-        skill.write_text("---\nname: context-atlas\n---\n", encoding="utf-8")
+        for name in ("context-atlas-init", "context-atlas-update"):
+            skill = root / "skills" / name / "SKILL.md"
+            skill.parent.mkdir(parents=True, exist_ok=True)
+            skill.write_text(f"---\nname: {name}\n---\n", encoding="utf-8")
 
     @staticmethod
     def _write_marketplaces(root: Path, payload: object) -> None:
@@ -157,8 +158,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertTrue(codex["interface"]["displayName"])
         self.assertTrue(codex["interface"]["defaultPrompt"])
 
-    def test_shared_skill_is_the_only_context_atlas_skill(self) -> None:
-        """验证 shared_skill_is_the_only_context_atlas_skill 场景。"""
+    def test_plugin_exposes_two_capability_skills(self) -> None:
+        """插件只公开初始化和更新两个能力 Skill。"""
 
         skill_files = sorted(
             path
@@ -168,10 +169,14 @@ class PluginContractTests(unittest.TestCase):
         named = [
             path
             for path in skill_files
-            if "name: context-atlas" in path.read_text(encoding="utf-8")
+            if "name: context-atlas-" in path.read_text(encoding="utf-8")
         ]
 
-        self.assertEqual([ROOT / "skills" / "context-atlas" / "SKILL.md"], named)
+        self.assertEqual([
+            ROOT / "skills" / "context-atlas-init" / "SKILL.md",
+            ROOT / "skills" / "context-atlas-update" / "SKILL.md",
+        ], named)
+        self.assertFalse(any((ROOT / "commands").glob("*.md")))
         self.assertFalse((ROOT / ".claude-plugin" / "skills").exists())
         self.assertFalse((ROOT / ".codex-plugin" / "skills").exists())
 
@@ -196,10 +201,10 @@ class PluginContractTests(unittest.TestCase):
             ".agents/plugins/marketplace.json",
             "context-atlas",
             "新建会话",
-            "$context-atlas init",
-            "$context-atlas update",
-            "/context-atlas:init",
-            "/context-atlas:update",
+            "$context-atlas-init",
+            "$context-atlas-update",
+            "/context-atlas-init",
+            "/context-atlas-update",
             "Proposal",
             "用户确认",
             "partial",
@@ -340,12 +345,13 @@ class PluginContractTests(unittest.TestCase):
             shutil.copytree(ROOT / ".claude-plugin", root / ".claude-plugin")
             shutil.copytree(ROOT / ".codex-plugin", root / ".codex-plugin")
             self._write_valid_marketplaces(root)
-            canonical = root / "skills/context-atlas/SKILL.md"
-            canonical.parent.mkdir(parents=True)
-            canonical.write_text("---\nname: context-atlas\n---\n", encoding="utf-8")
-            duplicate = root / ".worktrees/old/skills/context-atlas/SKILL.md"
+            for name in ("context-atlas-init", "context-atlas-update"):
+                canonical = root / "skills" / name / "SKILL.md"
+                canonical.parent.mkdir(parents=True, exist_ok=True)
+                canonical.write_text(f"---\nname: {name}\n---\n", encoding="utf-8")
+            duplicate = root / ".worktrees/old/skills/context-atlas-init/SKILL.md"
             duplicate.parent.mkdir(parents=True)
-            duplicate.write_text("---\nname: context-atlas\n---\n", encoding="utf-8")
+            duplicate.write_text("---\nname: context-atlas-init\n---\n", encoding="utf-8")
 
             errors = validate_plugin_contract(root)
 
@@ -365,14 +371,14 @@ class PluginContractTests(unittest.TestCase):
             ("CLAUDE.md", "# dev only\n", "CLAUDE.md"),
             ("tests/fixtures/sample.txt", "fixture\n", "tests/fixtures"),
             (
-                ".worktrees/old/skills/context-atlas/SKILL.md",
-                "---\nname: context-atlas\n---\n",
+                ".worktrees/old/skills/context-atlas-init/SKILL.md",
+                "---\nname: context-atlas-init\n---\n",
                 ".worktrees",
             ),
             (
                 "skills/context-atlas-copy/SKILL.md",
-                "---\nname: context-atlas\n---\n",
-                "只能存在一份",
+                "---\nname: context-atlas-copy\n---\n",
+                "必须且只能存在",
             ),
         ):
             with self.subTest(relative=relative):

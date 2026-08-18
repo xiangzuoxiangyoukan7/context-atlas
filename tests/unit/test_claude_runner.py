@@ -249,7 +249,8 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertNotEqual(ROOT.resolve(), plugin_directory)
         self.assertIn(".claude-plugin/plugin.json", process.plugin_release_files[0])
         self.assertIn(".claude-plugin/marketplace.json", process.plugin_release_files[0])
-        self.assertIn("skills/context-atlas/SKILL.md", process.plugin_release_files[0])
+        self.assertIn("skills/context-atlas-init/SKILL.md", process.plugin_release_files[0])
+        self.assertIn("skills/context-atlas-update/SKILL.md", process.plugin_release_files[0])
         self.assertNotIn("AGENTS.md", process.plugin_release_files[0])
         self.assertNotIn("CLAUDE.md", process.plugin_release_files[0])
         self.assertFalse(any(path.startswith("tests/") for path in process.plugin_release_files[0]))
@@ -530,7 +531,7 @@ class ClaudeRunnerTests(unittest.TestCase):
 
         self.assertTrue(
             orchestration.EXPLICIT_INITIALIZE_PROMPT.startswith(
-                "/context-atlas:init"
+                "/context-atlas-init"
             )
         )
 

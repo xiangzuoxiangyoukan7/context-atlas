@@ -97,7 +97,7 @@ class CompatibilityTests(TempDirectoryTestCase):
         target = initialize_from_assets(
             self.root,
             project_name="example",
-            assets_root=ROOT / "skills/context-atlas/assets",
+            assets_root=ROOT / "assets",
             initialized_at="2026-08-13",
         )
 

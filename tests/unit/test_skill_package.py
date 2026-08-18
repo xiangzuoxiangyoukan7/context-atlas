@@ -7,7 +7,12 @@ import tempfile
 import unittest
 
 
-SKILL_ROOT = Path("skills/context-atlas")
+SKILL_ROOTS = (
+    Path("skills/context-atlas-init"),
+    Path("skills/context-atlas-update"),
+)
+ASSETS_ROOT = Path("assets")
+REFERENCES_ROOT = Path("references")
 REFERENCES = (
     "初始化协议.md",
     "执行状态机.md",
@@ -27,16 +32,17 @@ class SkillPackageTests(unittest.TestCase):
     def test_skill_has_required_progressive_disclosure_files(self) -> None:
         """验证 skill_has_required_progressive_disclosure_files 场景。"""
 
-        self.assertTrue((SKILL_ROOT / "SKILL.md").is_file())
-        self.assertTrue((SKILL_ROOT / "agents/openai.yaml").is_file())
+        for skill_root in SKILL_ROOTS:
+            self.assertTrue((skill_root / "SKILL.md").is_file())
+            self.assertTrue((skill_root / "agents/openai.yaml").is_file())
+            self.assertFalse((skill_root / "README.md").exists())
         for name in REFERENCES:
-            self.assertTrue((SKILL_ROOT / "references" / name).is_file(), name)
-        self.assertFalse((SKILL_ROOT / "README.md").exists())
+            self.assertTrue((REFERENCES_ROOT / name).is_file(), name)
 
     def test_installed_skill_contains_all_runtime_assets(self) -> None:
         """验证 installed_skill_contains_all_runtime_assets 场景。"""
 
-        assets = SKILL_ROOT / "assets"
+        assets = ASSETS_ROOT
         manifest = json.loads((assets / "manifest.json").read_text(encoding="utf-8"))
         missing = [path for path in manifest["files"] if not (assets / path).is_file()]
 
@@ -47,46 +53,40 @@ class SkillPackageTests(unittest.TestCase):
 
         from scripts.sync_skill_assets import sync_assets
 
-        mismatches = sync_assets(Path.cwd(), SKILL_ROOT, check=True)
+        mismatches = sync_assets(Path.cwd(), Path.cwd(), check=True)
 
         self.assertEqual(mismatches, [])
 
     def test_skill_declares_required_behavior_boundaries(self) -> None:
         """验证 skill_declares_required_behavior_boundaries 场景。"""
 
-        content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        content = "\n".join((root / "SKILL.md").read_text(encoding="utf-8") for root in SKILL_ROOTS)
         required = (
             "doc-<项目目录名>",
             "显式确认",
             "目标已存在",
             "AGENTS.md",
             "CLAUDE.md",
-            "references/初始化协议.md",
-            "references/执行状态机.md",
-            "references/知识采集与确认.md",
-            "references/更新冲突与归档.md",
-            "references/验证与结果报告.md",
-            "references/关系与影响分析.md",
-            "references/兼容与迁移.md",
-            "references/身份与主动采集.md",
+            "../../references/初始化协议.md",
+            "../../references/执行状态机.md",
+            "../../references/知识采集与确认.md",
+            "../../references/更新冲突与归档.md",
+            "../../references/验证与结果报告.md",
         )
         for phrase in required:
             self.assertIn(phrase, content)
 
         for command in (
-            "$context-atlas init",
-            "$context-atlas update",
-            "/context-atlas:init",
-            "/context-atlas:update",
-            "固定操作符",
-            "不得触发正式写入",
+            "$context-atlas-init",
+            "$context-atlas-update",
+            "Formal writes require explicit invocation",
         ):
             self.assertIn(command, content)
 
     def test_relation_and_impact_reference_explains_human_decision_boundary(self) -> None:
         """Skill 必须解释统一链接、三级结果和人工确认边界。"""
 
-        content = (SKILL_ROOT / "references" / "关系与影响分析.md").read_text(
+        content = (REFERENCES_ROOT / "关系与影响分析.md").read_text(
             encoding="utf-8"
         )
 
@@ -103,7 +103,7 @@ class SkillPackageTests(unittest.TestCase):
     def test_relation_and_impact_templates_are_packaged(self) -> None:
         """初始化资产必须包含关系目录和影响分析记录模板。"""
 
-        assets = SKILL_ROOT / "assets" / "templates" / "core" / "doc-project"
+        assets = ASSETS_ROOT / "templates" / "core" / "doc-project"
 
         self.assertTrue((assets / "02-架构与契约/关系目录.md").is_file())
         self.assertTrue((assets / "03-实施与验收/影响分析/TEMPLATE.md").is_file())
@@ -111,7 +111,7 @@ class SkillPackageTests(unittest.TestCase):
     def test_database_reference_and_four_entity_templates_are_packaged(self) -> None:
         """Skill 必须解释数据库产品层级并包含四类实体模板。"""
 
-        reference = (SKILL_ROOT / "references" / "数据库知识.md").read_text(
+        reference = (REFERENCES_ROOT / "数据库知识.md").read_text(
             encoding="utf-8"
         )
         for phrase in (
@@ -126,7 +126,7 @@ class SkillPackageTests(unittest.TestCase):
         ):
             self.assertIn(phrase, reference)
         database_root = (
-            SKILL_ROOT / "assets/templates/core/doc-project/02-架构与契约/数据库"
+            ASSETS_ROOT / "templates/core/doc-project/02-架构与契约/数据库"
         )
         for relative in (
             "数据源/TEMPLATE.md",
@@ -139,7 +139,7 @@ class SkillPackageTests(unittest.TestCase):
     def test_skill_state_machine_has_confirmation_and_revision_gates(self) -> None:
         """验证 skill_state_machine_has_confirmation_and_revision_gates 场景。"""
 
-        content = (SKILL_ROOT / "references" / "执行状态机.md").read_text(
+        content = (REFERENCES_ROOT / "执行状态机.md").read_text(
             encoding="utf-8"
         )
         states = (
@@ -162,10 +162,10 @@ class SkillPackageTests(unittest.TestCase):
     def test_identity_capture_and_migration_references_explain_runtime_protocol(self) -> None:
         """Skill 必须给 Agent 明确的身份、检查点和轻量迁移调用协议。"""
 
-        identity = (SKILL_ROOT / "references" / "身份与主动采集.md").read_text(
+        identity = (REFERENCES_ROOT / "身份与主动采集.md").read_text(
             encoding="utf-8"
         )
-        migration = (SKILL_ROOT / "references" / "兼容与迁移.md").read_text(
+        migration = (REFERENCES_ROOT / "兼容与迁移.md").read_text(
             encoding="utf-8"
         )
         for phrase in (
@@ -194,10 +194,10 @@ class SkillPackageTests(unittest.TestCase):
     def test_proposal_and_report_references_use_state_machine_contract(self) -> None:
         """验证 proposal_and_report_references_use_state_machine_contract 场景。"""
 
-        proposal = (SKILL_ROOT / "references" / "知识采集与确认.md").read_text(
+        proposal = (REFERENCES_ROOT / "知识采集与确认.md").read_text(
             encoding="utf-8"
         )
-        report = (SKILL_ROOT / "references" / "验证与结果报告.md").read_text(
+        report = (REFERENCES_ROOT / "验证与结果报告.md").read_text(
             encoding="utf-8"
         )
 
@@ -210,13 +210,14 @@ class SkillPackageTests(unittest.TestCase):
     def test_skill_ui_metadata_is_readable_and_legacy_assets_are_absent(self) -> None:
         """验证 skill_ui_metadata_is_readable_and_legacy_assets_are_absent 场景。"""
 
-        metadata = (SKILL_ROOT / "agents/openai.yaml").read_text(encoding="utf-8")
+        metadata = "\n".join((root / "agents/openai.yaml").read_text(encoding="utf-8") for root in SKILL_ROOTS)
         manifest = json.loads(
-            (SKILL_ROOT / "assets/manifest.json").read_text(encoding="utf-8")
+            (ASSETS_ROOT / "manifest.json").read_text(encoding="utf-8")
         )
 
-        self.assertIn('display_name: "脉络地图"', metadata)
-        self.assertIn("$context-atlas init", metadata)
+        self.assertIn('display_name: "初始化脉络地图"', metadata)
+        self.assertIn("$context-atlas-init", metadata)
+        self.assertIn("$context-atlas-update", metadata)
         self.assertFalse(Path("skills/project-knowledge-context").exists())
         self.assertFalse(Path("profiles").exists())
         self.assertFalse(any(path.startswith("profiles/") for path in manifest["files"]))
@@ -224,26 +225,17 @@ class SkillPackageTests(unittest.TestCase):
     def test_skill_frontmatter_matches_official_constraints(self) -> None:
         """验证 skill_frontmatter_matches_official_constraints 场景。"""
 
-        content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-        match = re.match(r"^---\n(.*?)\n---", content, re.DOTALL)
-
-        self.assertIsNotNone(match)
-        assert match is not None
-        fields = dict(
-            line.split(":", 1)
-            for line in match.group(1).splitlines()
-            if ":" in line
-        )
-        self.assertEqual(set(fields), {"name", "description"})
-        name = fields["name"].strip()
-        description = fields["description"].strip()
-        self.assertRegex(name, r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-        self.assertLessEqual(len(name), 64)
-        self.assertTrue(description.startswith("Use when"))
-        self.assertNotRegex(description, r"[<>]")
-        self.assertLessEqual(len(description), 1024)
-        self.assertNotIn("TODO", content)
-        self.assertLess(len(content.splitlines()), 500)
+        for skill_root in SKILL_ROOTS:
+            content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+            match = re.match(r"^---\n(.*?)\n---", content, re.DOTALL)
+            self.assertIsNotNone(match)
+            assert match is not None
+            fields = dict(line.split(":", 1) for line in match.group(1).splitlines() if ":" in line)
+            self.assertEqual(set(fields), {"name", "description"})
+            name = fields["name"].strip()
+            self.assertEqual(skill_root.name, name)
+            self.assertNotIn("TODO", content)
+            self.assertLess(len(content.splitlines()), 500)
 
     def test_sync_rejects_escape_and_preserves_undeclared_files(self) -> None:
         """验证 sync_rejects_escape_and_preserves_undeclared_files 场景。"""

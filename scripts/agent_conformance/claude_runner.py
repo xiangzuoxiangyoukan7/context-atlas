@@ -131,6 +131,8 @@ class ClaudeRunner:
         shutil.copy2(marketplace, claude_plugin / "marketplace.json")
         shutil.copy2(manifest, claude_plugin / "plugin.json")
         shutil.copytree(skills, release_root / "skills")
+        shutil.copytree(self.plugin_root / "assets", release_root / "assets")
+        shutil.copytree(self.plugin_root / "references", release_root / "references")
         return release_root
 
     def _build_command(

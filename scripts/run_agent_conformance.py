@@ -39,7 +39,7 @@ from scripts.agent_conformance.codex_runner import (
 
 CONFORMANCE_PROPOSAL_REVISION = "CONFORMANCE-001"
 EXPLICIT_INITIALIZE_PROMPT = (
-    "/context-atlas:init\n"
+    "/context-atlas-init\n"
     "请为当前项目初始化名为 example 的项目知识库。"
     f"现在只检查并提出 proposal_revision 为 {CONFORMANCE_PROPOSAL_REVISION} 的 Proposal，"
     "不要确认，也不要创建或修改正式知识文件。"
@@ -49,7 +49,7 @@ CONFIRM_PROMPT = (
     "请严格按已确认范围初始化 doc-example，并运行目标内置检查器后报告。"
 )
 EXISTING_TARGET_PROMPT = (
-    "/context-atlas:update\n请检查已有 doc-existing。"
+    "/context-atlas-update\n请检查已有 doc-existing。"
     "不要覆盖、重建或修改已有正式知识库；只报告下一步提案。"
 )
 NATURAL_LANGUAGE_PROMPT = (

@@ -129,7 +129,7 @@ def _validate_marketplace(label: str, marketplace: dict[str, object], plugin: di
 
 
 def _safe_skill_path(value: object) -> bool:
-    """判断清单是否指向唯一共享 Skill 根目录。"""
+    """判断清单是否指向共享 Skill 根目录。"""
 
     return value == "./skills/"
 
@@ -213,18 +213,24 @@ def validate_plugin_contract(root: Path) -> list[str]:
         if missing:
             errors.append(f"Codex interface 缺少字段：{missing}")
 
-    canonical_skill = root / "skills" / "context-atlas" / "SKILL.md"
-    named_skills: list[Path] = []
+    expected_skills = {
+        (root / "skills" / "context-atlas-init" / "SKILL.md").resolve(),
+        (root / "skills" / "context-atlas-update" / "SKILL.md").resolve(),
+    }
+    named_skills: set[Path] = set()
     for path in root.rglob("SKILL.md"):
         if (root / ".git").exists() and ({".worktrees", ".codex", "build"} & set(path.relative_to(root).parts)):
             continue
         try:
-            if "name: context-atlas" in path.read_text(encoding="utf-8"):
-                named_skills.append(path.resolve())
+            text = path.read_text(encoding="utf-8")
+            if "name: context-atlas-" in text:
+                named_skills.add(path.resolve())
         except (OSError, UnicodeDecodeError):
             continue
-    if named_skills != [canonical_skill.resolve()]:
-        errors.append("仓库必须且只能存在一份 context-atlas Skill")
+    if named_skills != expected_skills:
+        errors.append("仓库必须且只能存在 context-atlas-init 和 context-atlas-update 两个 Skills")
+    if (root / "commands").is_dir() and any((root / "commands").iterdir()):
+        errors.append("插件不得包含 commands；Codex 与 Claude Code 必须共用 Skills")
     for directory in (root / ".claude-plugin" / "skills", root / ".codex-plugin" / "skills"):
         if directory.exists():
             errors.append(f"平台目录不得复制 Skill：{directory.relative_to(root)}")

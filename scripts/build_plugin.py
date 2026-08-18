@@ -36,8 +36,8 @@ def _copy_common(target: Path, platform: str) -> None:
             target / manifest_dir / "marketplace.json",
         )
     _copy_tree(ROOT / "skills", target / "skills")
-    if platform == "claude":
-        _copy_tree(ROOT / "commands", target / "commands")
+    _copy_tree(ROOT / "assets", target / "assets")
+    _copy_tree(ROOT / "references", target / "references")
     for name in ("README.md", "LICENSE"):
         source = ROOT / name
         if source.is_file():

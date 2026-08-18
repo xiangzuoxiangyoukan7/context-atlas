@@ -12,7 +12,7 @@ from scripts.project_kb.agent_operation import execute_initialize
 
 
 ROOT = Path(__file__).resolve().parents[2]
-ASSETS = ROOT / "skills" / "context-atlas" / "assets"
+ASSETS = ROOT / "assets"
 
 
 class AgentOperationTests(unittest.TestCase):

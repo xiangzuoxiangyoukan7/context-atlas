@@ -92,7 +92,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--skill-root",
         type=Path,
-        default=Path("skills/context-atlas"),
+        default=Path("."),
     )
     return parser
 

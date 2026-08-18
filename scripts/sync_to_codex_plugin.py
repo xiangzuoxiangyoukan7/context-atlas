@@ -15,6 +15,8 @@ MANAGED_PATHS = (
     Path(".agents"),
     Path(".codex-plugin"),
     Path("skills"),
+    Path("assets"),
+    Path("references"),
     Path("README.md"),
     Path("LICENSE"),
     Path("release-manifest.json"),
@@ -24,7 +26,6 @@ FORBIDDEN_ROOTS = frozenset(
         ".claude-plugin",
         ".codex",
         ".superpowers",
-        "commands",
         "doc-atlas",
         "docs",
         "examples",
@@ -39,7 +40,7 @@ FORBIDDEN_ROOTS = frozenset(
     }
 )
 ALLOWED_ROOTS = frozenset(
-    {".git", ".agents", ".codex-plugin", "skills", "README.md", "LICENSE", "release-manifest.json"}
+    {".git", ".agents", ".codex-plugin", "skills", "assets", "references", "README.md", "LICENSE", "release-manifest.json"}
 )
 
 
@@ -127,6 +128,8 @@ def sync(destination: Path) -> list[str]:
         destination / ".codex-plugin" / "plugin.json",
     )
     _copy_tree(ROOT / "skills", destination / "skills")
+    _copy_tree(ROOT / "assets", destination / "assets")
+    _copy_tree(ROOT / "references", destination / "references")
     (destination / ".agents" / "plugins").mkdir(parents=True)
     (destination / ".agents" / "plugins" / "marketplace.json").write_text(
         json.dumps(_marketplace(), ensure_ascii=False, indent=2) + "\n",
@@ -148,14 +151,13 @@ def sync(destination: Path) -> list[str]:
     unexpected = sorted(path.name for path in destination.iterdir() if path.name not in ALLOWED_ROOTS)
     if unexpected:
         raise ValueError(f"发布仓库包含非白名单根路径：{unexpected}")
-    named_skills = [
-        path
-        for path in destination.rglob("SKILL.md")
-        if "name: context-atlas" in path.read_text(encoding="utf-8")
-    ]
-    canonical = destination / "skills" / "context-atlas" / "SKILL.md"
-    if named_skills != [canonical]:
-        raise ValueError("Codex 发布仓库必须且只能包含一份 context-atlas Skill")
+    expected_skills = {
+        destination / "skills" / "context-atlas-init" / "SKILL.md",
+        destination / "skills" / "context-atlas-update" / "SKILL.md",
+    }
+    actual_skills = set(destination.rglob("SKILL.md"))
+    if actual_skills != expected_skills:
+        raise ValueError("Codex 发布仓库必须且只能包含 context-atlas-init 和 context-atlas-update 两个 Skills")
     return [
         path.relative_to(destination).as_posix()
         for path in sorted(destination.rglob("*"))

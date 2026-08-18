@@ -66,7 +66,7 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
 
         target = initialize_from_assets(
             self.root,
-            assets_root=ROOT / "skills/context-atlas/assets",
+            assets_root=ROOT / "assets",
         )
         content_file = self.root / "replacement.md"
         content_file.write_text("# 已确认更新\n", encoding="utf-8")

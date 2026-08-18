@@ -30,8 +30,8 @@ def _adapt_prompt(prompt: str) -> str:
     """将 Claude 显式技能命令转换为 Codex 的技能调用语法。"""
 
     mappings = {
-        "/context-atlas:init": "$context-atlas init",
-        "/context-atlas:update": "$context-atlas update",
+        "/context-atlas-init": "$context-atlas-init",
+        "/context-atlas-update": "$context-atlas-update",
     }
     adapted = prompt
     for claude_command, codex_command in mappings.items():
@@ -134,7 +134,7 @@ class CodexRunner:
         marketplace.mkdir(parents=True, exist_ok=True)
         packaged_plugin = marketplace
         marketplace_name = "context-atlas-dev"
-        for relative_path in (Path(".codex-plugin"), Path("skills")):
+        for relative_path in (Path(".codex-plugin"), Path("skills"), Path("assets"), Path("references")):
             source = self.plugin_root / relative_path
             destination = packaged_plugin / relative_path
             if destination.exists():
@@ -221,7 +221,7 @@ class CodexRunner:
             initial_prompt, proposal_revision = previous_context
             # Codex 0.147.0 原生 resume 会恢复为只读沙箱；内存重放保持工作流语义与写权限。
             adapted_prompt = (
-                "$context-atlas init\n"
+                "$context-atlas-init\n"
                 "继续同一知识治理流程。首轮用户请求如下：\n"
                 f"{initial_prompt}\n\n"
                 "首轮已完成只读检查、展示 Proposal，且没有正式写入。\n"

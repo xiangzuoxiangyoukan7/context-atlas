@@ -97,7 +97,7 @@ class CodexRunnerTests(unittest.TestCase):
                 (marketplace / ".codex-plugin/plugin.json").is_file()
             )
             self.assertTrue(
-                (marketplace / "skills/context-atlas/SKILL.md").is_file()
+                (marketplace / "skills/context-atlas-init/SKILL.md").is_file()
             )
             self.assertFalse((marketplace / "AGENTS.md").exists())
             self.assertFalse((marketplace / "tests").exists())
@@ -156,7 +156,7 @@ class CodexRunnerTests(unittest.TestCase):
                 auth_source=None,
             )
 
-            runner.run_turn(workspace, "$context-atlas init\n第一轮", None)
+            runner.run_turn(workspace, "$context-atlas-init\n第一轮", None)
             runner.run_turn(workspace, "第二轮", "thread-1")
 
         first = process.calls[2][0]
@@ -164,7 +164,7 @@ class CodexRunnerTests(unittest.TestCase):
         self.assertIn("--ephemeral", first)
         self.assertIn("--ephemeral", second)
         self.assertNotIn("resume", second)
-        self.assertTrue(second[-1].startswith("$context-atlas init\n"))
+        self.assertTrue(second[-1].startswith("$context-atlas-init\n"))
         self.assertIn("第一轮", second[-1])
         self.assertIn("第二轮", second[-1])
         self.assertEqual(1, second[-1].count("完成"))

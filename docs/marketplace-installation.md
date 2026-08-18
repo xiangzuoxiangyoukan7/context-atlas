@@ -11,6 +11,20 @@ py scripts/build_plugin.py claude --output build/claude/context-atlas
 py scripts/build_plugin.py codex --output build/codex/context-atlas.zip --archive
 ```
 
+Codex 的正式发布仓库不是手工打包目录。完成源码修改和检查后执行：
+
+```powershell
+py scripts/sync_to_codex_plugin.py `
+  --destination D:\loong-workspace-python\context-atlas-codex-plugin
+py C:\Users\Seven\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py `
+  D:\loong-workspace-python\context-atlas-codex-plugin
+git -C D:\loong-workspace-python\context-atlas-codex-plugin add --all
+git -C D:\loong-workspace-python\context-atlas-codex-plugin commit -m "release: context-atlas <版本号>"
+git -C D:\loong-workspace-python\context-atlas-codex-plugin push origin main
+```
+
+正式版本标签使用 `v<版本号>`，并指向上述发布仓库提交。不得直接修改发布仓库中的生成文件。
+
 构建产物只包含目标平台清单、Skill、运行时资产和命令，不包含测试、设计文档或本项目知识库。
 
 ## 安装范围
@@ -95,15 +109,15 @@ claude plugin update --scope project context-atlas@context-atlas-dev
 安装完成后，Codex 使用固定 Skill 操作符：
 
 ```text
-$context-atlas init
-$context-atlas update
+$context-atlas-init
+$context-atlas-update
 ```
 
 Claude Code 使用原生插件命令：
 
 ```text
-/context-atlas:init
-/context-atlas:update
+/context-atlas-init
+/context-atlas-update
 ```
 
 两套入口调用同一个内部 `init` 或 `update` 执行器。没有固定操作符的自然语言不能触发正式写入。命令会先
