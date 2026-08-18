@@ -6,11 +6,3 @@ sandbox_mode = "workspace-write"
 
   [mcp_servers.pycharm]
     url = "http://127.0.0.1:64462/stream"
-
-[marketplaces.context-atlas-dev]
-last_updated = "2026-08-17T14:48:22Z"
-source_type = "local"
-source = '\\?\D:\loong-workspace-python\context-atlas'
-
-[plugins."context-atlas@context-atlas-dev"]
-enabled = true
