@@ -23,6 +23,7 @@ REFERENCES = (
     "数据库知识.md",
     "兼容与迁移.md",
     "身份与主动采集.md",
+    "宿主执行与运行时探测.md",
 )
 
 
@@ -82,6 +83,47 @@ class SkillPackageTests(unittest.TestCase):
             "Formal writes require explicit invocation",
         ):
             self.assertIn(command, content)
+
+    def test_skill_resolves_python_three_portably(self) -> None:
+        """Skill 必须优先使用平台原生 Python 3 启动方式并报告探测结果。"""
+
+        runtime_contract = (REFERENCES_ROOT / "宿主执行与运行时探测.md").read_text(
+            encoding="utf-8"
+        )
+        for skill_root in SKILL_ROOTS:
+            skill_content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("../../references/宿主执行与运行时探测.md", skill_content)
+            content = skill_content + "\n" + runtime_contract
+            for phrase in (
+                "py -3",
+                "python3",
+                "Windows Store",
+                "exit code 9009",
+                "zero formal writes",
+                "只记录候选命令",
+            ):
+                self.assertIn(phrase, content, f"{skill_root.name}: {phrase}")
+
+    def test_agent_host_fallback_is_scoped_and_auditable(self) -> None:
+        """无 Python 时必须暂存、限制写入范围并降低验证声明。"""
+
+        contract = (REFERENCES_ROOT / "宿主执行与运行时探测.md").read_text(
+            encoding="utf-8"
+        )
+        for phrase in (
+            "agent_host",
+            ".context-atlas-staging-<revision-prefix>",
+            "不得直接写正式目标",
+            "写入范围只包含暂存目录",
+            "deterministic_validation: not_run",
+            "不得表述为“确定性验证通过”",
+        ):
+            self.assertIn(phrase, contract)
+
+        for skill_root in SKILL_ROOTS:
+            content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("../../references/宿主执行与运行时探测.md", content)
+            self.assertIn("agent_host", content)
 
     def test_relation_and_impact_reference_explains_human_decision_boundary(self) -> None:
         """Skill 必须解释统一链接、三级结果和人工确认边界。"""
@@ -215,7 +257,8 @@ class SkillPackageTests(unittest.TestCase):
             (ASSETS_ROOT / "manifest.json").read_text(encoding="utf-8")
         )
 
-        self.assertIn('display_name: "初始化脉络地图"', metadata)
+        self.assertIn('display_name: "context-atlas-init"', metadata)
+        self.assertIn('display_name: "context-atlas-update"', metadata)
         self.assertIn("$context-atlas-init", metadata)
         self.assertIn("$context-atlas-update", metadata)
         self.assertFalse(Path("skills/project-knowledge-context").exists())

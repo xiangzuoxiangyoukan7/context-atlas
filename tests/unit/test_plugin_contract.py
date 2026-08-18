@@ -51,7 +51,7 @@ class PluginContractTests(unittest.TestCase):
             "repository": "https://example.invalid/context-atlas",
             "skills": "./skills/",
             "interface": {
-                "displayName": "脉络地图",
+                "displayName": "context-atlas",
                 "shortDescription": "初始化、维护和验证项目知识库",
                 "longDescription": "通过统一 Skill、模板、Schema 和确定性检查器维护可追溯的项目知识库。",
                 "developerName": "Context Atlas Maintainers",
@@ -155,7 +155,7 @@ class PluginContractTests(unittest.TestCase):
         )
         self.assertNotIn("hooks", codex)
         self.assertIn("interface", codex)
-        self.assertTrue(codex["interface"]["displayName"])
+        self.assertEqual(codex["name"], codex["interface"]["displayName"])
         self.assertTrue(codex["interface"]["defaultPrompt"])
 
     def test_plugin_exposes_two_capability_skills(self) -> None:

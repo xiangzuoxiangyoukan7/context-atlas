@@ -57,6 +57,10 @@ class InitializationContractTests(TempDirectoryTestCase):
 
         self.assertEqual("initialized", report.operation)
         self.assertEqual("passed", report.validation.result)
+        self.assertEqual("python_executor", report.execution.mode)
+        self.assertEqual("deterministic_executor", report.validation.authority)
+        self.assertEqual("passed", report.validation.deterministic_validation)
+        self.assertEqual(3, report.execution.runtime_detection.attempts[0].python_major)
         self.assertEqual(("UNKNOWN-001",), report.unknowns)
         target = self.root / "doc-example"
         self.assertIn("Python", (target / "00-项目总览/技术栈与版本.md").read_text(encoding="utf-8"))

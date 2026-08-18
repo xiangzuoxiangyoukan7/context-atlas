@@ -212,6 +212,8 @@ def validate_plugin_contract(root: Path) -> list[str]:
         missing = sorted(field for field in required_interface if not interface.get(field))
         if missing:
             errors.append(f"Codex interface 缺少字段：{missing}")
+        if interface.get("displayName") != codex.get("name"):
+            errors.append("Codex interface.displayName 必须与插件 name 一致")
 
     expected_skills = {
         (root / "skills" / "context-atlas-init" / "SKILL.md").resolve(),
