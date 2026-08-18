@@ -7,6 +7,7 @@
 - [本项目知识库](doc-atlas/README.md)
 - [通用核心模板](./templates/core/README.md)
 - [核心 Schema](./schemas/README.md)
+- [Schema 逐文件字段说明](./schemas/字段说明.md)
 - [知识库检查器](./scripts/check_knowledge_base.py)
 - [初始化 Skill](./skills/context-atlas-init/SKILL.md)
 - [更新 Skill](./skills/context-atlas-update/SKILL.md)

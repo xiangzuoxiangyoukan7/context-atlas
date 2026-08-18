@@ -46,13 +46,36 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
     def test_init_is_an_explicit_alias_for_initialize(self) -> None:
         """init 命令应执行正式初始化并返回结构化报告。"""
 
+        from scripts.project_kb.initialization_contract import canonical_revision
+
+        proposal = {
+            "operation": "initialize",
+            "project": {
+                "root": str(self.root),
+                "id": self.root.name,
+                "name": self.root.name,
+                "knowledge_base_name": f"doc-{self.root.name}",
+            },
+            "facts": {
+                "goals": [],
+                "boundaries_in": [],
+                "boundaries_out": [],
+                "technology_stacks": [],
+                "local_commands": [],
+            },
+            "unknowns": [],
+            "conflicts": [],
+        }
+        proposal["proposal_revision"] = canonical_revision(proposal)
+        proposal_path = self.root / "proposal.json"
+        proposal_path.write_text(json.dumps(proposal, ensure_ascii=False), encoding="utf-8")
+
         exit_code, payload = self._run(
             "init",
-            str(self.root),
-            "--proposal-revision",
-            "proposal-init-1",
+            "--proposal",
+            str(proposal_path),
             "--confirmed-revision",
-            "proposal-init-1",
+            str(proposal["proposal_revision"]),
         )
 
         self.assertEqual(0, exit_code)
