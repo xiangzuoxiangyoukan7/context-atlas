@@ -39,7 +39,6 @@ class InitializationContractTests(TempDirectoryTestCase):
                     "name": "Python", "version": "3.14", "location": ".", "purpose": "项目实现",
                     "commands": ["py -m unittest"], "configuration": "pyproject.toml",
                 }],
-                "local_commands": [],
             },
             "unknowns": [{"id": "UNKNOWN-001", "question": "部署环境是什么？", "owner_action": "项目负责人确认"}],
             "conflicts": [],

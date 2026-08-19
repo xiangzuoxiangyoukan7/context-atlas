@@ -5,7 +5,7 @@ title: 黄金样例与 Agent 一致性测试
 plan: docs/superpowers/plans/2026-08-10-single-knowledge-base-multi-stack.md
 status: acceptance
 acceptance: [F01-AC-01, F01-AC-02, F02-AC-01, F02-AC-02, F03-AC-01, F03-AC-02, F05-AC-02]
-last_updated: 2026-08-10
+last_updated: 2026-08-19
 ---
 
 # TASK-KB-004：单知识库多技术栈黄金样例与一致性测试
@@ -18,7 +18,7 @@ last_updated: 2026-08-10
 
 - 功能：F01、F02、F03、F05 的产品验收项。
 - 契约：[初始化产物契约](../../02-架构与契约/初始化产物契约.md)、[知识项与 Proposal 契约](../../02-架构与契约/知识项与Proposal契约.md)
-- Skill：[脉络地图 Skill](../../../skills/context-atlas/SKILL.md)
+- Skill：[初始化 Skill](../../../skills/context-atlas-init/SKILL.md)、[更新 Skill](../../../skills/context-atlas-update/SKILL.md)
 
 ## 范围
 

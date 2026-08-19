@@ -53,10 +53,8 @@ def required_template_paths() -> Sequence[Path]:
             "03-实施与验收/验收证据/TEMPLATE.md",
             "04-决策记录/README.md",
             "04-决策记录/TEMPLATE.md",
-            "05-开发指南/README.md",
-            "05-开发指南/AI知识采集协议.md",
-            "05-开发指南/本地开发.md",
-            "05-开发指南/测试规则.md",
+            "05-知识治理/README.md",
+            "05-知识治理/AI知识采集协议.md",
             "90-历史归档/README.md",
         )
     )

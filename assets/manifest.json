@@ -103,10 +103,8 @@
     "templates/core/doc-project/03-实施与验收/验收证据/TEMPLATE.md",
     "templates/core/doc-project/04-决策记录/README.md",
     "templates/core/doc-project/04-决策记录/TEMPLATE.md",
-    "templates/core/doc-project/05-开发指南/AI知识采集协议.md",
-    "templates/core/doc-project/05-开发指南/README.md",
-    "templates/core/doc-project/05-开发指南/本地开发.md",
-    "templates/core/doc-project/05-开发指南/测试规则.md",
+    "templates/core/doc-project/05-知识治理/AI知识采集协议.md",
+    "templates/core/doc-project/05-知识治理/README.md",
     "templates/core/doc-project/90-历史归档/README.md",
     "templates/core/doc-project/README.md",
     "templates/core/doc-project/knowledge-base.yaml"

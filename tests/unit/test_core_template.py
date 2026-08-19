@@ -20,7 +20,7 @@ class CoreTemplateTests(TempDirectoryTestCase):
         current_change = root / "03-实施与验收/当前变更.md"
         manifest = (root / "knowledge-base.yaml").read_text(encoding="utf-8")
         collaboration = (
-            root / "05-开发指南/AI知识采集协议.md"
+            root / "05-知识治理/AI知识采集协议.md"
         ).read_text(encoding="utf-8")
 
         self.assertTrue(current_change.is_file())
@@ -28,6 +28,36 @@ class CoreTemplateTests(TempDirectoryTestCase):
         self.assertNotIn("current:", manifest)
         self.assertIn("不构成任务执行许可", current_change.read_text(encoding="utf-8"))
         self.assertNotIn("无可执行开发任务", collaboration)
+
+    def test_capture_guide_is_durable_fallback_not_runtime_specification(self) -> None:
+        """生成的协作文档必须自包含，但不复制插件运行时细节。"""
+
+        guide = Path(
+            "templates/core/doc-project/05-知识治理/AI知识采集协议.md"
+        ).read_text(encoding="utf-8")
+
+        for phrase in (
+            "持久化的治理说明",
+            "不是插件完整运行时规范",
+            "未安装 Skill 时",
+            "当前修订标识",
+            "沉默不是确认",
+            "不表示内容已被正确批准",
+        ):
+            self.assertIn(phrase, guide)
+        for runtime_detail in (
+            "agent_kb_operation.py",
+            "py -3",
+            "python3",
+            "Windows Store",
+            "agent_host",
+        ):
+            self.assertNotIn(runtime_detail, guide)
+
+        root = Path("templates/core/doc-project")
+        self.assertFalse((root / "05-开发指南").exists())
+        self.assertFalse((root / "05-知识治理/本地开发.md").exists())
+        self.assertFalse((root / "05-知识治理/测试规则.md").exists())
 
     def test_data_asset_readme_has_inventory_columns_and_valid_card_template_link(
         self,

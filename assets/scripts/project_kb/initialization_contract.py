@@ -24,7 +24,6 @@ FACT_GROUPS = {
     "boundaries_in",
     "boundaries_out",
     "technology_stacks",
-    "local_commands",
 }
 
 
@@ -157,16 +156,6 @@ def validate_initialization_proposal(proposal: object) -> dict[str, Any]:
             _text(command, f"{label}.commands") for command in _list(item["commands"], f"{label}.commands")
         ]
         normalized_facts["technology_stacks"].append(normalized)
-
-    command_fields = {"purpose", "prerequisites", "command", "expected_result"}
-    normalized_facts["local_commands"] = []
-    for index, item in enumerate(_list(facts["local_commands"], "proposal.facts.local_commands")):
-        label = f"proposal.facts.local_commands[{index}]"
-        normalized = _fact(item, label, command_fields)
-        assert isinstance(item, dict)
-        for field in command_fields:
-            normalized[field] = _text(item[field], f"{label}.{field}")
-        normalized_facts["local_commands"].append(normalized)
 
     def open_items(key: str) -> list[dict[str, str]]:
         """校验未知项或冲突项的固定字段。"""

@@ -5,14 +5,14 @@ title: 跨 Agent 执行一致性与 Claude Code 验收
 plan: docs/superpowers/plans/2026-08-13-cross-agent-execution-and-claude-validation.md
 status: in_progress
 acceptance: [KB-AC-26, KB-AC-27, KB-AC-28, KB-AC-29]
-last_updated: 2026-08-13
+last_updated: 2026-08-19
 ---
 
 # TASK-KB-006：跨 Agent 执行一致性与 Claude Code 验收
 
 ## 范围
 
-- Codex 与 Claude Code 使用各自平台清单加载唯一的 `skills/context-atlas/`。
+- Codex 与 Claude Code 使用各自平台清单加载共享的 `skills/context-atlas-init/` 和 `skills/context-atlas-update/`。
 - 用同一组场景验证确认前零正式写入、确认后初始化、已有目标防覆盖和自然语言触发。
 - 以文件快照、命令退出码和目标内置检查器验证实际行为，不使用 Agent 自述代替证据。
 
@@ -25,7 +25,7 @@ last_updated: 2026-08-13
 ## 依据
 
 - 计划：`docs/superpowers/plans/2026-08-13-cross-agent-execution-and-claude-validation.md`
-- Skill：[Context Atlas Skill](../../../skills/context-atlas/SKILL.md)
+- Skill：[初始化 Skill](../../../skills/context-atlas-init/SKILL.md)、[更新 Skill](../../../skills/context-atlas-update/SKILL.md)
 - 验收：`KB-AC-26`～`KB-AC-29`
 - 证据：[跨 Agent 执行一致性与 Claude Code 验收](../验收证据/跨Agent执行一致性与Claude验收.md)
 

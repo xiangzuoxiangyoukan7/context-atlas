@@ -6,11 +6,68 @@ from datetime import date
 from pathlib import Path
 import re
 import shutil
-import tempfile
+import uuid
 from .validator import ValidationConfig, validate
 
 
 MARKER_PATTERN = re.compile(r"{{[A-Z][A-Z0-9_]*}}")
+
+
+def _cell(value: object) -> str:
+    """将已校验文本安全放入 Markdown 表格单元格。"""
+
+    return str(value).replace("\r", " ").replace("\n", " ").replace("|", "\\|")
+
+
+def _source(fact: dict[str, object]) -> str:
+    """把事实来源格式化为可回查的表格文本。"""
+
+    source = fact["source"]
+    assert isinstance(source, dict)
+    return f"{_cell(source['type'])}: {_cell(source['reference'])}"
+
+
+def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
+    """把 Proposal 的受控字段渲染到预定义文档，禁止任意目标路径。"""
+
+    facts = proposal["facts"]
+    assert isinstance(facts, dict)
+
+    goals = ["# 项目目标与成功标准", "", "## 目标", ""]
+    goal_items = facts["goals"]
+    assert isinstance(goal_items, list)
+    if goal_items:
+        goals.extend(f"- **{_cell(item['id'])}** {_cell(item['value'])}（{_source(item)}；{_cell(item['status'])}）" for item in goal_items)
+    else:
+        goals.append("待确认。")
+    goals.extend(["", "## 成功标准", "", "初始化 Proposal 未确认可衡量标准时保持待确认。", ""])
+    (root / "00-项目总览" / "项目目标与成功标准.md").write_text("\n".join(goals), encoding="utf-8", newline="\n")
+
+    boundaries = ["# 项目边界", "", "## 范围内", "", "| 编号 | 能力或对象 | 来源 | 状态 |", "| --- | --- | --- | --- |"]
+    inside = facts["boundaries_in"]
+    outside = facts["boundaries_out"]
+    assert isinstance(inside, list) and isinstance(outside, list)
+    boundaries.extend(f"| {_cell(item['id'])} | {_cell(item['value'])} | {_source(item)} | {_cell(item['status'])} |" for item in inside)
+    if not inside:
+        boundaries.append("| 待确认 | 待确认 | 待确认 | missing |")
+    boundaries.extend(["", "## 范围外", "", "| 编号 | 不包含内容 | 来源 | 状态 |", "| --- | --- | --- | --- |"])
+    boundaries.extend(f"| {_cell(item['id'])} | {_cell(item['value'])} | {_source(item)} | {_cell(item['status'])} |" for item in outside)
+    if not outside:
+        boundaries.append("| 待确认 | 待确认 | 待确认 | missing |")
+    boundaries.append("")
+    (root / "00-项目总览" / "项目边界.md").write_text("\n".join(boundaries), encoding="utf-8", newline="\n")
+
+    technologies = ["# 技术栈与版本", "", "| 技术 | 版本 | 使用目录或模块 | 项目用途 | 构建、测试与运行命令 | 配置位置 | 来源 | 状态 |", "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+    stacks = facts["technology_stacks"]
+    assert isinstance(stacks, list)
+    technologies.extend(
+        f"| {_cell(item['name'])} | {_cell(item['version'])} | {_cell(item['location'])} | {_cell(item['purpose'])} | {_cell('; '.join(item['commands']))} | {_cell(item['configuration'])} | {_source(item)} | {_cell(item['status'])} |"
+        for item in stacks
+    )
+    if not stacks:
+        technologies.append("| 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | missing |")
+    technologies.append("")
+    (root / "00-项目总览" / "技术栈与版本.md").write_text("\n".join(technologies), encoding="utf-8", newline="\n")
 
 
 def _safe_project_name(name: str) -> str:
@@ -44,8 +101,10 @@ def _replace_markers(root: Path, values: dict[str, str]) -> None:
 def initialize_from_assets(
     project_root: Path,
     project_name: str | None = None,
-    assets_root: Path = Path("skills/context-atlas/assets"),
+    assets_root: Path = Path("assets"),
     initialized_at: str | None = None,
+    proposal: dict[str, object] | None = None,
+    project_display_name: str | None = None,
 ) -> Path:
     """从 Skill 资产创建自包含且已验证的新知识库。"""
 
@@ -64,18 +123,21 @@ def initialize_from_assets(
         raise ValueError("Skill assets are incomplete")
 
     # 先在同一文件系统完成复制和验证，最后原子改名，避免暴露半成品目标。
-    staging = Path(tempfile.mkdtemp(prefix=f".{target.name}.initializing-", dir=project_root))
+    staging = project_root / f".{target.name}.initializing-{uuid.uuid4().hex[:8]}"
+    staging.mkdir()
     try:
         shutil.copytree(template, staging, dirs_exist_ok=True)
         _replace_markers(
             staging,
             {
                 "{{PROJECT_ID}}": name,
-                "{{PROJECT_NAME}}": name,
+                "{{PROJECT_NAME}}": project_display_name or name,
                 "{{KNOWLEDGE_BASE_NAME}}": target.name,
                 "{{INITIALIZED_AT}}": initialized_at or date.today().isoformat(),
             },
         )
+        if proposal is not None:
+            _render_confirmed_content(staging, proposal)
         shutil.copytree(assets_root / "scripts", staging / ".project-kb" / "scripts")
         shutil.copytree(schema_root, staging / ".project-kb" / "schemas")
         shutil.copy2(

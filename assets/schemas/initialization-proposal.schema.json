@@ -22,13 +22,12 @@
     "facts": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["goals", "boundaries_in", "boundaries_out", "technology_stacks", "local_commands"],
+      "required": ["goals", "boundaries_in", "boundaries_out", "technology_stacks"],
       "properties": {
         "goals": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
         "boundaries_in": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
         "boundaries_out": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
-        "technology_stacks": {"type": "array", "items": {"$ref": "#/$defs/technology"}},
-        "local_commands": {"type": "array", "items": {"$ref": "#/$defs/command"}}
+        "technology_stacks": {"type": "array", "items": {"$ref": "#/$defs/technology"}}
       }
     },
     "unknowns": {"type": "array", "items": {"$ref": "#/$defs/open_item"}},
@@ -70,21 +69,6 @@
         "purpose": {"type": "string", "minLength": 1},
         "commands": {"type": "array", "items": {"type": "string"}},
         "configuration": {"type": "string", "minLength": 1}
-      }
-    },
-    "command": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "value", "status", "source", "purpose", "prerequisites", "command", "expected_result"],
-      "properties": {
-        "id": {"type": "string", "pattern": "^[A-Z]+-[0-9]{3}$"},
-        "value": {"type": "string", "minLength": 1},
-        "status": {"enum": ["confirmed", "proposed"]},
-        "source": {"$ref": "#/$defs/source"},
-        "purpose": {"type": "string", "minLength": 1},
-        "prerequisites": {"type": "string", "minLength": 1},
-        "command": {"type": "string", "minLength": 1},
-        "expected_result": {"type": "string", "minLength": 1}
       }
     },
     "open_item": {

@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 import shutil
 import sys
-import tempfile
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -385,8 +384,11 @@ def generate() -> None:
         raise FileExistsError("example, fixture, or snapshot output already exists")
     examples.mkdir()
     try:
-        with tempfile.TemporaryDirectory() as directory:
-            temporary = Path(directory)
+        temporary = Path(".context-atlas-example-generation")
+        if temporary.exists():
+            raise FileExistsError("example generation staging already exists")
+        temporary.mkdir()
+        try:
             for name in EXAMPLE_NAMES:
                 materialized = initialize_from_assets(
                     temporary,
@@ -395,6 +397,8 @@ def generate() -> None:
                 )
                 _populate_example(materialized, name)
                 shutil.copytree(materialized, examples / name)
+        finally:
+            shutil.rmtree(temporary, ignore_errors=True)
         _generate_invalid_fixtures(fixtures)
         structures = {
             name: sorted(

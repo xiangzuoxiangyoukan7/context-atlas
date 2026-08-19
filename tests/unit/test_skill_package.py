@@ -249,6 +249,27 @@ class SkillPackageTests(unittest.TestCase):
         self.assertIn("Validation result", report)
         self.assertIn("not_validated", report)
 
+    def test_capture_protocol_has_one_runtime_authority_and_thin_skills(self) -> None:
+        """知识采集完整执行语义必须集中在 references，Skill 只做薄编排。"""
+
+        protocol = (REFERENCES_ROOT / "知识采集与确认.md").read_text(
+            encoding="utf-8"
+        )
+        for phrase in (
+            "single normative protocol source",
+            "thin adapters",
+            "durable governance explanation",
+            "not the plugin runtime specification",
+            "Schemas are the machine authority",
+        ):
+            self.assertIn(phrase, protocol)
+
+        for skill_root in SKILL_ROOTS:
+            skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("../../references/知识采集与确认.md", skill)
+            self.assertNotIn("## Source types", skill)
+            self.assertNotIn("## Proposal contract", skill)
+
     def test_skill_ui_metadata_is_readable_and_legacy_assets_are_absent(self) -> None:
         """验证 skill_ui_metadata_is_readable_and_legacy_assets_are_absent 场景。"""
 

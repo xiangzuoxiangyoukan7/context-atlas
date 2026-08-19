@@ -15,7 +15,7 @@ class SecurityTests(TempDirectoryTestCase):
 
         knowledge_base = make_valid_knowledge_base(self.root / "doc-example")
         write_record(
-            knowledge_base / "05-开发指南" / "unsafe.md",
+            knowledge_base / "05-知识治理" / "unsafe.md",
             {
                 "id": "SECURITY-001",
                 "type": "knowledge_item",
@@ -42,7 +42,7 @@ class SecurityTests(TempDirectoryTestCase):
 
         knowledge_base = make_valid_knowledge_base(self.root / "doc-example")
         write_record(
-            knowledge_base / "05-开发指南" / "safe.md",
+            knowledge_base / "05-知识治理" / "safe.md",
             {
                 "id": "SECURITY-001",
                 "type": "knowledge_item",

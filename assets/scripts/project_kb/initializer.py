@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 import re
 import shutil
-import tempfile
+import uuid
 from .validator import ValidationConfig, validate
 
 
@@ -69,18 +69,6 @@ def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
     technologies.append("")
     (root / "00-项目总览" / "技术栈与版本.md").write_text("\n".join(technologies), encoding="utf-8", newline="\n")
 
-    commands = ["# 本地开发", "", "| 目的 | 前置条件 | 命令 | 预期结果 | 来源 | 状态 |", "| --- | --- | --- | --- | --- | --- |"]
-    local_commands = facts["local_commands"]
-    assert isinstance(local_commands, list)
-    commands.extend(
-        f"| {_cell(item['purpose'])} | {_cell(item['prerequisites'])} | `{_cell(item['command'])}` | {_cell(item['expected_result'])} | {_source(item)} | {_cell(item['status'])} |"
-        for item in local_commands
-    )
-    if not local_commands:
-        commands.append("| 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | missing |")
-    commands.append("")
-    (root / "05-开发指南" / "本地开发.md").write_text("\n".join(commands), encoding="utf-8", newline="\n")
-
 
 def _safe_project_name(name: str) -> str:
     """验证项目名只能形成一个安全目录段。"""
@@ -135,7 +123,8 @@ def initialize_from_assets(
         raise ValueError("Skill assets are incomplete")
 
     # 先在同一文件系统完成复制和验证，最后原子改名，避免暴露半成品目标。
-    staging = Path(tempfile.mkdtemp(prefix=f".{target.name}.initializing-", dir=project_root))
+    staging = project_root / f".{target.name}.initializing-{uuid.uuid4().hex[:8]}"
+    staging.mkdir()
     try:
         shutil.copytree(template, staging, dirs_exist_ok=True)
         _replace_markers(
