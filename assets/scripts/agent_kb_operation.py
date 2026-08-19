@@ -160,7 +160,7 @@ def _execute(args: argparse.Namespace) -> tuple[object, int]:
         )
     if args.operation == "identify-contributor":
         people_path = (
-            args.knowledge_base_root.resolve() / "00-项目总览" / "协作人员.md"
+            args.knowledge_base_root.resolve() / "05-知识治理" / "协作与责任.md"
         )
         return discover_identity_match(args.repository_root, people_path), 0
     proposal = _migration_proposal(

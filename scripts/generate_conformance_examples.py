@@ -139,28 +139,31 @@ def _populate_example(root: Path, name: str) -> None:
     _source(root, "SRC-001", "user_statement", "fictional example-owner confirmation")
     _source(root, "SRC-002", "repository_file", "README.example")
     _write(
-        root / "00-项目总览/项目目标与成功标准.md",
-        """# 项目目标与成功标准
+        root / "00-项目总览/项目概述.md",
+        """# 示例项目概述
 
 > 虚构黄金样例；事实由 `example-owner` 于 2026-08-10 确认，来源为 SRC-001、SRC-002。
 
-| 编号 | 可观察结果 | 衡量方式 | 状态 | 来源 |
-| --- | --- | --- | --- | --- |
-| GOAL-01 | 团队能查询已批准的示例知识 | 返回带来源的结果 | approved | SRC-001 |
-""",
-    )
-    _write(
-        root / "00-项目总览/项目边界.md",
-        """# 项目边界
+## 项目定位
 
-| 类型 | 内容 | 状态 | 来源 |
-| --- | --- | --- | --- |
-| 范围内 | 存储并查询虚构项目知识 | approved | SRC-001 |
-| 范围外 | 真实业务处理与用户凭据 | approved | SRC-001 |
+团队用于查询已批准示例知识的虚构项目。
+
+## 长期职责
+
+- 存储并查询虚构项目知识。
+
+## 明确不负责
+
+- 不处理真实业务和用户凭据。
+
+## 来源
+
+- SRC-001：虚构用户确认。
+- SRC-002：虚构仓库 README。
 """,
     )
     _write(
-        root / "00-项目总览/产品能力地图.md",
+        root / "01-功能基线/能力地图.md",
         """# 产品能力地图
 
 | 功能编号 | 名称 | 阶段 | 优先级 | 当前切片 | 状态 | 来源 |
@@ -178,13 +181,13 @@ def _populate_example(root: Path, name: str) -> None:
 """,
     )
     _write(
-        root / "00-项目总览/技术栈与版本.md",
-        """# 技术栈与版本
+        root / "02-架构与契约/技术基线.md",
+        """# 技术基线
 
 | 技术 | 版本 | 使用目录或模块 | 项目用途 | 构建、测试与运行命令 | 配置位置 | 来源 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Java | 21 | backend | Spring Boot API | mvn test | application.yml | SRC-001 | approved |
-""" if name == "single-stack" else """# 技术栈与版本
+""" if name == "single-stack" else """# 技术基线
 
 | 技术 | 版本 | 使用目录或模块 | 项目用途 | 构建、测试与运行命令 | 配置位置 | 来源 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- | --- |

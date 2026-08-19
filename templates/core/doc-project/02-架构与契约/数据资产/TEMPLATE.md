@@ -28,7 +28,7 @@ last_updated: {{INITIALIZED_AT}}
 | --- | --- | --- | --- | --- | --- |
 | database | missing | missing | missing | missing | proposed |
 
-数据来源描述实际数据流；支撑本卡内容的证据在[知识来源](../../00-项目总览/知识来源.md)中记录。
+数据来源描述实际数据流；支撑本卡内容的证据直接记录在本卡的来源字段中。
 
 ## 主要内容
 

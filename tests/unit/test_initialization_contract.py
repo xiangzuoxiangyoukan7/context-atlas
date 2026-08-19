@@ -62,8 +62,8 @@ class InitializationContractTests(TempDirectoryTestCase):
         self.assertEqual(3, report.execution.runtime_detection.attempts[0].python_major)
         self.assertEqual(("UNKNOWN-001",), report.unknowns)
         target = self.root / "doc-example"
-        self.assertIn("Python", (target / "00-项目总览/技术栈与版本.md").read_text(encoding="utf-8"))
-        self.assertIn("提供可验证的知识库", (target / "00-项目总览/项目目标与成功标准.md").read_text(encoding="utf-8"))
+        self.assertIn("Python", (target / "02-架构与契约/技术基线.md").read_text(encoding="utf-8"))
+        self.assertIn("提供可验证的知识库", (target / "00-项目总览/项目概述.md").read_text(encoding="utf-8"))
 
     def test_revision_mismatch_has_zero_formal_writes(self) -> None:
         """确认修订不一致时不得创建正式目录。"""

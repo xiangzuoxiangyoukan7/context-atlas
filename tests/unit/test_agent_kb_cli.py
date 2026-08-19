@@ -153,9 +153,9 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
 
         from scripts.project_kb.identity import email_digest
 
-        people_dir = self.root / "doc-example/00-项目总览"
+        people_dir = self.root / "doc-example/05-知识治理"
         people_dir.mkdir(parents=True)
-        (people_dir / "协作人员.md").write_text(
+        (people_dir / "协作与责任.md").write_text(
             "# 协作人员\n\n"
             "| 人员编号 | 显示名称 | 所属团队 | 状态 | Git 用户名别名 | Git 邮箱摘要 |\n"
             "| --- | --- | --- | --- | --- | --- |\n"

@@ -33,41 +33,42 @@ def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
     facts = proposal["facts"]
     assert isinstance(facts, dict)
 
-    goals = ["# 项目目标与成功标准", "", "## 目标", ""]
+    overview = [f"# {_cell(proposal['project']['name'])} 项目概述", "", "## 项目定位", ""]
     goal_items = facts["goals"]
     assert isinstance(goal_items, list)
     if goal_items:
-        goals.extend(f"- **{_cell(item['id'])}** {_cell(item['value'])}（{_source(item)}；{_cell(item['status'])}）" for item in goal_items)
+        overview.extend(f"- **{_cell(item['id'])}** {_cell(item['value'])}（{_cell(item['status'])}）" for item in goal_items)
     else:
-        goals.append("待确认。")
-    goals.extend(["", "## 成功标准", "", "初始化 Proposal 未确认可衡量标准时保持待确认。", ""])
-    (root / "00-项目总览" / "项目目标与成功标准.md").write_text("\n".join(goals), encoding="utf-8", newline="\n")
+        overview.append("待确认。")
 
-    boundaries = ["# 项目边界", "", "## 范围内", "", "| 编号 | 能力或对象 | 来源 | 状态 |", "| --- | --- | --- | --- |"]
+    overview.extend(["", "## 长期职责", ""])
     inside = facts["boundaries_in"]
     outside = facts["boundaries_out"]
     assert isinstance(inside, list) and isinstance(outside, list)
-    boundaries.extend(f"| {_cell(item['id'])} | {_cell(item['value'])} | {_source(item)} | {_cell(item['status'])} |" for item in inside)
+    overview.extend(f"- **{_cell(item['id'])}** {_cell(item['value'])}（{_cell(item['status'])}）" for item in inside)
     if not inside:
-        boundaries.append("| 待确认 | 待确认 | 待确认 | missing |")
-    boundaries.extend(["", "## 范围外", "", "| 编号 | 不包含内容 | 来源 | 状态 |", "| --- | --- | --- | --- |"])
-    boundaries.extend(f"| {_cell(item['id'])} | {_cell(item['value'])} | {_source(item)} | {_cell(item['status'])} |" for item in outside)
+        overview.append("待确认。")
+    overview.extend(["", "## 明确不负责", ""])
+    overview.extend(f"- **{_cell(item['id'])}** {_cell(item['value'])}（{_cell(item['status'])}）" for item in outside)
     if not outside:
-        boundaries.append("| 待确认 | 待确认 | 待确认 | missing |")
-    boundaries.append("")
-    (root / "00-项目总览" / "项目边界.md").write_text("\n".join(boundaries), encoding="utf-8", newline="\n")
+        overview.append("待确认。")
+    overview.extend(["", "## 来源", ""])
+    source_items = [*goal_items, *inside, *outside]
+    overview.extend(f"- **{_cell(item['id'])}** {_source(item)}" for item in source_items)
+    if not source_items:
+        overview.append("待确认。")
+    overview.append("")
+    (root / "00-项目总览" / "项目概述.md").write_text("\n".join(overview), encoding="utf-8", newline="\n")
 
-    technologies = ["# 技术栈与版本", "", "| 技术 | 版本 | 使用目录或模块 | 项目用途 | 构建、测试与运行命令 | 配置位置 | 来源 | 状态 |", "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+    technologies = ["# 技术基线", "", "| 技术 | 版本 | 使用目录或模块 | 项目用途 | 构建、测试与运行命令 | 配置位置 | 来源 | 状态 |", "| --- | --- | --- | --- | --- | --- | --- | --- |"]
     stacks = facts["technology_stacks"]
     assert isinstance(stacks, list)
     technologies.extend(
         f"| {_cell(item['name'])} | {_cell(item['version'])} | {_cell(item['location'])} | {_cell(item['purpose'])} | {_cell('; '.join(item['commands']))} | {_cell(item['configuration'])} | {_source(item)} | {_cell(item['status'])} |"
         for item in stacks
     )
-    if not stacks:
-        technologies.append("| 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | missing |")
     technologies.append("")
-    (root / "00-项目总览" / "技术栈与版本.md").write_text("\n".join(technologies), encoding="utf-8", newline="\n")
+    (root / "02-架构与契约" / "技术基线.md").write_text("\n".join(technologies), encoding="utf-8", newline="\n")
 
 
 def _safe_project_name(name: str) -> str:

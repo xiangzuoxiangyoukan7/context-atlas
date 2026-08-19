@@ -19,7 +19,7 @@ class TechnologyStackTests(TempDirectoryTestCase):
         for name, rows in cases.items():
             with self.subTest(name=name):
                 root = materialize_core_template(self.root / name, name)
-                technology = root / "00-项目总览" / "技术栈与版本.md"
+                technology = root / "02-架构与契约" / "技术基线.md"
                 content = technology.read_text(encoding="utf-8").replace(
                     "| 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | SRC-001 | missing |",
                     rows,
