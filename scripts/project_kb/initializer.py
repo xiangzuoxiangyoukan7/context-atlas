@@ -32,6 +32,65 @@ def _source(fact: dict[str, object]) -> str:
     )
 
 
+def _embedded_source_lines(fact: dict[str, object]) -> list[str]:
+    """把已校验来源渲染为受限 Front Matter 支持的内嵌对象。"""
+
+    source = fact["source"]
+    assert isinstance(source, dict)
+    lines = [
+        f"  - type: {source['type']}",
+        f"    reference: {source['reference']}",
+        f"    observed_at: {source['observed_at']}",
+        f"    confirmation_status: {source['confirmation_status']}",
+    ]
+    if "confirmed_at" in source:
+        lines.append(f"    confirmed_at: {source['confirmed_at']}")
+    return lines
+
+
+def _knowledge_status(fact: dict[str, object]) -> str:
+    """将初始化事实状态映射为通用知识状态。"""
+
+    return "approved" if fact.get("status") == "confirmed" else "proposed"
+
+
+def _render_module(root: Path, item: dict[str, object]) -> None:
+    """把模块观察写成可独立引用的模块契约。"""
+
+    identifier = _cell(item["id"])
+    source = item["source"]
+    assert isinstance(source, dict)
+    lines = [
+        "---", f"id: {identifier}", "type: module", f"title: {identifier}",
+        f"status: {_knowledge_status(item)}", f"paths: [{_cell(source['reference'])}]", "sources:",
+        *_embedded_source_lines(item), "rel_provides: []", "rel_calls: []", "rel_depends_on: []",
+        f"last_updated: {str(source['observed_at'])[:10]}", "---", f"# {identifier}", "",
+        "## 职责", "", _cell(item["value"]), "", "## 明确不负责", "", "待确认。", "",
+        "## 允许依赖与禁止依赖", "", "待确认。", "",
+    ]
+    (root / "02-架构与契约" / "模块" / f"{identifier}.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
+
+
+def _render_interface(root: Path, item: dict[str, object]) -> None:
+    """把接口观察写成统一接口契约并按编号确定通信类型。"""
+
+    identifier = _cell(item["id"])
+    source = item["source"]
+    assert isinstance(source, dict)
+    prefix = identifier.split("-", 1)[0]
+    kinds = {"API": "http", "RPC": "rpc", "EVENT": "event", "WEBHOOK": "webhook", "FILE": "file"}
+    lines = [
+        "---", f"id: {identifier}", "type: interface", f"title: {identifier}",
+        f"status: {_knowledge_status(item)}", f"interface_kind: {kinds.get(prefix, 'function')}",
+        "visibility: internal", "version: v1", "sources:", *_embedded_source_lines(item),
+        "rel_reads: []", "rel_writes: []", "rel_depends_on: []", "rel_verified_by: []",
+        f"last_updated: {str(source['observed_at'])[:10]}", "---", f"# {identifier}", "",
+        "## 入口、输入与输出", "", _cell(item["value"]), "", "## 错误语义", "", "待确认。", "",
+        "## 版本、兼容与敏感字段", "", "待确认。", "",
+    ]
+    (root / "02-架构与契约" / "接口" / f"{identifier}.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
+
+
 def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
     """把 Proposal 的受控字段渲染到预定义文档，禁止任意目标路径。"""
 
@@ -93,8 +152,10 @@ def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
     capability_items = [*facts["capabilities"], *facts["features"]]
     facts["_routed_features"] = capability_items
     render_table("01-功能基线/能力地图.md", "产品能力地图", "_routed_features", ("编号", "能力或功能", "来源", "状态"))
-    render_table("02-架构与契约/模块边界.md", "模块边界", "modules", ("模块编号", "路径与职责", "来源", "状态"))
-    render_table("02-架构与契约/接口契约.md", "接口契约", "interfaces", ("契约编号", "入口与语义", "来源", "状态"))
+    for module in facts["modules"]:
+        _render_module(root, module)
+    for interface in facts["interfaces"]:
+        _render_interface(root, interface)
     render_table("02-架构与契约/数据库/README.md", "数据库知识", "databases", ("数据库编号", "观察事实", "来源", "状态"))
     render_table("02-架构与契约/外部依赖/README.md", "外部依赖", "external_dependencies", ("依赖编号", "依赖与用途", "来源", "状态"))
     render_table("04-决策记录/README.md", "决策记录", "adrs", ("ADR 编号", "已有决策摘要", "来源", "状态"))
