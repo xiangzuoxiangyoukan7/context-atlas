@@ -13,6 +13,12 @@ CORE_RELATIONS = {
     "rel_supported_by",
     "rel_conforms_to",
     "rel_implements",
+    "rel_satisfies",
+    "rel_primary_module",
+    "rel_participating_modules",
+    "rel_provides",
+    "rel_calls",
+    "rel_uses",
     "rel_exposes",
     "rel_reads",
     "rel_writes",
@@ -39,6 +45,8 @@ class RelationCatalogTests(TempDirectoryTestCase):
 
         self.assertEqual(CORE_RELATIONS, set(catalog.relations))
         self.assertEqual("实现该需求", catalog.get("rel_implements").name_zh)
+        self.assertEqual("deprecated", catalog.get("rel_implements").status)
+        self.assertEqual("满足该需求", catalog.get("rel_satisfies").name_zh)
 
     def test_catalog_returns_specific_and_default_impact_levels(self) -> None:
         """明确变化使用确定等级，未登记变化安全降级为人工复核。"""

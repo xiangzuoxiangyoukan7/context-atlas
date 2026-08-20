@@ -7,7 +7,6 @@ interface_kind: http
 visibility: internal
 version: v1
 sources: []
-rel_provided_by: []
 rel_reads: []
 rel_writes: []
 rel_depends_on: []

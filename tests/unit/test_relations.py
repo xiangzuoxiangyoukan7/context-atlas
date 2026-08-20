@@ -46,7 +46,7 @@ class RelationIndexTests(TempDirectoryTestCase):
             self.root / "01-功能" / "订单功能.md",
             "id: FEATURE-001\n"
             "type: feature\n"
-            "rel_implements:\n"
+            "rel_satisfies:\n"
             '  - "[[01-需求/订单需求|REQ-001]]"\n',
         )
 
@@ -68,7 +68,7 @@ class RelationIndexTests(TempDirectoryTestCase):
             self.root / "01-功能" / "订单功能.md",
             "id: FEATURE-001\n"
             "type: feature\n"
-            "rel_implements:\n"
+            "rel_satisfies:\n"
             '  - "[[01-需求/需求汇总#REQ-001 创建订单|REQ-001]]"\n',
         )
 
