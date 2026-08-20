@@ -7,7 +7,7 @@ version: 1.0.0
 physical_name: example_table
 owner: missing
 sensitivity: missing
-sources: [SRC-000]
+sources: []
 ddl_sources: [missing]
 rel_belongs_to:
   - "[[02-架构与契约/数据库/数据命名空间/NS-EXAMPLE|NS-EXAMPLE]]"

@@ -7,7 +7,7 @@ version: 1.0.0
 physical_name: example_table
 owner: missing
 sensitivity: missing
-sources: [SRC-000]
+sources: []
 ddl_sources: [missing]
 rel_belongs_to:
   - "[[02-架构与契约/数据库/数据命名空间/NS-EXAMPLE|NS-EXAMPLE]]"
@@ -19,7 +19,7 @@ last_updated: 2026-08-10
 
 | 字段编号 | 字段名 | 数据类型 | 可空 | 默认值 | 中文含义 | 值域类型 | 允许值或最小值 | 最大值或格式 | 允许其他值 | 约束执行位置 | 来源 | 锚点 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| FIELD-EXAMPLE-001 | id | bigint | 否 | — | 示例主键 | 任意 | — | 任意整数 | 否 | 数据库约束 | [[00-项目总览/知识来源#SRC-000 待登记来源|SRC-000]] | ^FIELD-EXAMPLE-001 |
+| FIELD-EXAMPLE-001 | id | bigint | 否 | — | 示例主键 | 任意 | — | 任意整数 | 否 | 数据库约束 | 内嵌来源待填写 | ^FIELD-EXAMPLE-001 |
 
 ## 主子表关系
 

@@ -8,10 +8,15 @@ product_version: 16.3
 owner: example-owner
 config_reference: EXAMPLE_DATABASE_URL
 environments: [development]
-sources: [SRC-002]
 approved_by: example-owner
 approved_at: 2026-08-10
 last_updated: 2026-08-13
+sources:
+  - type: "repository_file"
+    reference: "README.example"
+    observed_at: "2026-08-10T00:00:00Z"
+    confirmation_status: "confirmed"
+    confirmed_at: "2026-08-10T00:00:00Z"
 ---
 # DS-KNOWLEDGE 知识示例数据源
 

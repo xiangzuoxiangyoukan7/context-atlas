@@ -4,7 +4,7 @@ type: data_asset
 title: 数据资产名称
 status: proposed
 version: 0.1.0
-sources: [SRC-001]
+sources: []
 owner: missing
 source_types: [database]
 sensitivity: missing

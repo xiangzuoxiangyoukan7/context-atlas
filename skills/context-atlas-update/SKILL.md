@@ -15,6 +15,8 @@ Before apply, follow the runtime detection contract. Use the bundled Python exec
 
 Follow `inspect -> propose -> await_confirmation -> apply -> validate -> report`. Present exact target paths and a revisioned Proposal, then obtain explicit confirmation of that revision. If no Context Atlas knowledge base exists, stop and direct the user to `$context-atlas-init`.
 
+Run this workflow only when the user explicitly asks to maintain, rescan, synchronize, migrate, or update the knowledge base. Ordinary development, code review, diagnosis, or knowledge-base reading must not trigger this Skill, create a Proposal file, modify formal knowledge, or block the user's task. You may mention a discovered candidate without persisting it.
+
 Use the structured executor under `../../assets/scripts/`; do not ask the user to provide low-level revision, file, or content parameters. Preserve approved history, resolve conflicts explicitly, archive or supersede knowledge according to the governance rules, validate the result, and report exact paths and unresolved items.
 
 Keep repository evidence, AI inference, user approval, stored knowledge, and validator results distinct. Never store secrets or unredacted personal data. Never treat validator success as content approval.

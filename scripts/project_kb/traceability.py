@@ -13,6 +13,7 @@ from .model import DocumentRecord, Issue
 
 ACCEPTANCE_PATTERN = re.compile(r"(?:F\d{2}|KB)-AC-\d{2}\Z")
 ACCEPTANCE_RESULTS = {"not_started", "partial", "passed", "not_applicable"}
+SOURCE_TYPES = {"user_statement", "repository_file", "command_output", "existing_document", "external_document", "ai_inference"}
 REFERENCE_FIELDS = (
     "depends_on",
     "contracts",
@@ -84,7 +85,9 @@ def _validate_lifecycle(
         if metadata.get("type") not in LIFECYCLE_TYPES:
             continue
         status = metadata.get("status")
-        sources = as_list(metadata.get("sources"))
+        raw_sources = metadata.get("sources")
+        embedded_sources = raw_sources if isinstance(raw_sources, list) and all(isinstance(item, dict) for item in raw_sources) else None
+        sources = as_list(raw_sources) if embedded_sources is None else []
         for source in sources:
             if source not in ids:
                 issues.append(
@@ -119,11 +122,24 @@ def _validate_lifecycle(
                     )
                 )
             registered_sources = [ids[source] for source in sources if source in ids]
-            if registered_sources and all(
-                source.metadata.get("type") == "source"
-                and source.metadata.get("source_type") == "ai_inference"
+            only_ai_inference = bool(registered_sources) and all(
+                source.metadata.get("type") == "source" and source.metadata.get("source_type") == "ai_inference"
                 for source in registered_sources
-            ):
+            )
+            if embedded_sources is not None:
+                for index, source in enumerate(embedded_sources):
+                    required = {"type", "reference", "observed_at", "confirmation_status"}
+                    missing = required - set(source)
+                    if missing:
+                        issues.append(Issue("KB_SOURCE_EMBEDDED", record.path, f"embedded source {index} lacks: {', '.join(sorted(missing))}"))
+                    if source.get("type") not in SOURCE_TYPES:
+                        issues.append(Issue("KB_SOURCE_EMBEDDED", record.path, f"embedded source {index} has invalid type"))
+                    if source.get("confirmation_status") not in {"observed", "confirmed"}:
+                        issues.append(Issue("KB_SOURCE_EMBEDDED", record.path, f"embedded source {index} has invalid confirmation_status"))
+                    if source.get("confirmation_status") == "confirmed" and not source.get("confirmed_at"):
+                        issues.append(Issue("KB_SOURCE_EMBEDDED", record.path, f"embedded source {index} lacks confirmed_at"))
+                only_ai_inference = bool(embedded_sources) and all(source.get("type") == "ai_inference" for source in embedded_sources)
+            if only_ai_inference:
                 issues.append(
                     Issue(
                         "KB_APPROVAL_AI_INFERENCE",
@@ -132,7 +148,8 @@ def _validate_lifecycle(
                     )
                 )
         if status == "conflicted":
-            if len(set(sources)) < 2:
+            source_count = len({str(source) for source in (embedded_sources or sources)})
+            if source_count < 2:
                 issues.append(
                     Issue(
                         "KB_CONFLICT_SOURCES",

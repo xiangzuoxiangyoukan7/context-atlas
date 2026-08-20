@@ -12,12 +12,13 @@ from typing import Sequence
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scripts.project_kb.agent_operation import execute_initialize
+from scripts.project_kb.agent_operation import execute_initialization_proposal
 from scripts.project_kb.capture import CaptureCandidate, capture_candidate
 from scripts.project_kb.compatibility import CompatibilityPolicy
 from scripts.project_kb.discovery import discover_records
 from scripts.project_kb.identity import discover_identity_match
 from scripts.project_kb.migration import apply_migration, build_migration_proposal
+from scripts.project_kb.updater import UpdateChange, execute_update
 
 
 def _default_assets_root() -> Path:
@@ -26,7 +27,10 @@ def _default_assets_root() -> Path:
     scripts_parent = Path(__file__).resolve().parents[1]
     if (scripts_parent / "templates" / "core" / "doc-project").is_dir():
         return scripts_parent
-    return scripts_parent / "skills" / "context-atlas" / "assets"
+    source_assets = scripts_parent / "assets"
+    if (source_assets / "templates" / "core" / "doc-project").is_dir():
+        return source_assets
+    raise FileNotFoundError("Context Atlas assets root was not found")
 
 
 def _default_compatibility() -> Path:
@@ -40,12 +44,17 @@ def _parser() -> argparse.ArgumentParser:
 
     parser = argparse.ArgumentParser(description="执行已确认的 Context Atlas 结构化操作")
     subparsers = parser.add_subparsers(dest="operation", required=True)
-    initialize = subparsers.add_parser("initialize")
-    initialize.add_argument("project_root", type=Path)
-    initialize.add_argument("--project-name")
-    initialize.add_argument("--proposal-revision", required=True)
+    initialize = subparsers.add_parser("initialize", aliases=["init"])
+    initialize.add_argument("--proposal", required=True, help="Proposal JSON path, or - for stdin")
     initialize.add_argument("--confirmed-revision", required=True)
     initialize.add_argument("--assets-root", type=Path, default=_default_assets_root())
+
+    update = subparsers.add_parser("update")
+    update.add_argument("knowledge_base_root", type=Path)
+    update.add_argument("--proposal-revision", required=True)
+    update.add_argument("--confirmed-revision", required=True)
+    update.add_argument("--file", action="append", required=True)
+    update.add_argument("--content-file", action="append", required=True)
 
     diagnose = subparsers.add_parser("diagnose-format")
     diagnose.add_argument("knowledge_base_root", type=Path)
@@ -101,13 +110,26 @@ def _migration_proposal(root: Path, compatibility: Path) -> object:
 def _execute(args: argparse.Namespace) -> tuple[object, int]:
     """按已解析操作执行并返回报告及进程退出码。"""
 
-    if args.operation == "initialize":
-        report = execute_initialize(
-            project_root=args.project_root,
-            project_name=args.project_name,
-            proposal_revision=args.proposal_revision,
+    if args.operation in {"initialize", "init"}:
+        proposal_text = sys.stdin.read() if args.proposal == "-" else Path(args.proposal).read_text(encoding="utf-8")
+        proposal = json.loads(proposal_text)
+        report = execute_initialization_proposal(
+            proposal=proposal,
             confirmed_revision=args.confirmed_revision,
             assets_root=args.assets_root,
+        )
+        return report, report.validation.exit_code
+    if args.operation == "update":
+        if len(args.file) != len(args.content_file):
+            raise ValueError("--file and --content-file must be supplied the same number of times")
+        report = execute_update(
+            knowledge_base_root=args.knowledge_base_root,
+            proposal_revision=args.proposal_revision,
+            confirmed_revision=args.confirmed_revision,
+            changes=tuple(
+                UpdateChange(path, Path(content_file))
+                for path, content_file in zip(args.file, args.content_file)
+            ),
         )
         return report, report.validator_exit_code
     if args.operation == "diagnose-format":
@@ -138,7 +160,7 @@ def _execute(args: argparse.Namespace) -> tuple[object, int]:
         )
     if args.operation == "identify-contributor":
         people_path = (
-            args.knowledge_base_root.resolve() / "00-项目总览" / "协作人员.md"
+            args.knowledge_base_root.resolve() / "05-知识治理" / "协作与责任.md"
         )
         return discover_identity_match(args.repository_root, people_path), 0
     proposal = _migration_proposal(
@@ -164,7 +186,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         args = parser.parse_args(list(argv) if argv is not None else None)
         report, exit_code = _execute(args)
-    except (OSError, ValueError, PermissionError) as error:
+    except (json.JSONDecodeError, OSError, ValueError, PermissionError) as error:
         print(
             json.dumps(
                 {"ok": False, "error_type": type(error).__name__, "message": str(error)},

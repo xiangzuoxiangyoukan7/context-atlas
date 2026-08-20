@@ -228,8 +228,8 @@ class SkillPackageTests(unittest.TestCase):
             "migrate-propose",
             "migrate-apply",
             "proposal_revision",
-            "旧字段",
-            "rel_supported_by",
+            "内嵌来源对象",
+            "公共来源",
         ):
             self.assertIn(phrase, migration)
 

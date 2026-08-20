@@ -29,7 +29,7 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
         """格式诊断应明确当前版本是否可写及是否需要转换。"""
 
         (self.root / "knowledge-base.yaml").write_text(
-            "project_version: 1.0.0\nformat_version: 3\n", encoding="utf-8"
+            "project_version: 1.0.0\nformat_version: 4\n", encoding="utf-8"
         )
 
         exit_code, payload = self._run(
@@ -61,6 +61,15 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
                 "boundaries_in": [],
                 "boundaries_out": [],
                 "technology_stacks": [],
+                "terms": [],
+                "capabilities": [],
+                "features": [],
+                "modules": [],
+                "interfaces": [],
+                "databases": [],
+                "external_dependencies": [],
+                "tests": [],
+                "adrs": [],
             },
             "unknowns": [],
             "conflicts": [],
@@ -226,7 +235,10 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
         self.assertEqual(0, propose_code)
         self.assertEqual(0, apply_code)
         self.assertEqual("migrated", report["status"])
-        self.assertIn("rel_supported_by", target.read_text(encoding="utf-8"))
+        migrated = target.read_text(encoding="utf-8")
+        self.assertIn("sources:", migrated)
+        self.assertIn("confirmation_status: \"confirmed\"", migrated)
+        self.assertNotIn("sources: [SRC-001]", migrated)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+import json
 from pathlib import Path
 import tempfile
 from typing import Iterable
@@ -14,7 +15,7 @@ from .model import DocumentRecord
 
 @dataclass(frozen=True)
 class MigrationChange:
-    """描述一个文件需要补充的统一来源关系及原内容摘要。"""
+    """描述一个文件需要内嵌的来源对象及原内容摘要。"""
 
     path: Path
     links: tuple[str, ...]
@@ -184,7 +185,11 @@ def _governance_layout(root: Path) -> tuple[tuple[MigrationMove, ...], tuple[Mig
 def _rewrite_governance_paths(content: str, governance_readme: bool = False) -> str:
     """将旧开发指南语义收敛为知识治理，保留其他项目内容。"""
 
-    result = content.replace("05-开发指南", "05-知识治理").replace("开发指南", "知识治理")
+    result = (
+        content.replace("05-开发指南", "05-知识治理")
+        .replace("开发指南", "知识治理")
+        .replace("00-项目总览/SRC-", "05-知识治理/公共来源/SRC-")
+    )
     if governance_readme:
         lines = [
             line for line in result.splitlines()
@@ -211,16 +216,25 @@ def build_migration_proposal(
         raise ValueError("current format has no applicable conversion")
     record_list = list(records)
     sources = _source_paths(record_list)
+    source_records = {
+        str(record.metadata.get("id")): record
+        for record in record_list
+        if record.metadata.get("type") == "source" and isinstance(record.metadata.get("id"), str)
+    }
     changes: list[MigrationChange] = []
     unresolved: list[MigrationUnresolved] = []
-    for record in record_list if result.format_version == 1 else ():
+    referenced_source_ids: set[str] = set()
+    for record in record_list if result.format_version <= 3 else ():
+        if record.metadata.get("type") == "source":
+            continue
         raw_sources = record.metadata.get("sources")
-        if not isinstance(raw_sources, list) or "rel_supported_by" in record.metadata:
+        if not isinstance(raw_sources, list) or not raw_sources or all(isinstance(item, dict) for item in raw_sources):
             continue
         links: list[str] = []
         record_unresolved: list[MigrationUnresolved] = []
         for raw_source in raw_sources:
             source_id = str(raw_source)
+            referenced_source_ids.add(source_id)
             candidates = sources.get(source_id, [])
             if len(candidates) != 1:
                 reason = "来源不存在" if not candidates else "来源编号不唯一"
@@ -228,8 +242,18 @@ def build_migration_proposal(
                     MigrationUnresolved(record.path.resolve(), source_id, reason)
                 )
                 continue
-            relative = candidates[0].relative_to(resolved_root).with_suffix("").as_posix()
-            links.append(f"[[{relative}|{source_id}]]")
+            source_record = source_records[source_id]
+            confirmation_status = "confirmed" if record.metadata.get("status") == "approved" else "observed"
+            embedded = {
+                "type": source_record.metadata.get("source_type"),
+                "reference": source_record.metadata.get("reference"),
+                "observed_at": f"{source_record.metadata.get('last_updated')}T00:00:00Z",
+                "confirmation_status": confirmation_status,
+            }
+            if confirmation_status == "confirmed":
+                approved_at = record.metadata.get("approved_at")
+                embedded["confirmed_at"] = f"{approved_at}T00:00:00Z" if approved_at else embedded["observed_at"]
+            links.append(json.dumps(embedded, ensure_ascii=False, sort_keys=True))
         if record_unresolved:
             unresolved.extend(record_unresolved)
             continue
@@ -242,6 +266,25 @@ def build_migration_proposal(
             )
     ordered_changes = tuple(sorted(changes, key=lambda item: str(item.path)))
     moves, removals, rewrites, layout_unresolved = _governance_layout(resolved_root)
+    rewrite_paths = {item.path.resolve() for item in rewrites}
+    for path in resolved_root.rglob("*.md"):
+        if "00-项目总览/SRC-" in path.read_text(encoding="utf-8") and path.resolve() not in rewrite_paths:
+            rewrites += (MigrationRewrite(path.resolve(), _digest(path.read_bytes())),)
+            rewrite_paths.add(path.resolve())
+    for source_id, record in source_records.items():
+        if source_id not in referenced_source_ids:
+            unresolved.append(MigrationUnresolved(record.path.resolve(), source_id, "来源未被任何知识项引用，不能安全删除"))
+        try:
+            relative = record.path.resolve().relative_to(resolved_root)
+        except ValueError:
+            unresolved.append(MigrationUnresolved(record.path.resolve(), source_id, "公共来源路径逃逸知识库"))
+            continue
+        if relative.parts and relative.parts[0] == "00-项目总览":
+            destination = resolved_root / "05-知识治理" / "公共来源" / record.path.name
+            if destination.exists():
+                unresolved.append(MigrationUnresolved(record.path.resolve(), source_id, "公共来源新旧位置同时存在"))
+            else:
+                moves += (MigrationMove(record.path.resolve(), destination, _digest(record.path.read_bytes())),)
     unresolved.extend(layout_unresolved)
     ordered_unresolved = tuple(
         sorted(unresolved, key=lambda item: (str(item.path), item.source_id))
@@ -267,7 +310,7 @@ def build_migration_proposal(
 
 
 def _add_supported_by(content: str, links: tuple[str, ...]) -> str:
-    """在保留原文的前提下向 Front Matter 末尾补充统一来源关系。"""
+    """把旧来源编号替换为 Front Matter 内嵌来源对象。"""
 
     lines = content.splitlines(keepends=True)
     if not lines or lines[0].rstrip("\r\n") != "---":
@@ -279,8 +322,27 @@ def _add_supported_by(content: str, links: tuple[str, ...]) -> str:
             break
     if closing is None:
         raise ValueError("migration target has incomplete front matter")
-    addition = ["rel_supported_by:\n"] + [f'  - "{link}"\n' for link in links]
-    return "".join(lines[:closing] + addition + lines[closing:])
+    retained: list[str] = []
+    skipping = False
+    for line in lines[1:closing]:
+        if line.startswith(("sources:", "rel_supported_by:")):
+            skipping = True
+            continue
+        if skipping and line.startswith(("  ", "\t")):
+            continue
+        skipping = False
+        retained.append(line)
+    addition = ["sources:\n"]
+    for encoded in links:
+        source = json.loads(encoded)
+        first = True
+        for key in ("type", "reference", "observed_at", "confirmation_status", "confirmed_at"):
+            if key not in source:
+                continue
+            prefix = "  - " if first else "    "
+            addition.append(f'{prefix}{key}: {json.dumps(source[key], ensure_ascii=False)}\n')
+            first = False
+    return "".join([lines[0], *retained, *addition, lines[closing]]) + "".join(lines[closing + 1:])
 
 
 def _set_format_version(content: str, target_version: int) -> str:

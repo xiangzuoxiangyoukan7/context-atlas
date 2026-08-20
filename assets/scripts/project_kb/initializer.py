@@ -24,7 +24,12 @@ def _source(fact: dict[str, object]) -> str:
 
     source = fact["source"]
     assert isinstance(source, dict)
-    return f"{_cell(source['type'])}: {_cell(source['reference'])}"
+    confirmation = source.get("confirmed_at", "未确认")
+    return (
+        f"{_cell(source['type'])}: {_cell(source['reference'])}; "
+        f"observed_at={_cell(source['observed_at'])}; "
+        f"confirmation={_cell(source['confirmation_status'])}@{_cell(confirmation)}"
+    )
 
 
 def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
@@ -69,6 +74,40 @@ def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
     )
     technologies.append("")
     (root / "02-架构与契约" / "技术基线.md").write_text("\n".join(technologies), encoding="utf-8", newline="\n")
+
+    def render_table(relative: str, title: str, group: str, headers: tuple[str, ...]) -> None:
+        """将一类仓库观察写入其唯一固定文档。"""
+
+        items = facts[group]
+        assert isinstance(items, list)
+        lines = [f"# {title}", "", "| " + " | ".join(headers) + " |", "| " + " | ".join("---" for _ in headers) + " |"]
+        for item in items:
+            lines.append(
+                f"| {_cell(item['id'])} | {_cell(item['value'])} | {_source(item)} | {_cell(item['status'])} |"
+            )
+        lines.extend(["", "仓库观察只证明可定位的实现事实；产品含义、设计原因和批准状态仍需责任人确认。", ""])
+        (root / relative).write_text("\n".join(lines), encoding="utf-8", newline="\n")
+
+    render_table("00-项目总览/术语表.md", "术语表", "terms", ("术语编号", "名称与含义", "来源", "状态"))
+    capability_items = [*facts["capabilities"], *facts["features"]]
+    facts["_routed_features"] = capability_items
+    render_table("01-功能基线/能力地图.md", "产品能力地图", "_routed_features", ("编号", "能力或功能", "来源", "状态"))
+    render_table("02-架构与契约/模块边界.md", "模块边界", "modules", ("模块编号", "路径与职责", "来源", "状态"))
+    render_table("02-架构与契约/接口契约.md", "接口契约", "interfaces", ("契约编号", "入口与语义", "来源", "状态"))
+    render_table("02-架构与契约/数据库/README.md", "数据库知识", "databases", ("数据库编号", "观察事实", "来源", "状态"))
+    render_table("02-架构与契约/外部依赖/README.md", "外部依赖", "external_dependencies", ("依赖编号", "依赖与用途", "来源", "状态"))
+    render_table("04-决策记录/README.md", "决策记录", "adrs", ("ADR 编号", "已有决策摘要", "来源", "状态"))
+
+    test_items = facts["tests"]
+    assert isinstance(test_items, list)
+    if test_items:
+        technologies.extend(["## 已观察的验证入口", "", "| 编号 | 命令或测试位置 | 来源 | 状态 |", "| --- | --- | --- | --- |"])
+        technologies.extend(
+            f"| {_cell(item['id'])} | {_cell(item['value'])} | {_source(item)} | {_cell(item['status'])} |"
+            for item in test_items
+        )
+        technologies.append("")
+        (root / "02-架构与契约" / "技术基线.md").write_text("\n".join(technologies), encoding="utf-8", newline="\n")
 
 
 def _safe_project_name(name: str) -> str:

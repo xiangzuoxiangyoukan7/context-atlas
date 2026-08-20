@@ -73,11 +73,11 @@ class MigrationTests(TempDirectoryTestCase):
         proposal = self._proposal()
 
         self.assertEqual(1, proposal.source_version)
-        self.assertEqual(3, proposal.target_version)
+        self.assertEqual(4, proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
         self.assertIn(
-            "[[00-项目总览/SRC-001|SRC-001]]",
-            proposal.changes[0].links,
+            '"reference": "fixture"',
+            proposal.changes[0].links[0],
         )
         self.assertEqual(before[manifest], manifest.read_bytes())
         self.assertEqual(before[knowledge], knowledge.read_bytes())
@@ -107,15 +107,20 @@ class MigrationTests(TempDirectoryTestCase):
 
         with self.assertRaises(PermissionError):
             apply_migration(self.root, proposal, "wrong-revision")
-        self.assertNotIn("rel_supported_by", knowledge.read_text(encoding="utf-8"))
+        self.assertIn("sources: [SRC-001]", knowledge.read_text(encoding="utf-8"))
 
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
 
         content = knowledge.read_text(encoding="utf-8")
         manifest_content = manifest.read_text(encoding="utf-8")
-        self.assertIn("rel_supported_by:", content)
-        self.assertIn('  - "[[00-项目总览/SRC-001|SRC-001]]"', content)
-        self.assertIn("format_version: 3", manifest_content)
+        self.assertIn("sources:", content)
+        self.assertIn("  - type: \"user_statement\"", content)
+        self.assertIn("    reference: \"fixture\"", content)
+        self.assertIn("    confirmation_status: \"confirmed\"", content)
+        self.assertNotIn("SRC-001", content)
+        self.assertFalse((self.root / "00-项目总览/SRC-001.md").exists())
+        self.assertTrue((self.root / "05-知识治理/公共来源/SRC-001.md").exists())
+        self.assertIn("format_version: 4", manifest_content)
         self.assertIn("project_version: 3.4.0", manifest_content)
         self.assertEqual("migrated", report.status)
 
@@ -165,7 +170,7 @@ class MigrationTests(TempDirectoryTestCase):
         )
 
         self.assertEqual(2, proposal.source_version)
-        self.assertEqual(3, proposal.target_version)
+        self.assertEqual(4, proposal.target_version)
         self.assertEqual(2, len(proposal.moves))
         self.assertEqual(2, len(proposal.removals))
         self.assertEqual([], list(proposal.unresolved))
@@ -176,7 +181,7 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertTrue((self.root / "05-知识治理/AI知识采集协议.md").is_file())
         self.assertFalse((legacy / "本地开发.md").exists())
         self.assertFalse((legacy / "测试规则.md").exists())
-        self.assertIn("format_version: 3", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 4", manifest.read_text(encoding="utf-8"))
         self.assertIn("05-知识治理/README.md", root_readme.read_text(encoding="utf-8"))
         self.assertNotIn("05-开发指南", root_readme.read_text(encoding="utf-8"))
         self.assertEqual(

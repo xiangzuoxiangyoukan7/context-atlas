@@ -22,12 +22,21 @@
     "facts": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["goals", "boundaries_in", "boundaries_out", "technology_stacks"],
+      "required": ["goals", "boundaries_in", "boundaries_out", "technology_stacks", "terms", "capabilities", "features", "modules", "interfaces", "databases", "external_dependencies", "tests", "adrs"],
       "properties": {
         "goals": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
         "boundaries_in": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
         "boundaries_out": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
-        "technology_stacks": {"type": "array", "items": {"$ref": "#/$defs/technology"}}
+        "technology_stacks": {"type": "array", "items": {"$ref": "#/$defs/technology"}},
+        "terms": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
+        "capabilities": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
+        "features": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
+        "modules": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
+        "interfaces": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
+        "databases": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
+        "external_dependencies": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
+        "tests": {"type": "array", "items": {"$ref": "#/$defs/fact"}},
+        "adrs": {"type": "array", "items": {"$ref": "#/$defs/fact"}}
       }
     },
     "unknowns": {"type": "array", "items": {"$ref": "#/$defs/open_item"}},
@@ -37,10 +46,13 @@
     "source": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "reference"],
+      "required": ["type", "reference", "observed_at", "confirmation_status"],
       "properties": {
         "type": {"enum": ["repository_file", "user_statement", "existing_document", "command_output", "ai_inference"]},
-        "reference": {"type": "string", "minLength": 1}
+        "reference": {"type": "string", "minLength": 1},
+        "observed_at": {"type": "string", "format": "date-time"},
+        "confirmation_status": {"enum": ["observed", "confirmed"]},
+        "confirmed_at": {"type": "string", "format": "date-time"}
       }
     },
     "fact": {

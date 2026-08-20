@@ -7,7 +7,7 @@ version: 1.0.0
 namespace_kind: schema
 physical_name: public
 owner: missing
-sources: [SRC-000]
+sources: []
 rel_belongs_to:
   - "[[02-架构与契约/数据库/数据库单元/DB-EXAMPLE|DB-EXAMPLE]]"
 last_updated: 2026-08-10

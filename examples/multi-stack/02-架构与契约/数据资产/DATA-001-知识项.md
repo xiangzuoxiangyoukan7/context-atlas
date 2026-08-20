@@ -4,7 +4,6 @@ type: data_asset
 title: 知识项数据
 status: approved
 version: 1.0.0
-sources: [SRC-001, SRC-002]
 owner: example-owner
 source_types: [database, api, file]
 sensitivity: internal
@@ -14,6 +13,17 @@ approved_at: 2026-08-10
 proposal_revision: 1
 confirmed_revision: 1
 last_updated: 2026-08-10
+sources:
+  - type: "repository_file"
+    reference: "README.example"
+    observed_at: "2026-08-10T00:00:00Z"
+    confirmation_status: "confirmed"
+    confirmed_at: "2026-08-10T00:00:00Z"
+  - type: "user_statement"
+    reference: "fictional example-owner confirmation"
+    observed_at: "2026-08-10T00:00:00Z"
+    confirmation_status: "confirmed"
+    confirmed_at: "2026-08-10T00:00:00Z"
 ---
 # DATA-001：知识项数据
 

@@ -4,7 +4,7 @@ type: data_asset
 title: 数据资产名称
 status: proposed
 version: 0.1.0
-sources: [SRC-001]
+sources: []
 owner: missing
 source_types: [database]
 sensitivity: missing
@@ -28,7 +28,7 @@ last_updated: 2026-08-10
 | --- | --- | --- | --- | --- | --- |
 | database | missing | missing | missing | missing | proposed |
 
-数据来源描述实际数据流；支撑本卡内容的证据在[知识来源](../../00-项目总览/知识来源.md)中记录。
+数据来源描述实际数据流；支撑本卡内容的证据直接内嵌在本卡 Front Matter 中。
 
 ## 主要内容
 

@@ -7,7 +7,7 @@ version: 1.0.0
 unit_kind: database
 physical_name: example_db
 owner: missing
-sources: [SRC-000]
+sources: []
 rel_belongs_to:
   - "[[02-架构与契约/数据库/数据源/DS-EXAMPLE|DS-EXAMPLE]]"
 last_updated: {{INITIALIZED_AT}}

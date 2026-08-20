@@ -8,7 +8,7 @@ product_version: unknown
 owner: missing
 config_reference: APP_DATABASE_URL
 environments: [development]
-sources: [SRC-000]
+sources: []
 last_updated: 2026-08-10
 ---
 # DS-EXAMPLE 示例数据源

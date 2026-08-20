@@ -15,6 +15,7 @@ from .relations import RelationIndex
 from .schema_catalog import SchemaCatalog
 from .security import validate_security
 from .traceability import validate_traceability
+from .structure import validate_structure
 
 
 @dataclass(frozen=True)
@@ -36,6 +37,7 @@ def validate(root: Path, config: ValidationConfig) -> list[Issue]:
         return [Issue("KB_ROOT_MISSING", resolved_root, "knowledge-base root does not exist")]
 
     records, issues = discover_records(resolved_root, config.excluded_directories)
+    issues.extend(validate_structure(resolved_root, records))
     catalog = SchemaCatalog.load(config.schema_root)
     for record in records:
         kind = record.metadata.get("type")

@@ -7,7 +7,6 @@ version: 1.0.0
 physical_name: knowledge_audit
 owner: example-owner
 sensitivity: internal
-sources: [SRC-002]
 ddl_sources: [FILE-001]
 approved_by: example-owner
 approved_at: 2026-08-10
@@ -16,6 +15,12 @@ rel_belongs_to:
 rel_logical_parent:
   - "[[02-架构与契约/数据库/数据表/TABLE-KNOWLEDGE-001|TABLE-KNOWLEDGE-001]]"
 last_updated: 2026-08-13
+sources:
+  - type: "repository_file"
+    reference: "README.example"
+    observed_at: "2026-08-10T00:00:00Z"
+    confirmation_status: "confirmed"
+    confirmed_at: "2026-08-10T00:00:00Z"
 ---
 # TABLE-KNOWLEDGE-AUDIT 知识审计表
 
@@ -23,8 +28,8 @@ last_updated: 2026-08-13
 
 | 字段编号 | 字段名 | 数据类型 | 可空 | 默认值 | 中文含义 | 值域类型 | 允许值或最小值 | 最大值或格式 | 允许其他值 | 约束执行位置 | 来源 | 锚点 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| FIELD-AUDIT-001 | id | bigint | 否 | — | 审计主键 | 任意 | — | 正整数 | 否 | 数据库约束 | [[00-项目总览/SRC-002|SRC-002]] | ^FIELD-AUDIT-001 |
-| FIELD-AUDIT-002 | knowledge_id | bigint | 否 | — | 对应知识项主键 | 任意 | — | 正整数 | 否 | 应用规则 | [[00-项目总览/SRC-002|SRC-002]] | ^FIELD-AUDIT-002 |
+| FIELD-AUDIT-001 | id | bigint | 否 | — | 审计主键 | 任意 | — | 正整数 | 否 | 数据库约束 | [[05-知识治理/公共来源/SRC-002|SRC-002]] | ^FIELD-AUDIT-001 |
+| FIELD-AUDIT-002 | knowledge_id | bigint | 否 | — | 对应知识项主键 | 任意 | — | 正整数 | 否 | 应用规则 | [[05-知识治理/公共来源/SRC-002|SRC-002]] | ^FIELD-AUDIT-002 |
 
 ## 主子表关系
 
