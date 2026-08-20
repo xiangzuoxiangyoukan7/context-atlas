@@ -19,6 +19,7 @@ from scripts.project_kb.discovery import discover_records
 from scripts.project_kb.identity import discover_identity_match
 from scripts.project_kb.migration import apply_migration, build_migration_proposal
 from scripts.project_kb.updater import UpdateChange, execute_update
+from scripts.project_kb.archive import apply_archive, build_archive_proposal
 
 
 def _default_assets_root() -> Path:
@@ -92,6 +93,18 @@ def _parser() -> argparse.ArgumentParser:
         if operation == "migrate-apply":
             migration.add_argument("--proposal-revision", required=True)
             migration.add_argument("--confirmed-revision", required=True)
+    for operation in ("archive-propose", "archive-apply"):
+        archive = subparsers.add_parser(operation)
+        archive.add_argument("knowledge_base_root", type=Path)
+        archive.add_argument("--source", required=True)
+        archive.add_argument("--target", required=True)
+        archive.add_argument("--successor-id", required=True)
+        archive.add_argument("--archived-at", required=True)
+        archive.add_argument("--reason", required=True)
+        archive.add_argument("--source-reference", required=True)
+        if operation == "archive-apply":
+            archive.add_argument("--proposal-revision", required=True)
+            archive.add_argument("--confirmed-revision", required=True)
     return parser
 
 
@@ -167,6 +180,16 @@ def _execute(args: argparse.Namespace) -> tuple[object, int]:
             args.knowledge_base_root.resolve() / "05-知识治理" / "协作与责任.md"
         )
         return discover_identity_match(args.repository_root, people_path), 0
+    if args.operation in {"archive-propose", "archive-apply"}:
+        proposal = build_archive_proposal(
+            args.knowledge_base_root, args.source, args.target, args.successor_id,
+            args.archived_at, args.reason, args.source_reference,
+        )
+        if args.operation == "archive-propose":
+            return proposal, 0
+        if args.proposal_revision != proposal.proposal_revision:
+            raise PermissionError("proposal revision no longer matches current files")
+        return apply_archive(args.knowledge_base_root, proposal, args.confirmed_revision), 0
     proposal = _migration_proposal(
         args.knowledge_base_root, args.compatibility
     )

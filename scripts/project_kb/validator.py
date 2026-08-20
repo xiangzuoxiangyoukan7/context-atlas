@@ -16,6 +16,7 @@ from .schema_catalog import SchemaCatalog
 from .security import validate_security
 from .traceability import validate_traceability
 from .structure import validate_structure
+from .archive_validation import discover_archive, validate_current_archive_links
 
 
 @dataclass(frozen=True)
@@ -67,6 +68,14 @@ def validate(root: Path, config: ValidationConfig) -> list[Issue]:
     issues.extend(validate_database_fields(records))
     issues.extend(validate_people(resolved_root))
     issues.extend(validate_links(resolved_root, config.excluded_directories))
-    issues.extend(validate_traceability(resolved_root, records))
+    archived_records, archive_issues = discover_archive(resolved_root)
+    issues.extend(archive_issues)
+    issues.extend(validate_current_archive_links(resolved_root, records))
+    archived_ids = frozenset(
+        str(record.metadata["id"])
+        for record in archived_records
+        if isinstance(record.metadata.get("id"), str)
+    )
+    issues.extend(validate_traceability(resolved_root, records, archived_ids))
     issues.extend(validate_security(records))
     return sorted(issues, key=lambda issue: (str(issue.path), issue.code, issue.message))

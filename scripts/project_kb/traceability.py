@@ -206,6 +206,7 @@ def _validate_lifecycle(
 def _validate_references(
     records: Iterable[DocumentRecord],
     ids: Mapping[str, DocumentRecord],
+    archived_ids: frozenset[str] = frozenset(),
 ) -> list[Issue]:
     """验证受控引用字段均指向已登记知识编号。"""
 
@@ -213,7 +214,7 @@ def _validate_references(
     for record in _records_with_metadata(records):
         for field in REFERENCE_FIELDS:
             for reference in as_list(record.metadata.get(field)):
-                if reference and reference not in ids:
+                if reference and reference not in ids and not (field == "supersedes" and reference in archived_ids):
                     issues.append(
                         Issue(
                             "KB_TRACE_REFERENCE",
@@ -335,13 +336,17 @@ def _validate_matrix(root: Path, records: Iterable[DocumentRecord]) -> list[Issu
     return issues
 
 
-def validate_traceability(root: Path, records: Iterable[DocumentRecord]) -> list[Issue]:
+def validate_traceability(
+    root: Path,
+    records: Iterable[DocumentRecord],
+    archived_ids: frozenset[str] = frozenset(),
+) -> list[Issue]:
     """汇总生命周期、引用和验收矩阵的追溯问题。"""
 
     materialized = list(records)
     issues: list[Issue] = []
     ids = _id_index(materialized, issues)
     issues.extend(_validate_lifecycle(materialized, ids))
-    issues.extend(_validate_references(materialized, ids))
+    issues.extend(_validate_references(materialized, ids, archived_ids))
     issues.extend(_validate_matrix(root, materialized))
     return issues

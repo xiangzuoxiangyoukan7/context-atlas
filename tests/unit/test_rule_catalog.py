@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-# context-atlas-rules: [[rules/知识治理规则#RULE-AGENT-001|RULE-AGENT-001]] [[rules/知识治理规则#RULE-DB-001|RULE-DB-001]] [[rules/知识治理规则#RULE-GOV-001|RULE-GOV-001]] [[rules/知识治理规则#RULE-GOV-002|RULE-GOV-002]] [[rules/知识治理规则#RULE-GOV-003|RULE-GOV-003]] [[rules/知识治理规则#RULE-IMPACT-001|RULE-IMPACT-001]] [[rules/知识治理规则#RULE-REL-001|RULE-REL-001]] [[rules/知识治理规则#RULE-SRC-001|RULE-SRC-001]]
+# context-atlas-rules: [[rules/知识治理规则#RULE-AGENT-001|RULE-AGENT-001]] [[rules/知识治理规则#RULE-ARCHIVE-001|RULE-ARCHIVE-001]] [[rules/知识治理规则#RULE-DB-001|RULE-DB-001]] [[rules/知识治理规则#RULE-GOV-001|RULE-GOV-001]] [[rules/知识治理规则#RULE-GOV-002|RULE-GOV-002]] [[rules/知识治理规则#RULE-GOV-003|RULE-GOV-003]] [[rules/知识治理规则#RULE-IMPACT-001|RULE-IMPACT-001]] [[rules/知识治理规则#RULE-REL-001|RULE-REL-001]] [[rules/知识治理规则#RULE-SRC-001|RULE-SRC-001]]
 
 import unittest
 import shutil
