@@ -42,7 +42,7 @@ last_updated: {{INITIALIZED_AT}}
 - 处理：missing
 - 下游：missing
 
-技术细节链接至[数据库](../数据库/README.md)、[接口契约](../接口契约.md)或已确认的具体技术契约。
+技术细节链接至[数据库](../数据库/README.md)、[接口契约](../接口/README.md)或已确认的具体技术契约。
 
 ## 质量要求
 

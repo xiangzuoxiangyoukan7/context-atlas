@@ -1,5 +1,6 @@
 {
   "acceptance": "acceptance.schema.json",
+  "contract": "contract.schema.json",
   "data_asset": "data-asset.schema.json",
   "data_source": "data-source.schema.json",
   "database_namespace": "database-namespace.schema.json",
@@ -7,8 +8,10 @@
   "database_unit": "database-unit.schema.json",
   "feature": "feature.schema.json",
   "governance_task": "governance-task.schema.json",
+  "interface": "interface.schema.json",
   "knowledge_proposal": "knowledge-proposal.schema.json",
   "knowledge_item": "knowledge-item.schema.json",
+  "module": "module.schema.json",
   "project_manifest": "project-manifest.schema.json",
   "requirement": "requirement.schema.json",
   "source": "source.schema.json",
