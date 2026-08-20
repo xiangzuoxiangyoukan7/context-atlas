@@ -9,7 +9,12 @@ from pathlib import Path
 import shutil
 import zipfile
 
-from project_kb.plugin_contract import validate_plugin_contract
+try:
+    from .project_kb.plugin_contract import validate_plugin_contract
+    from .project_kb.plugin_assets import materialize_plugin_assets
+except ImportError:  # 兼容直接执行 scripts/build_plugin.py
+    from project_kb.plugin_contract import validate_plugin_contract
+    from project_kb.plugin_assets import materialize_plugin_assets
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,7 +41,7 @@ def _copy_common(target: Path, platform: str) -> None:
             target / manifest_dir / "marketplace.json",
         )
     _copy_tree(ROOT / "skills", target / "skills")
-    _copy_tree(ROOT / "assets", target / "assets")
+    materialize_plugin_assets(ROOT, target / "assets")
     _copy_tree(ROOT / "references", target / "references")
     for name in ("README.md", "LICENSE"):
         source = ROOT / name

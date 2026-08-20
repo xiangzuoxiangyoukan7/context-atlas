@@ -9,6 +9,11 @@ from pathlib import Path
 import shutil
 from typing import Sequence
 
+try:
+    from .project_kb.plugin_assets import materialize_plugin_assets
+except ImportError:  # 兼容直接执行 scripts/sync_to_codex_plugin.py
+    from project_kb.plugin_assets import materialize_plugin_assets
+
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCAL_IGNORED_ROOTS = frozenset({".idea"})
@@ -130,7 +135,7 @@ def sync(destination: Path) -> list[str]:
         destination / ".codex-plugin" / "plugin.json",
     )
     _copy_tree(ROOT / "skills", destination / "skills")
-    _copy_tree(ROOT / "assets", destination / "assets")
+    materialize_plugin_assets(ROOT, destination / "assets")
     _copy_tree(ROOT / "references", destination / "references")
     (destination / ".agents" / "plugins").mkdir(parents=True)
     (destination / ".agents" / "plugins" / "marketplace.json").write_text(

@@ -5,13 +5,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tests.helpers import TempDirectoryTestCase
+from tests.helpers import InstalledPluginTestCase
 
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
-class CompatibilityTests(TempDirectoryTestCase):
+class CompatibilityTests(InstalledPluginTestCase):
     """验证插件升级和目标知识库迁移保持相互独立。"""
 
     def _manifest(self, extra: str = "") -> None:
@@ -97,7 +97,7 @@ class CompatibilityTests(TempDirectoryTestCase):
         target = initialize_from_assets(
             self.root,
             project_name="example",
-            assets_root=ROOT / "assets",
+            assets_root=self.assets_root,
             initialized_at="2026-08-13",
         )
 

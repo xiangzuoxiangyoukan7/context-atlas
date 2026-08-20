@@ -8,13 +8,13 @@ import json
 from pathlib import Path
 
 from scripts.agent_kb_operation import main
-from tests.helpers import TempDirectoryTestCase
+from tests.helpers import InstalledPluginTestCase
 
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
-class AgentKnowledgeCliTests(TempDirectoryTestCase):
+class AgentKnowledgeCliTests(InstalledPluginTestCase):
     """验证命令输出是可判定的 JSON，并保留确认门禁。"""
 
     def _run(self, *arguments: str) -> tuple[int, dict[str, object]]:
@@ -84,6 +84,8 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
             str(proposal_path),
             "--confirmed-revision",
             str(proposal["proposal_revision"]),
+            "--assets-root",
+            str(self.assets_root),
         )
 
         self.assertEqual(0, exit_code)
@@ -97,7 +99,7 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
 
         target = initialize_from_assets(
             self.root,
-            assets_root=ROOT / "assets",
+            assets_root=self.assets_root,
         )
         content_file = self.root / "replacement.md"
         content_file.write_text("# 已确认更新\n", encoding="utf-8")

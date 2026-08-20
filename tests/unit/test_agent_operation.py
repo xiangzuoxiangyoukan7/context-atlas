@@ -9,13 +9,10 @@ from dataclasses import asdict
 from pathlib import Path
 
 from scripts.project_kb.agent_operation import execute_initialize
+from tests.helpers import InstalledPluginTestCase
 
 
-ROOT = Path(__file__).resolve().parents[2]
-ASSETS = ROOT / "assets"
-
-
-class AgentOperationTests(unittest.TestCase):
+class AgentOperationTests(InstalledPluginTestCase):
     """验证 AgentOperationTests 相关行为。"""
 
     def test_revision_mismatch_refuses_before_any_write(self) -> None:
@@ -26,7 +23,7 @@ class AgentOperationTests(unittest.TestCase):
             before = set(project.iterdir())
 
             with self.assertRaises(PermissionError):
-                execute_initialize(project, "example", "proposal-2", "proposal-1", ASSETS)
+                execute_initialize(project, "example", "proposal-2", "proposal-1", self.assets_root)
 
             self.assertEqual(before, set(project.iterdir()))
 
@@ -41,7 +38,7 @@ class AgentOperationTests(unittest.TestCase):
             sentinel.write_text("unchanged", encoding="utf-8")
 
             with self.assertRaises(FileExistsError):
-                execute_initialize(project, "example", "proposal-1", "proposal-1", ASSETS)
+                execute_initialize(project, "example", "proposal-1", "proposal-1", self.assets_root)
 
             self.assertEqual("unchanged", sentinel.read_text(encoding="utf-8"))
             self.assertEqual([sentinel], list(target.iterdir()))
@@ -57,7 +54,7 @@ class AgentOperationTests(unittest.TestCase):
                 "example",
                 "proposal-1",
                 "proposal-1",
-                ASSETS,
+                self.assets_root,
             )
 
             self.assertEqual("initialized", report.operation)

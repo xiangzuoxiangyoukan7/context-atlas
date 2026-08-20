@@ -94,3 +94,25 @@ class TempDirectoryTestCase(unittest.TestCase):
         """清理当前测试创建的隔离资源。"""
 
         self.temporary_directory.cleanup()
+
+
+class InstalledPluginTestCase(TempDirectoryTestCase):
+    """为测试类构建一次插件，并向各用例提供安装态运行资产。"""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """构建当前测试类共享的 Codex 插件安装产物。"""
+
+        from scripts.build_plugin import build
+
+        cls.plugin_directory = tempfile.TemporaryDirectory()
+        cls.plugin_root = build(
+            Path(cls.plugin_directory.name) / "context-atlas", "codex"
+        )
+        cls.assets_root = cls.plugin_root / "assets"
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """清理当前测试类共享的插件安装产物。"""
+
+        cls.plugin_directory.cleanup()

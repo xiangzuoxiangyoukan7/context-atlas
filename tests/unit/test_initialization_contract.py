@@ -6,13 +6,13 @@ from pathlib import Path
 
 from scripts.project_kb.agent_operation import execute_initialization_proposal
 from scripts.project_kb.initialization_contract import canonical_revision, validate_initialization_proposal
-from tests.helpers import TempDirectoryTestCase
+from tests.helpers import InstalledPluginTestCase
 
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
-class InitializationContractTests(TempDirectoryTestCase):
+class InitializationContractTests(InstalledPluginTestCase):
     """确认修订门禁、来源规则和固定文件映射。"""
 
     def _proposal(self) -> dict[str, object]:
@@ -65,7 +65,7 @@ class InitializationContractTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
         report = execute_initialization_proposal(
-            proposal, str(proposal["proposal_revision"]), ROOT / "assets"
+            proposal, str(proposal["proposal_revision"]), self.assets_root
         )
 
         self.assertEqual("initialized", report.operation)
@@ -91,7 +91,7 @@ class InitializationContractTests(TempDirectoryTestCase):
         """确认修订不一致时不得创建正式目录。"""
 
         with self.assertRaises(PermissionError):
-            execute_initialization_proposal(self._proposal(), "sha256:" + "0" * 64, ROOT / "assets")
+            execute_initialization_proposal(self._proposal(), "sha256:" + "0" * 64, self.assets_root)
         self.assertFalse((self.root / "doc-example").exists())
 
     def test_empty_project_keeps_routed_documents_empty(self) -> None:
@@ -102,7 +102,7 @@ class InitializationContractTests(TempDirectoryTestCase):
             proposal["facts"][group] = []  # type: ignore[index]
         proposal["proposal_revision"] = canonical_revision(proposal)
         execute_initialization_proposal(
-            proposal, str(proposal["proposal_revision"]), ROOT / "assets"
+            proposal, str(proposal["proposal_revision"]), self.assets_root
         )
 
         target = self.root / "doc-example"
