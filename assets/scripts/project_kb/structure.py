@@ -12,7 +12,7 @@ REQUIRED_ENTRIES = (
     "README.md", "knowledge-base.yaml", "00-项目总览/README.md",
     "00-项目总览/项目概述.md", "01-功能基线/README.md",
     "01-功能基线/能力地图.md", "02-架构与契约/README.md",
-    "02-架构与契约/技术基线.md", "03-实施与验收/README.md",
+    "02-架构与契约/系统架构.md", "03-实施与验收/README.md",
     "03-实施与验收/验收矩阵.md", "04-决策记录/README.md",
     "05-知识治理/README.md", "05-知识治理/AI知识采集协议.md",
     "90-历史归档/README.md",

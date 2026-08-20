@@ -65,7 +65,7 @@ def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
     overview.append("")
     (root / "00-项目总览" / "项目概述.md").write_text("\n".join(overview), encoding="utf-8", newline="\n")
 
-    technologies = ["# 技术基线", "", "| 技术 | 版本 | 使用目录或模块 | 项目用途 | 构建、测试与运行命令 | 配置位置 | 来源 | 状态 |", "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+    technologies = ["# 系统架构", "", "## 技术基线", "", "| 技术 | 版本 | 使用目录或模块 | 项目用途 | 构建、测试与运行命令 | 配置位置 | 来源 | 状态 |", "| --- | --- | --- | --- | --- | --- | --- | --- |"]
     stacks = facts["technology_stacks"]
     assert isinstance(stacks, list)
     technologies.extend(
@@ -73,7 +73,8 @@ def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
         for item in stacks
     )
     technologies.append("")
-    (root / "02-架构与契约" / "技术基线.md").write_text("\n".join(technologies), encoding="utf-8", newline="\n")
+    technologies.extend(["", "## 上下文与组件", "", "待确认。", ""])
+    (root / "02-架构与契约" / "系统架构.md").write_text("\n".join(technologies), encoding="utf-8", newline="\n")
 
     def render_table(relative: str, title: str, group: str, headers: tuple[str, ...]) -> None:
         """将一类仓库观察写入其唯一固定文档。"""
@@ -107,7 +108,7 @@ def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
             for item in test_items
         )
         technologies.append("")
-        (root / "02-架构与契约" / "技术基线.md").write_text("\n".join(technologies), encoding="utf-8", newline="\n")
+        (root / "02-架构与契约" / "系统架构.md").write_text("\n".join(technologies), encoding="utf-8", newline="\n")
 
 
 def _safe_project_name(name: str) -> str:

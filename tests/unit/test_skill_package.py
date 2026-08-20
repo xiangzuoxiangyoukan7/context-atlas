@@ -150,8 +150,8 @@ class SkillPackageTests(unittest.TestCase):
         self.assertTrue((assets / "02-架构与契约/关系目录.md").is_file())
         self.assertTrue((assets / "03-实施与验收/影响分析/TEMPLATE.md").is_file())
 
-    def test_database_reference_and_four_entity_templates_are_packaged(self) -> None:
-        """Skill 必须解释数据库产品层级并包含四类实体模板。"""
+    def test_database_reference_and_simplified_templates_are_packaged(self) -> None:
+        """Skill 必须解释数据库细节并包含数据源与数据表模板。"""
 
         reference = (REFERENCES_ROOT / "数据库知识.md").read_text(
             encoding="utf-8"
@@ -170,12 +170,7 @@ class SkillPackageTests(unittest.TestCase):
         database_root = (
             ASSETS_ROOT / "templates/core/doc-project/02-架构与契约/数据库"
         )
-        for relative in (
-            "数据源/TEMPLATE.md",
-            "数据库单元/TEMPLATE.md",
-            "数据命名空间/TEMPLATE.md",
-            "数据表/TEMPLATE.md",
-        ):
+        for relative in ("数据源模板/TEMPLATE.md", "数据表模板/TEMPLATE.md"):
             self.assertTrue((database_root / relative).is_file(), relative)
 
     def test_skill_state_machine_has_confirmation_and_revision_gates(self) -> None:

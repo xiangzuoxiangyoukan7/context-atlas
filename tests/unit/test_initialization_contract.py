@@ -76,7 +76,7 @@ class InitializationContractTests(TempDirectoryTestCase):
         self.assertEqual(3, report.execution.runtime_detection.attempts[0].python_major)
         self.assertEqual(("UNKNOWN-001",), report.unknowns)
         target = self.root / "doc-example"
-        self.assertIn("Python", (target / "02-架构与契约/技术基线.md").read_text(encoding="utf-8"))
+        self.assertIn("Python", (target / "02-架构与契约/系统架构.md").read_text(encoding="utf-8"))
         self.assertIn("提供可验证的知识库", (target / "00-项目总览/项目概述.md").read_text(encoding="utf-8"))
         self.assertIn("Atlas", (target / "00-项目总览/术语表.md").read_text(encoding="utf-8"))
         self.assertIn("初始化命令", (target / "01-功能基线/能力地图.md").read_text(encoding="utf-8"))
@@ -84,7 +84,7 @@ class InitializationContractTests(TempDirectoryTestCase):
         self.assertIn("POST /init", (target / "02-架构与契约/接口契约.md").read_text(encoding="utf-8"))
         self.assertIn("sqlite", (target / "02-架构与契约/数据库/README.md").read_text(encoding="utf-8"))
         self.assertIn("GitHub API", (target / "02-架构与契约/外部依赖/README.md").read_text(encoding="utf-8"))
-        self.assertIn("py -m unittest", (target / "02-架构与契约/技术基线.md").read_text(encoding="utf-8"))
+        self.assertIn("py -m unittest", (target / "02-架构与契约/系统架构.md").read_text(encoding="utf-8"))
         self.assertIn("使用 Markdown", (target / "04-决策记录/README.md").read_text(encoding="utf-8"))
 
     def test_revision_mismatch_has_zero_formal_writes(self) -> None:

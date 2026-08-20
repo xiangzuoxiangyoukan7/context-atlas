@@ -1,29 +1,26 @@
 ---
-id: TABLE-EXAMPLE
+id: TABLE-DOMAIN-NAME
 type: database_table
-title: 示例业务表
+title: 数据表名称
 status: proposed
 version: 1.0.0
-physical_name: example_table
+physical_name: table_name
 owner: missing
 sensitivity: missing
 sources: []
 ddl_sources: [missing]
 rel_belongs_to:
-  - "[[02-架构与契约/数据库/数据命名空间/NS-EXAMPLE|NS-EXAMPLE]]"
+  - "[[02-架构与契约/数据库/DS-DOMAIN-NAME/README|DS-DOMAIN-NAME]]"
 last_updated: {{INITIALIZED_AT}}
 ---
-# TABLE-EXAMPLE 示例业务表
+# TABLE-DOMAIN-NAME：数据表名称
 
 ## 字段定义
 
 | 字段编号 | 字段名 | 数据类型 | 可空 | 默认值 | 中文含义 | 值域类型 | 允许值或最小值 | 最大值或格式 | 允许其他值 | 约束执行位置 | 来源 | 锚点 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| FIELD-EXAMPLE-001 | id | bigint | 否 | — | 示例主键 | 任意 | — | 任意整数 | 否 | 数据库约束 | repository_file: 待登记路径 | ^FIELD-EXAMPLE-001 |
 
 ## 主子表关系
-
-没有主表关系时保留空表；存在业务主子表引用时同时增加 `rel_logical_parent`。
 
 | 关系编号 | 子字段编号 | 主表与字段 | 物理约束 | 约束名称 |
 | --- | --- | --- | --- | --- |
