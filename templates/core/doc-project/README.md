@@ -15,3 +15,5 @@
 - [历史归档](./90-历史归档/README.md)
 
 未知内容不得猜测为事实：登记为 `missing` 或 Proposal，附来源，等待责任人确认。自动检查只证明结构和引用有效，不代表内容已获批准。
+
+使用已安装的 `context-atlas-navigate` Skill 渐进浏览知识：先用 `children` 从本入口逐层发现目录和文件；定位到带稳定 `id` 的需求、功能、模块、接口或数据库表后，用 `neighbors` 查询一跳正向与反向邻居；只有多跳或全局分析才使用受节点上限约束的 `graph`。这些查询只返回摘要和路径，由 Agent 按当前任务选择是否读取正文；未安装 Skill 时可运行 `.project-kb/scripts/agent_kb_operation.py` 的同名操作。

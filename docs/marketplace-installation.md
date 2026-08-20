@@ -114,18 +114,22 @@ claude plugin update --scope project context-atlas@context-atlas-dev
 
 ```text
 $context-atlas-init
+$context-atlas-navigate
 $context-atlas-update
+$context-atlas-upgrade
 ```
 
 Claude Code 使用原生插件命令：
 
 ```text
 /context-atlas-init
+/context-atlas-navigate
 /context-atlas-update
+/context-atlas-upgrade
 ```
 
-两套入口调用同一个内部 `init` 或 `update` 执行器。没有固定操作符的自然语言不能触发正式写入。命令会先
-生成 Proposal，只有用户明确确认后才执行；底层 Python 参数由插件负责，不作为用户接口。
+`init`、`update` 和 `upgrade` 是相互独立的正式写入入口：`update` 维护业务知识，`upgrade` 只升级知识库格式和结构。未来业务知识更新会继续拆分为更细的 Skills，不扩张 `update` 的职责。`navigate` 只读支持逐层目录浏览、一跳正反向邻接查询，以及有深度和节点数量边界的关系图查询，不生成 Proposal，并由 Agent 决定是否读取候选文件正文。完整图只有在明确需要全局分析时才查询，不作为会话默认上下文。没有固定写入操作符的自然语言不能触发正式写入。写入命令会先生成
+Proposal，只有用户明确确认后才执行；底层 Python 参数由插件负责，不作为用户接口。
 
 ## 当前验收状态
 

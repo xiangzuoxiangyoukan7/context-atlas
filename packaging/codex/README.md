@@ -20,10 +20,22 @@ codex
 $context-atlas-init
 ```
 
-更新已有知识库：
+逐层发现知识目录、查询节点邻接关系或按需分析受限关系图：
+
+```text
+$context-atlas-navigate
+```
+
+更新已有知识库中的业务知识：
 
 ```text
 $context-atlas-update
+```
+
+升级已有知识库格式和结构：
+
+```text
+$context-atlas-upgrade
 ```
 
 没有明确调用对应 Skill 的自然语言不能触发正式知识写入。

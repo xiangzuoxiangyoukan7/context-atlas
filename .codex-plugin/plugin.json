@@ -15,6 +15,6 @@
     "developerName": "Context Atlas Maintainers",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write"],
-    "defaultPrompt": ["使用 $context-atlas-init 初始化知识库，或使用 $context-atlas-update 更新已有知识库。"]
+    "defaultPrompt": ["使用 $context-atlas-init 初始化知识库，使用 $context-atlas-update 更新业务知识，或使用 $context-atlas-upgrade 升级知识库格式。"]
   }
 }

@@ -36,6 +36,12 @@ class SkillPackageTests(unittest.TestCase):
         cls.references_root = cls.plugin_root / "references"
         cls.skill_roots = (
             cls.plugin_root / "skills/context-atlas-init",
+            cls.plugin_root / "skills/context-atlas-navigate",
+            cls.plugin_root / "skills/context-atlas-update",
+            cls.plugin_root / "skills/context-atlas-upgrade",
+        )
+        cls.write_skill_roots = (
+            cls.plugin_root / "skills/context-atlas-init",
             cls.plugin_root / "skills/context-atlas-update",
         )
 
@@ -80,7 +86,7 @@ class SkillPackageTests(unittest.TestCase):
     def test_skill_declares_required_behavior_boundaries(self) -> None:
         """验证 skill_declares_required_behavior_boundaries 场景。"""
 
-        content = "\n".join((root / "SKILL.md").read_text(encoding="utf-8") for root in self.skill_roots)
+        content = "\n".join((root / "SKILL.md").read_text(encoding="utf-8") for root in self.write_skill_roots)
         required = (
             "doc-<项目目录名>",
             "显式确认",
@@ -109,7 +115,7 @@ class SkillPackageTests(unittest.TestCase):
         runtime_contract = (self.references_root / "宿主执行与运行时探测.md").read_text(
             encoding="utf-8"
         )
-        for skill_root in self.skill_roots:
+        for skill_root in self.write_skill_roots:
             skill_content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
             self.assertIn("../../references/宿主执行与运行时探测.md", skill_content)
             content = skill_content + "\n" + runtime_contract
@@ -139,7 +145,7 @@ class SkillPackageTests(unittest.TestCase):
         ):
             self.assertIn(phrase, contract)
 
-        for skill_root in self.skill_roots:
+        for skill_root in self.write_skill_roots:
             content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
             self.assertIn("../../references/宿主执行与运行时探测.md", content)
             self.assertIn("agent_host", content)
@@ -240,8 +246,8 @@ class SkillPackageTests(unittest.TestCase):
         for phrase in (
             "format_version",
             "project_version",
-            "migrate-propose",
-            "migrate-apply",
+            "upgrade-propose",
+            "upgrade-apply",
             "proposal_revision",
             "内嵌来源对象",
             "公共来源",
@@ -279,7 +285,7 @@ class SkillPackageTests(unittest.TestCase):
         ):
             self.assertIn(phrase, protocol)
 
-        for skill_root in self.skill_roots:
+        for skill_root in self.write_skill_roots:
             skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
             self.assertIn("../../references/知识采集与确认.md", skill)
             self.assertNotIn("## Source types", skill)
@@ -294,12 +300,28 @@ class SkillPackageTests(unittest.TestCase):
         )
 
         self.assertIn('display_name: "context-atlas-init"', metadata)
-        self.assertIn('display_name: "context-atlas-update"', metadata)
+        self.assertIn('display_name: "Context Atlas Navigate"', metadata)
+        self.assertIn('display_name: "Context Atlas Update"', metadata)
+        self.assertIn('display_name: "Context Atlas Upgrade"', metadata)
         self.assertIn("$context-atlas-init", metadata)
+        self.assertIn("$context-atlas-navigate", metadata)
         self.assertIn("$context-atlas-update", metadata)
+        self.assertIn("$context-atlas-upgrade", metadata)
         self.assertFalse(Path("skills/project-knowledge-context").exists())
         self.assertFalse(Path("profiles").exists())
         self.assertFalse(any(path.startswith("profiles/") for path in manifest["files"]))
+
+    def test_update_and_upgrade_skills_have_separate_responsibilities(self) -> None:
+        """业务知识更新与格式升级必须由两个独立 Skill 承担。"""
+
+        update = (self.plugin_root / "skills/context-atlas-update/SKILL.md").read_text(encoding="utf-8")
+        upgrade = (self.plugin_root / "skills/context-atlas-upgrade/SKILL.md").read_text(encoding="utf-8")
+
+        self.assertIn("Do not use it to upgrade", update)
+        self.assertIn("$context-atlas-upgrade", update)
+        self.assertNotIn("upgrade-diagnose -> upgrade-propose", update)
+        self.assertIn("upgrade-diagnose -> upgrade-propose", upgrade)
+        self.assertIn("Do not use it to add or revise business knowledge", upgrade)
 
     def test_skill_frontmatter_matches_official_constraints(self) -> None:
         """验证 skill_frontmatter_matches_official_constraints 场景。"""

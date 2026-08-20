@@ -31,7 +31,9 @@ def _adapt_prompt(prompt: str) -> str:
 
     mappings = {
         "/context-atlas-init": "$context-atlas-init",
+        "/context-atlas-navigate": "$context-atlas-navigate",
         "/context-atlas-update": "$context-atlas-update",
+        "/context-atlas-upgrade": "$context-atlas-upgrade",
     }
     adapted = prompt
     for claude_command, codex_command in mappings.items():

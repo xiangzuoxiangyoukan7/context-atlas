@@ -25,7 +25,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
             exit_code = main(list(arguments))
         return exit_code, json.loads(output.getvalue())
 
-    def test_diagnose_format_reports_current_compatibility(self) -> None:
+    def test_upgrade_diagnose_reports_current_compatibility(self) -> None:
         """格式诊断应明确当前版本是否可写及是否需要转换。"""
 
         (self.root / "knowledge-base.yaml").write_text(
@@ -33,7 +33,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         )
 
         exit_code, payload = self._run(
-            "diagnose-format",
+            "upgrade-diagnose",
             str(self.root),
             "--compatibility",
             str(ROOT / "compatibility.json"),
@@ -195,8 +195,8 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         self.assertEqual("PERSON-001", payload["person_id"])
         self.assertNotIn("fixture@example.com", json.dumps(payload))
 
-    def test_migration_requires_same_confirmed_revision(self) -> None:
-        """迁移应用命令必须使用只读提案返回的同一修订号。"""
+    def test_upgrade_requires_same_confirmed_revision(self) -> None:
+        """升级应用命令必须使用只读提案返回的同一修订号。"""
 
         (self.root / "knowledge-base.yaml").write_text(
             "project_version: 1.2.0\n", encoding="utf-8"
@@ -222,10 +222,10 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         compatibility = str(ROOT / "compatibility.json")
 
         propose_code, proposal = self._run(
-            "migrate-propose", str(self.root), "--compatibility", compatibility
+            "upgrade-propose", str(self.root), "--compatibility", compatibility
         )
         apply_code, report = self._run(
-            "migrate-apply",
+            "upgrade-apply",
             str(self.root),
             "--compatibility",
             compatibility,
@@ -242,6 +242,23 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         self.assertIn("sources:", migrated)
         self.assertIn("confirmation_status: \"confirmed\"", migrated)
         self.assertNotIn("sources: [SRC-001]", migrated)
+
+    def test_legacy_diagnose_format_alias_remains_available(self) -> None:
+        """旧格式诊断命令仅作为兼容别名继续工作。"""
+
+        (self.root / "knowledge-base.yaml").write_text(
+            "project_version: 1.0.0\nformat_version: 6\n", encoding="utf-8"
+        )
+
+        exit_code, payload = self._run(
+            "diagnose-format",
+            str(self.root),
+            "--compatibility",
+            str(ROOT / "compatibility.json"),
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("compatible", payload["status"])
 
 
 if __name__ == "__main__":
