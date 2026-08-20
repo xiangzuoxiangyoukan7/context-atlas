@@ -11,6 +11,7 @@
     "acceptance",
     "contracts",
     "adr",
+    "sources",
     "last_updated"
   ],
   "enums": {
@@ -21,9 +22,9 @@
     "current_slice": ["included", "excluded"]
   },
   "patterns": {
-    "id": "F\\d{2}",
+    "id": "(?:F\\d{2}|F-[A-Z0-9]+-[0-9]{3})",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"
   },
-  "non_empty_lists": ["acceptance"],
-  "unique_lists": ["depends_on", "acceptance", "contracts", "adr"]
+  "non_empty_lists": ["acceptance", "sources"],
+  "unique_lists": ["depends_on", "acceptance", "contracts", "adr", "sources"]
 }

@@ -10,6 +10,7 @@
   "knowledge_proposal": "knowledge-proposal.schema.json",
   "knowledge_item": "knowledge-item.schema.json",
   "project_manifest": "project-manifest.schema.json",
+  "requirement": "requirement.schema.json",
   "source": "source.schema.json",
   "task": "task.schema.json"
 }

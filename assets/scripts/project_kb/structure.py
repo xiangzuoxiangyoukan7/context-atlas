@@ -20,7 +20,8 @@ REQUIRED_ENTRIES = (
 OPTIONAL_ENTRIES = {"00-项目总览/术语表.md", "05-知识治理/协作与责任.md"}
 TYPE_DIRECTORIES = {
     "source": "05-知识治理",
-    "feature": "01-功能基线",
+    "requirement": "01-功能基线/需求",
+    "feature": "01-功能基线/功能",
     "data_asset": "02-架构与契约",
     "data_source": "02-架构与契约",
     "database_unit": "02-架构与契约",
@@ -96,7 +97,8 @@ def validate_structure(root: Path, records: Iterable[DocumentRecord]) -> list[Is
         expected = TYPE_DIRECTORIES.get(str(kind))
         if expected is not None:
             relative = record.path.resolve().relative_to(root.resolve()).as_posix()
-            if not relative.startswith(expected + "/"):
+            legacy_feature = kind == "feature" and format_version < 5 and relative.startswith("01-功能基线/")
+            if not relative.startswith(expected + "/") and not legacy_feature:
                 issues.append(Issue("KB_TYPE_DIRECTORY", record.path, f"{kind} must be stored under {expected}"))
         sources = record.metadata.get("sources")
         if format_version >= 4 and isinstance(sources, list) and any(not isinstance(item, dict) for item in sources):

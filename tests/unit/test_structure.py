@@ -31,3 +31,19 @@ class StructureTests(TempDirectoryTestCase):
         self.assertIn("KB_STRUCTURE_REQUIRED", codes)
         self.assertIn("KB_AUTHORITY_MISSING", codes)
         self.assertIn("KB_TYPE_DIRECTORY", codes)
+
+    def test_format_five_routes_requirements_and_features_to_distinct_directories(self) -> None:
+        """格式五要求需求和功能分别进入其受控子目录。"""
+
+        root = materialize_core_template(self.root, "example")
+        (root / "01-功能基线/需求/REQ-ORDER-001.md").write_text(
+            "---\nid: REQ-ORDER-001\ntype: requirement\n---\n# requirement\n", encoding="utf-8"
+        )
+        (root / "01-功能基线/F-ORDER-001.md").write_text(
+            "---\nid: F-ORDER-001\ntype: feature\n---\n# legacy location\n", encoding="utf-8"
+        )
+        records, _ = discover_records(root, frozenset({"90-历史归档"}))
+        issues = validate_structure(root, records)
+        wrong_paths = {issue.path.name for issue in issues if issue.code == "KB_TYPE_DIRECTORY"}
+        self.assertNotIn("REQ-ORDER-001.md", wrong_paths)
+        self.assertIn("F-ORDER-001.md", wrong_paths)
