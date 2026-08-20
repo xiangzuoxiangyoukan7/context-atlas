@@ -1,6 +1,6 @@
 {
   "acceptance": "acceptance.schema.json",
-  "contract": "contract.schema.json",
+  "independent_contract": "contract.schema.json",
   "data_asset": "data-asset.schema.json",
   "data_source": "data-source.schema.json",
   "database_namespace": "database-namespace.schema.json",

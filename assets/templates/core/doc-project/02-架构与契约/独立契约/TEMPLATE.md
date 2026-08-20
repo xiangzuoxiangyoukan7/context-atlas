@@ -1,6 +1,6 @@
 ---
 id: CONTRACT-DOMAIN-001
-type: contract
+type: independent_contract
 title: 契约名称
 status: proposed
 scope: project

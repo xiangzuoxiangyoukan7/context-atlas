@@ -181,13 +181,17 @@ def _populate_example(root: Path, name: str) -> None:
 """,
     )
     _write(
-        root / "02-架构与契约/技术基线.md",
-        """# 技术基线
+        root / "02-架构与契约/系统架构.md",
+        """# 系统架构
+
+## 技术基线
 
 | 技术 | 版本 | 使用目录或模块 | 项目用途 | 构建、测试与运行命令 | 配置位置 | 来源 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Java | 21 | backend | Spring Boot API | mvn test | application.yml | SRC-001 | approved |
-""" if name == "single-stack" else """# 技术基线
+""" if name == "single-stack" else """# 系统架构
+
+## 技术基线
 
 | 技术 | 版本 | 使用目录或模块 | 项目用途 | 构建、测试与运行命令 | 配置位置 | 来源 | 状态 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
