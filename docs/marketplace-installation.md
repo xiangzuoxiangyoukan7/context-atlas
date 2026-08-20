@@ -11,6 +11,10 @@ py scripts/build_plugin.py claude --output build/claude/context-atlas
 py scripts/build_plugin.py codex --output build/codex/context-atlas.zip --archive
 ```
 
+开发仓库不作为 Skill 运行目录。模板、Schema、脚本、规则、操作定义和兼容策略均只在各自根目录维护；
+`assets/manifest.json` 是运行资产白名单，构建时才生成插件内的完整 `assets/`。开发测试必须先构建插件，
+再对安装形态中的运行资产和行为进行验证，不能回退为直接读取开发仓库的 `assets/` 副本。
+
 Codex 的正式发布仓库不是手工打包目录。完成源码修改和检查后执行：
 
 ```powershell
@@ -25,7 +29,7 @@ git -C D:\loong-workspace-python\context-atlas-codex-plugin push origin main
 
 正式版本标签使用 `v<版本号>`，并指向上述发布仓库提交。不得直接修改发布仓库中的生成文件。
 
-构建产物只包含目标平台清单、Skill、运行时资产和命令，不包含测试、设计文档或本项目知识库。
+构建产物只包含目标平台清单、Skill、构建生成的运行时资产和命令，不包含测试、设计文档或本项目知识库。
 
 ## 安装范围
 

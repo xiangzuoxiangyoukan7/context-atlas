@@ -47,7 +47,10 @@ claude plugin marketplace remove --scope project context-atlas-dev
 
 不要直接删除目标项目的整个 `.codex/` 或 `.claude/` 目录，其中可能还有该项目的其他配置和插件。
 
-Plugin 发布包由根目录源码构建，不直接发布开发仓库。构建命令为：
+Plugin 发布包由根目录唯一源码构建，不直接运行或发布开发仓库。`templates/`、`schemas/`、
+`scripts/`、`rules/`、`operations/` 和 `compatibility.json` 只维护一份；开发态 `assets/` 只保存
+`manifest.json`。构建程序按清单把这些源码物化为安装包中的完整 `assets/`，测试也以构建后的安装形态为准。
+构建命令为：
 
 ```powershell
 py scripts/build_plugin.py claude --output build/claude/context-atlas
