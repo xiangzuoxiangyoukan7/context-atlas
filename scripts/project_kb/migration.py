@@ -189,6 +189,7 @@ def _rewrite_governance_paths(content: str, governance_readme: bool = False) -> 
         content.replace("05-开发指南", "05-知识治理")
         .replace("开发指南", "知识治理")
         .replace("00-项目总览/SRC-", "05-知识治理/公共来源/SRC-")
+        .replace("rel_implements:", "rel_satisfies:")
     )
     if governance_readme:
         lines = [
@@ -268,7 +269,8 @@ def build_migration_proposal(
     moves, removals, rewrites, layout_unresolved = _governance_layout(resolved_root)
     rewrite_paths = {item.path.resolve() for item in rewrites}
     for path in resolved_root.rglob("*.md"):
-        if "00-项目总览/SRC-" in path.read_text(encoding="utf-8") and path.resolve() not in rewrite_paths:
+        content = path.read_text(encoding="utf-8")
+        if ("00-项目总览/SRC-" in content or "rel_implements:" in content) and path.resolve() not in rewrite_paths:
             rewrites += (MigrationRewrite(path.resolve(), _digest(path.read_bytes())),)
             rewrite_paths.add(path.resolve())
     for source_id, record in source_records.items():

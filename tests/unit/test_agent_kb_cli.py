@@ -29,7 +29,7 @@ class AgentKnowledgeCliTests(TempDirectoryTestCase):
         """格式诊断应明确当前版本是否可写及是否需要转换。"""
 
         (self.root / "knowledge-base.yaml").write_text(
-            "project_version: 1.0.0\nformat_version: 4\n", encoding="utf-8"
+            "project_version: 1.0.0\nformat_version: 5\n", encoding="utf-8"
         )
 
         exit_code, payload = self._run(

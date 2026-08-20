@@ -27,7 +27,7 @@ class CompatibilityTests(TempDirectoryTestCase):
 
         from scripts.project_kb.compatibility import CompatibilityPolicy
 
-        self._manifest("format_version: 4\n")
+        self._manifest("format_version: 5\n")
         policy = CompatibilityPolicy.load(ROOT / "compatibility.json")
 
         result = policy.diagnose(self.root)
@@ -104,7 +104,19 @@ class CompatibilityTests(TempDirectoryTestCase):
         self.assertTrue((target / ".project-kb/compatibility.json").is_file())
         manifest = (target / "knowledge-base.yaml").read_text(encoding="utf-8")
         self.assertIn("project_version: 0.1.0", manifest)
-        self.assertIn("format_version: 4", manifest)
+        self.assertIn("format_version: 5", manifest)
+
+    def test_format_four_is_readable_with_one_version_conversion(self) -> None:
+        """上一格式仍可读取，并提供到格式五的受控转换。"""
+
+        from scripts.project_kb.compatibility import CompatibilityPolicy
+
+        self._manifest("format_version: 4\n")
+        result = CompatibilityPolicy.load(ROOT / "compatibility.json").diagnose(self.root)
+
+        self.assertEqual("conversion_available", result.status)
+        self.assertFalse(result.write_blocked)
+        self.assertTrue(result.conversion_available)
 
     def test_format_two_is_readable_and_has_governance_conversion(self) -> None:
         """格式二可读，但应提示转换到知识治理目录。"""

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Iterable
 
 from .model import DocumentRecord, Issue
@@ -100,7 +101,14 @@ def validate_structure(root: Path, records: Iterable[DocumentRecord]) -> list[Is
         expected = TYPE_DIRECTORIES.get(str(kind))
         if expected is not None:
             relative = record.path.resolve().relative_to(root.resolve()).as_posix()
-            legacy_feature = kind == "feature" and format_version < 5 and relative.startswith("01-功能基线/")
+            identifier = record.metadata.get("id")
+            legacy_feature = (
+                kind == "feature"
+                and format_version <= 5
+                and relative.startswith("01-功能基线/")
+                and isinstance(identifier, str)
+                and re.fullmatch(r"F\d+", identifier) is not None
+            )
             if not relative.startswith(expected + "/") and not legacy_feature:
                 issues.append(Issue("KB_TYPE_DIRECTORY", record.path, f"{kind} must be stored under {expected}"))
         sources = record.metadata.get("sources")
