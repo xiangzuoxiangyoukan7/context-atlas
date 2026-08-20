@@ -30,12 +30,12 @@ def write_record(
 def make_valid_knowledge_base(root: Path) -> Path:
     """提供 make_valid_knowledge_base 测试辅助行为。"""
 
-    (root / "03-实施与验收").mkdir(parents=True, exist_ok=True)
-    (root / "03-实施与验收" / "CURRENT.md").write_text(
+    (root / "03-变更与证据").mkdir(parents=True, exist_ok=True)
+    (root / "03-变更与证据" / "CURRENT.md").write_text(
         "# 当前状态\n\n- 当前任务：无可执行开发任务\n",
         encoding="utf-8",
     )
-    (root / "03-实施与验收" / "验收矩阵.md").write_text(
+    (root / "03-变更与证据" / "验收矩阵.md").write_text(
         "# 验收矩阵\n\n"
         "| 验收编号 | 对象 | 条件摘要 | 结果 | 证据位置 | 对应版本 |\n"
         "| --- | --- | --- | --- | --- | --- |\n",

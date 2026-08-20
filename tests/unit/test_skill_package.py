@@ -167,7 +167,8 @@ class SkillPackageTests(unittest.TestCase):
         assets = self.assets_root / "templates" / "core" / "doc-project"
 
         self.assertTrue((assets / "02-架构与契约/关系目录.md").is_file())
-        self.assertTrue((assets / "03-实施与验收/影响分析/TEMPLATE.md").is_file())
+        self.assertTrue((assets / "03-变更与证据/影响记录/TEMPLATE.md").is_file())
+        self.assertFalse((assets / "03-变更与证据/任务包").exists())
 
     def test_database_reference_and_simplified_templates_are_packaged(self) -> None:
         """Skill 必须解释数据库细节并包含数据源与数据表模板。"""

@@ -36,7 +36,7 @@ class TraceabilityTests(TempDirectoryTestCase):
                 "last_updated": "2026-08-10",
             },
         )
-        (self.knowledge_base / "03-实施与验收" / "验收矩阵.md").write_text(
+        (self.knowledge_base / "03-变更与证据" / "验收矩阵.md").write_text(
             "# 验收矩阵\n\n"
             "| 验收编号 | 对象 | 条件摘要 | 结果 | 证据位置 | 对应版本 |\n"
             "| --- | --- | --- | --- | --- | --- |\n"
@@ -75,7 +75,7 @@ class TraceabilityTests(TempDirectoryTestCase):
         """验证 task_feature_reference_must_resolve 场景。"""
 
         write_record(
-            self.knowledge_base / "03-实施与验收/任务包/TASK-F99-001.md",
+            self.knowledge_base / "03-变更与证据/任务包/TASK-F99-001.md",
             {
                 "id": "TASK-F99-001",
                 "type": "task",

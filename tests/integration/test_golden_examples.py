@@ -189,16 +189,18 @@ class GoldenExampleTests(unittest.TestCase):
                     child,
                 )
 
-    def test_examples_include_knowledge_proposal_entry_points(self) -> None:
-        """两套样例都应展示主动知识提案入口，人员登记保持可选。"""
+    def test_examples_include_optional_pending_knowledge_entry_points(self) -> None:
+        """两套样例展示按需待确认知识入口，不包含任务包。"""
 
         for name in EXAMPLES:
             with self.subTest(name=name):
                 root = Path("examples") / name
-                queue = root / "03-实施与验收/知识提案"
+                queue = root / "03-变更与证据/待确认知识"
                 self.assertFalse((root / "00-项目总览/协作人员.md").exists())
                 self.assertTrue((queue / "README.md").is_file())
                 self.assertTrue((queue / "TEMPLATE.md").is_file())
+                self.assertFalse((root / "03-变更与证据/任务包").exists())
+                self.assertFalse((root / "03-变更与证据/执行看板.md").exists())
                 self.assertIn(
                     "status: proposed",
                     (queue / "TEMPLATE.md").read_text(encoding="utf-8"),

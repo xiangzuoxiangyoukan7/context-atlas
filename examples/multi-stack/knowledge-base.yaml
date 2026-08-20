@@ -4,13 +4,13 @@ project_id: multi-stack
 project_name: multi-stack
 knowledge_base_name: doc-multi-stack
 project_version: 0.1.0
-format_version: 4
+format_version: 6
 revision: 1
 initialized_at: 2026-08-10
 authority:
   overview: 00-项目总览/README.md
   features: 01-功能基线/README.md
   architecture: 02-架构与契约/README.md
-  acceptance: 03-实施与验收/验收矩阵.md
+  acceptance: 03-变更与证据/验收矩阵.md
   decisions: 04-决策记录/README.md
   collaboration: 05-知识治理/AI知识采集协议.md

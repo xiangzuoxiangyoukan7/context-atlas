@@ -246,21 +246,15 @@ def _populate_example(root: Path, name: str) -> None:
         },
         "# F01：查询已批准知识\n\n返回知识值、版本和来源。业务实现尚未开始。",
     )
-    _record(
-        root / "03-实施与验收/任务包/TASK-F01-001.md",
-        {
-            "id": "TASK-F01-001",
-            "type": "task",
-            "title": "实现示例知识查询",
-            "feature": "F01",
-            "status": "ready",
-            "acceptance": ["F01-AC-01"],
-            "last_updated": DATE,
-        },
-        "# TASK-F01-001\n\n这是未执行的示例任务，不代表业务实现完成。",
+    _write(
+        root / "03-变更与证据/当前变更.md",
+        """# 当前变更
+
+当前没有登记变更；这不表示外部系统没有任务。
+""",
     )
     _write(
-        root / "03-实施与验收/验收矩阵.md",
+        root / "03-变更与证据/验收矩阵.md",
         """# 验收矩阵
 
 | 验收编号 | 对象 | 条件摘要 | 结果 | 证据位置 | 对应版本 |
@@ -269,7 +263,7 @@ def _populate_example(root: Path, name: str) -> None:
 """,
     )
     _write(
-        root / "03-实施与验收/验收证据/README.md",
+        root / "03-变更与证据/验收证据/README.md",
         """# 验收证据
 
 当前只有知识库结构校验证据；业务验收 `F01-AC-01` 尚未执行，不得标记为 passed。
@@ -283,7 +277,7 @@ def _minimal_fixture(root: Path, expected_code: str) -> None:
     root.mkdir(parents=True)
     _write(root / "README.md", f"# Invalid fixture\n\nexpected_code: {expected_code}")
     _write(
-        root / "03-实施与验收/验收矩阵.md",
+        root / "03-变更与证据/验收矩阵.md",
         "# 验收矩阵\n\n| 验收编号 | 对象 | 条件摘要 | 结果 | 证据位置 | 对应版本 |\n| --- | --- | --- | --- | --- | --- |",
     )
     _source(root, "SRC-001", "user_statement", "fixture owner")
@@ -400,6 +394,7 @@ def generate() -> None:
                 materialized = initialize_from_assets(
                     temporary,
                     name,
+                    assets_root=Path("."),
                     initialized_at=DATE,
                 )
                 _populate_example(materialized, name)

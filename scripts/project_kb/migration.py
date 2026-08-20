@@ -144,8 +144,30 @@ Agent 从构建文件、脚本和 CI 验证命令，不凭语言猜测。环境�
 | --- | --- | --- | --- | --- | --- | --- |
 | 单元测试 | 待确认 | 待确认 | 待确认 | 关键分支 | SRC-001 | missing |
 
-记录项目实际使用的测试框架、夹具、覆盖门槛和失败排查入口。功能完成前必须运行任务包指定验证并保存证据；未运行测试不得声称通过。""",
+记录项目实际使用的测试框架、夹具、覆盖门槛和失败排查入口。功能完成前必须运行适用验证并保存证据；未运行测试不得声称通过。""",
 }
+
+
+def _evidence_layout(root: Path) -> tuple[MigrationMove, ...]:
+    """把旧实施目录安全映射为变更、证据和历史任务目录。"""
+
+    legacy = root / "03-实施与验收"
+    if not legacy.is_dir():
+        return ()
+    moves: list[MigrationMove] = []
+    for source in sorted(path for path in legacy.rglob("*") if path.is_file()):
+        relative = source.relative_to(legacy)
+        if relative.parts[0] == "任务包" or relative.name == "执行看板.md":
+            suffix = relative.relative_to("任务包") if relative.parts[0] == "任务包" else relative
+            target = root / "90-历史归档" / "实施任务包" / suffix
+        elif relative.parts[0] == "影响分析":
+            target = root / "03-变更与证据" / "影响记录" / relative.relative_to("影响分析")
+        elif relative.parts[0] == "知识提案":
+            target = root / "03-变更与证据" / "待确认知识" / relative.relative_to("知识提案")
+        else:
+            target = root / "03-变更与证据" / relative
+        moves.append(MigrationMove(source, target, _digest(source.read_bytes())))
+    return tuple(moves)
 
 
 def _governance_layout(root: Path) -> tuple[tuple[MigrationMove, ...], tuple[MigrationRemoval, ...], tuple[MigrationRewrite, ...], tuple[MigrationUnresolved, ...]]:
@@ -190,6 +212,10 @@ def _rewrite_governance_paths(content: str, governance_readme: bool = False) -> 
         .replace("开发指南", "知识治理")
         .replace("00-项目总览/SRC-", "05-知识治理/公共来源/SRC-")
         .replace("rel_implements:", "rel_satisfies:")
+        .replace("03-实施与验收/任务包", "90-历史归档/实施任务包")
+        .replace("03-实施与验收/影响分析", "03-变更与证据/影响记录")
+        .replace("03-实施与验收/知识提案", "03-变更与证据/待确认知识")
+        .replace("03-实施与验收", "03-变更与证据")
     )
     if governance_readme:
         lines = [
@@ -267,6 +293,15 @@ def build_migration_proposal(
             )
     ordered_changes = tuple(sorted(changes, key=lambda item: str(item.path)))
     moves, removals, rewrites, layout_unresolved = _governance_layout(resolved_root)
+    destinations = {move.target for move in moves}
+    for move in _evidence_layout(resolved_root):
+        if move.target.exists() or move.target in destinations:
+            layout_unresolved += (
+                MigrationUnresolved(move.source, move.source.name, "新旧变更证据路径同时存在"),
+            )
+        else:
+            moves += (move,)
+            destinations.add(move.target)
     rewrite_paths = {item.path.resolve() for item in rewrites}
     for path in resolved_root.rglob("*.md"):
         content = path.read_text(encoding="utf-8")

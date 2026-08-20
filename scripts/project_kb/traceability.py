@@ -291,7 +291,7 @@ def _validate_matrix(root: Path, records: Iterable[DocumentRecord]) -> list[Issu
         if record.metadata.get("status") == "completed":
             completed.append((record.path, acceptance))
 
-    matrix = root / "03-实施与验收" / "验收矩阵.md"
+    matrix = root / "03-变更与证据" / "验收矩阵.md"
     if not matrix.exists():
         if declared:
             issues.append(Issue("KB_MATRIX_REQUIRED", matrix, "acceptance matrix is required"))

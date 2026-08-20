@@ -77,6 +77,7 @@ def _parser() -> argparse.ArgumentParser:
     capture.add_argument("--operated-by", required=True)
     capture.add_argument("--project-version", required=True)
     capture.add_argument("--captured-at", required=True)
+    capture.add_argument("--user-requested", action="store_true", required=True)
 
     identify = subparsers.add_parser("identify-contributor")
     identify.add_argument("repository_root", type=Path)
@@ -154,7 +155,10 @@ def _execute(args: argparse.Namespace) -> tuple[object, int]:
         )
         return (
             capture_candidate(
-                args.knowledge_base_root, candidate, captured_at=args.captured_at
+                args.knowledge_base_root,
+                candidate,
+                captured_at=args.captured_at,
+                user_requested=args.user_requested,
             ),
             0,
         )

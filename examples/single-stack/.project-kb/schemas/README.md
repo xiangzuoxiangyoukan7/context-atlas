@@ -5,7 +5,7 @@ Schema 可以理解为“机器可执行的表格填写规则”：它不保存�
 本目录有两类 Schema：
 
 1. `catalog.json` 登记的轻量 Schema，约束知识库 Markdown 顶部的 YAML Front Matter。
-2. `initialization-*.schema.json` 标准 JSON Schema约束初始化 Proposal 和报告；`embedded-source.schema.json` 定义格式 4 中知识项就地携带的来源对象。这些都不登记进知识类型 `catalog.json`。
+2. `initialization-*.schema.json` 标准 JSON Schema约束初始化 Proposal 和报告；`embedded-source.schema.json` 定义格式 4 及后续格式中知识项就地携带的来源对象。这些都不登记进知识类型 `catalog.json`。
 
 完整的逐文件、逐字段中文解释见[字段说明](./字段说明.md)。
 
@@ -13,7 +13,11 @@ Schema 可以理解为“机器可执行的表格填写规则”：它不保存�
 - [项目清单](./project-manifest.schema.json)
 - [通用知识项](./knowledge-item.schema.json)
 - [数据资产](./data-asset.schema.json)
+- [需求](./requirement.schema.json)
 - [功能](./feature.schema.json)
+- [模块](./module.schema.json)
+- [接口](./interface.schema.json)
+- [独立契约](./contract.schema.json)
 - [产品任务](./task.schema.json)
 - [治理任务](./governance-task.schema.json)
 - [验收](./acceptance.schema.json)

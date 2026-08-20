@@ -1,23 +1,33 @@
 {
   "version": 1,
   "plugin_version": "0.1.0",
-  "reads_format_versions": [1, 2, 3, 4],
-  "creates_format_version": 4,
+  "reads_format_versions": [1, 2, 3, 4, 5, 6],
+  "creates_format_version": 6,
   "conversions": [
     {
       "from": 1,
-      "to": 4,
+      "to": 6,
       "id": "embedded-sources-and-knowledge-governance"
     },
     {
       "from": 2,
-      "to": 4,
+      "to": 6,
       "id": "knowledge-governance-layout-and-embedded-sources"
     },
     {
       "from": 3,
-      "to": 4,
+      "to": 6,
       "id": "embedded-sources"
+    },
+    {
+      "from": 4,
+      "to": 6,
+      "id": "typed-knowledge-and-simplified-contract-layout"
+    },
+    {
+      "from": 5,
+      "to": 6,
+      "id": "changes-and-evidence-without-task-packages"
     }
   ]
 }

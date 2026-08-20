@@ -58,13 +58,13 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
     def valid_current(self) -> None:
         """提供 valid_current 测试辅助行为。"""
 
-        self.write("03-实施与验收/CURRENT.md", "# 当前任务\n\n- 当前任务：无可执行开发任务\n")
+        self.write("03-变更与证据/CURRENT.md", "# 当前任务\n\n- 当前任务：无可执行开发任务\n")
 
     def matrix(self, rows: str) -> None:
         """提供 matrix 测试辅助行为。"""
 
         self.write(
-            "03-实施与验收/验收矩阵.md",
+            "03-变更与证据/验收矩阵.md",
             "| 验收编号 | 对象 | 条件摘要 | 结果 | 证据位置 | 对应版本 |\n"
             "| --- | --- | --- | --- | --- | --- |\n" + rows,
         )
@@ -90,7 +90,7 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
 
         self.valid_feature(acceptance=[])
         self.metadata(
-            "03-实施与验收/任务包/TASK-F01-001.md", id="TASK-F01-001", type="task",
+            "03-变更与证据/任务包/TASK-F01-001.md", id="TASK-F01-001", type="task",
             title="Task", feature="F01", status="ready",
             acceptance=["F01-AC-01", "F01-AC-01"], last_updated="2026-08-07",
         )
@@ -133,7 +133,7 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
 
         self.valid_current()
         self.write(
-            "03-实施与验收/CURRENT.md",
+            "03-变更与证据/CURRENT.md",
             "- 当前任务：无可执行开发任务\n- 任务包：[task](./任务包/TASK-F01-001.md)\n",
         )
         self.assertNotIn("KB_CURRENT_STATE", self.codes(validate(self.root)))

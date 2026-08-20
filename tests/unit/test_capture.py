@@ -38,7 +38,7 @@ class CaptureTests(TempDirectoryTestCase):
         from scripts.project_kb.capture import capture_candidate
 
         report = capture_candidate(
-            self.root, self._candidate(), captured_at="2026-08-13T10:30:00+08:00"
+            self.root, self._candidate(), captured_at="2026-08-13T10:30:00+08:00", user_requested=True
         )
 
         self.assertEqual("created", report.status)
@@ -57,17 +57,17 @@ class CaptureTests(TempDirectoryTestCase):
         from scripts.project_kb.capture import capture_candidate
 
         first = capture_candidate(
-            self.root, self._candidate(), captured_at="2026-08-13T10:30:00+08:00"
+            self.root, self._candidate(), captured_at="2026-08-13T10:30:00+08:00", user_requested=True
         )
         second = capture_candidate(
-            self.root, self._candidate(), captured_at="2026-08-13T10:31:00+08:00"
+            self.root, self._candidate(), captured_at="2026-08-13T10:31:00+08:00", user_requested=True
         )
 
         self.assertEqual("duplicate", second.status)
         self.assertEqual(first.path, second.path)
         self.assertEqual(
             1,
-            len(list((self.root / "03-实施与验收/知识提案").glob("PROP-*.md"))),
+            len(list((self.root / "03-变更与证据/待确认知识").glob("PROP-*.md"))),
         )
 
     def test_supported_checkpoints_are_controlled(self) -> None:
@@ -91,7 +91,7 @@ class CaptureTests(TempDirectoryTestCase):
         candidate = self._candidate(checkpoint="background_monitor")
 
         with self.assertRaises(ValueError):
-            capture_candidate(self.root, candidate, captured_at="2026-08-13T10:30:00+08:00")
+            capture_candidate(self.root, candidate, captured_at="2026-08-13T10:30:00+08:00", user_requested=True)
 
     def test_plugin_process_file_is_referenced_but_not_copied(self) -> None:
         """其他插件产物只作为来源路径，提案不能复制其完整内容。"""
@@ -109,7 +109,7 @@ class CaptureTests(TempDirectoryTestCase):
         )
 
         report = capture_candidate(
-            self.root, candidate, captured_at="2026-08-13T10:30:00+08:00"
+            self.root, candidate, captured_at="2026-08-13T10:30:00+08:00", user_requested=True
         )
         content = report.path.read_text(encoding="utf-8")
 
@@ -125,6 +125,7 @@ class CaptureTests(TempDirectoryTestCase):
             self.root,
             self._candidate(proposed_by="AGENT-CODEX"),
             captured_at="2026-08-13T10:30:00+08:00",
+            user_requested=True,
         )
         content = report.path.read_text(encoding="utf-8")
 
@@ -132,3 +133,16 @@ class CaptureTests(TempDirectoryTestCase):
         self.assertIn("operated_by: AGENT-CODEX", content)
         self.assertIn("confirmed_by: pending", content)
         self.assertIn("git_commit: pending", content)
+
+    def test_capture_requires_explicit_user_request(self) -> None:
+        """普通开发发现候选时不得自动创建待确认知识文件。"""
+
+        from scripts.project_kb.capture import capture_candidate
+
+        with self.assertRaisesRegex(ValueError, "explicit user request"):
+            capture_candidate(
+                self.root,
+                self._candidate(),
+                captured_at="2026-08-13T10:30:00+08:00",
+            )
+        self.assertFalse((self.root / "03-变更与证据/待确认知识").exists())

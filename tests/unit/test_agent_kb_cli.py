@@ -29,7 +29,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         """格式诊断应明确当前版本是否可写及是否需要转换。"""
 
         (self.root / "knowledge-base.yaml").write_text(
-            "project_version: 1.0.0\nformat_version: 5\n", encoding="utf-8"
+            "project_version: 1.0.0\nformat_version: 6\n", encoding="utf-8"
         )
 
         exit_code, payload = self._run(
@@ -149,6 +149,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
             "1.2.0",
             "--captured-at",
             "2026-08-13T10:30:00+08:00",
+            "--user-requested",
         )
 
         self.assertEqual(0, exit_code)
