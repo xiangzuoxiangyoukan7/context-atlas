@@ -27,7 +27,7 @@ last_updated: 2026-08-19
 - 计划：`docs/superpowers/plans/2026-08-13-cross-agent-execution-and-claude-validation.md`
 - Skill：[初始化 Skill](../../../skills/context-atlas-init/SKILL.md)、[更新 Skill](../../../skills/context-atlas-update/SKILL.md)
 - 验收：`KB-AC-26`～`KB-AC-29`
-- 证据：[跨 Agent 执行一致性与 Claude Code 验收](../验收证据/跨Agent执行一致性与Claude验收.md)
+- 证据：[跨 Agent 执行一致性与 Claude Code 验收](../../03-变更与证据/验收证据/跨Agent执行一致性与Claude验收.md)
 
 ## 当前状态
 
