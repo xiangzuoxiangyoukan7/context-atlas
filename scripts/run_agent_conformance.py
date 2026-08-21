@@ -110,20 +110,24 @@ INGEST_PROMPTS = {
         "最终仅输出含全部必填字段的 JSON 对象并路由 context-atlas-upgrade，不要修改文件。"
     ),
     "ingest_revise_route": (
-        "/context-atlas-ingest\n只读摄取 sources/revise.md，它更新 doc-ingest/current.md 的同一稳定事实。"
-        "最终仅输出含全部必填字段的 JSON 对象并给出 revise 候选，不要修改文件。"
+        "/context-atlas-ingest\n只读摄取 sources/revise.md，它是 doc-ingest/current.md 中 RULE-ORDER-001 的已批准同身份补充。"
+        "最终仅输出含全部必填字段的 JSON 对象并给出 revise 候选，逐字保留 Schema 字段名，"
+        "不要用自然语言摘要替代，不要修改文件。"
     ),
     "ingest_retire_route": (
-        "/context-atlas-ingest\n只读摄取 sources/retire.md，它要求退役 doc-ingest/current.md 的稳定事实。"
-        "最终仅输出含全部必填字段的 JSON 对象并给出 retire 候选，不要修改文件。"
+        "/context-atlas-ingest\n只读摄取 sources/retire.md，它要求退役 doc-ingest/current.md 中的 RULE-ORDER-001。"
+        "最终仅输出含全部必填字段的 JSON 对象并给出 retire 候选，逐字保留 Schema 字段名，"
+        "不要用自然语言摘要替代，不要修改文件。"
     ),
     "ingest_ignore_route": (
-        "/context-atlas-ingest\n只读摄取 sources/duplicate.md，它与当前批准事实完全重复。"
-        "最终仅输出含全部必填字段的 JSON 对象并给出 ignore 候选，不要修改文件。"
+        "/context-atlas-ingest\n只读摄取 sources/duplicate.md，它与当前批准的 RULE-ORDER-001 完全重复。"
+        "最终仅输出含全部必填字段的 JSON 对象并给出 ignore 候选，逐字保留 Schema 字段名，"
+        "不要用自然语言摘要替代，不要修改文件。"
     ),
     "ingest_composite_add_revise_route": (
-        "/context-atlas-ingest\n只读摄取 sources/composite.md，它同时包含一个新事实和一个同身份修订。"
-        "最终仅输出含全部必填字段的 JSON 对象，并在同一 route_plan 中保留 add 与 revise，不要修改文件。"
+        "/context-atlas-ingest\n只读摄取 sources/composite.md，它同时包含一个新事实和 RULE-ORDER-001 的同身份修订。"
+        "最终仅输出含全部必填字段的 JSON 对象，并在同一 route_plan 中保留 add 与 revise，"
+        "逐字保留 Schema 字段名，不要用自然语言摘要替代，不要修改文件。"
     ),
 }
 INGEST_NATURAL_LANGUAGE_PROMPT = (
@@ -499,7 +503,7 @@ def _prepare_ingest_fixture(workspace: Path, plugin_root: Path) -> None:
             content = content.replace(marker, value)
         path.write_text(content, encoding="utf-8")
     (target / "current.md").write_text(
-        "# 当前批准事实\n\n订单状态只允许 pending。\n",
+        "# 当前批准事实\n\nRULE-ORDER-001：订单状态只允许 pending。\n",
         encoding="utf-8",
     )
     sources = workspace / "sources"
@@ -519,19 +523,19 @@ def _prepare_ingest_fixture(workspace: Path, plugin_root: Path) -> None:
         encoding="utf-8",
     )
     (sources / "revise.md").write_text(
-        "# 修订来源\n\n订单状态规则的说明需要补充审计原因。\n",
+        "# 已批准修订来源\n\nRULE-ORDER-001 保持 pending 限制，并补充审计原因说明。\n",
         encoding="utf-8",
     )
     (sources / "retire.md").write_text(
-        "# 退役来源\n\n订单状态旧规则已停止使用，需要受控退役。\n",
+        "# 退役来源\n\nRULE-ORDER-001 已停止使用，需要受控退役。\n",
         encoding="utf-8",
     )
     (sources / "duplicate.md").write_text(
-        "# 重复来源\n\n订单状态只允许 pending。\n",
+        "# 重复来源\n\nRULE-ORDER-001：订单状态只允许 pending。\n",
         encoding="utf-8",
     )
     (sources / "composite.md").write_text(
-        "# 复合来源\n\n订单状态规则需要补充审计原因。系统新增导出审计记录能力。\n",
+        "# 复合来源\n\nRULE-ORDER-001 保持 pending 限制并补充审计原因。系统新增导出审计记录能力。\n",
         encoding="utf-8",
     )
 
