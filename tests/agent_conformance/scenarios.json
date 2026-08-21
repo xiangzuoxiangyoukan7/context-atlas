@@ -63,6 +63,34 @@
       "invocation": "explicit",
       "turns": 1,
       "invariants": ["no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_single_source_read_only",
+      "description": "单来源摄取输出新增候选和路由但不写正式知识",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_report_fields", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_multiple_sources_blocked",
+      "description": "多个独立来源按第一版契约阻塞并要求拆分",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_blocked", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_conflict_read_only",
+      "description": "竞争来源输出冲突候选并保留双方定位",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_conflict", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_natural_language_not_triggered",
+      "description": "未显式调用时不得执行 ingest 或输出 ingest 报告",
+      "invocation": "natural_language",
+      "turns": 1,
+      "invariants": ["ingest_not_triggered", "no_formal_write_before_confirmation"]
     }
   ]
 }

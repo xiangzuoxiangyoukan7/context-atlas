@@ -27,6 +27,12 @@ $context-atlas-navigate
 $context-atlas-review
 ```
 
+只读摄取一个可定位来源并生成知识维护路由：
+
+```text
+$context-atlas-ingest
+```
+
 向已有知识库新增业务知识：
 
 ```text

@@ -75,6 +75,36 @@ class AgentConformanceTests(unittest.TestCase):
 
         self.assertEqual([], issues)
 
+    def test_ingest_response_requires_core_read_only_fields(self) -> None:
+        """摄取响应必须包含跨平台稳定字段、状态和候选动作。"""
+
+        _, assertions = _load_api()
+        valid = json.dumps(
+            {
+                "status": "analyzed",
+                "source_identity": {"type": "repository_file", "reference": "source.md"},
+                "observed_at": "2026-08-21",
+                "source_digest_or_version": "sha256:test",
+                "route_plan": ["context-atlas-add"],
+                "candidate_action": "add",
+                "writes_performed": False,
+                "confirmation_state": "not_applicable",
+                "next_action": "显式调用 context-atlas-add",
+            },
+            ensure_ascii=False,
+        )
+
+        self.assertEqual(
+            [],
+            assertions.assert_ingest_response(
+                valid, expected_status="analyzed", expected_action="add"
+            ),
+        )
+        issues = assertions.assert_ingest_response(
+            "{}", expected_status="blocked", expected_action=None
+        )
+        self.assertTrue(issues)
+
     def test_existing_target_requires_unchanged_formal_files_and_sentinel_hash(self) -> None:
         """已有正式目标变化必须失败，但允许新增非正式运行记录。"""
 
@@ -188,6 +218,10 @@ class AgentConformanceTests(unittest.TestCase):
                 "openspec_mapping_is_read_only",
                 "spec_kit_mapping_is_read_only",
                 "external_status_is_not_approval",
+                "ingest_single_source_read_only",
+                "ingest_multiple_sources_blocked",
+                "ingest_conflict_read_only",
+                "ingest_natural_language_not_triggered",
             },
             scenario_ids,
         )

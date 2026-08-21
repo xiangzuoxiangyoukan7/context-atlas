@@ -130,13 +130,44 @@ class ScriptedClaudeRunner:
                 encoding="utf-8",
             )
             (schemas / "catalog.json").write_text("{}\n", encoding="utf-8")
+        ingest_results = {
+            "ingest_single_source_read_only": (
+                '{"operation":"ingest","status":"analyzed",'
+                '"source_identity":"sources/new-requirement.md",'
+                '"observed_at":"2026-08-21T00:00:00Z",'
+                '"source_digest_or_version":"sha256:test",'
+                '"route_plan":[{"candidate_action":"add"}],'
+                '"writes_performed":false,"confirmation_state":"not_applicable",'
+                '"next_action":"invoke context-atlas-add"}'
+            ),
+            "ingest_multiple_sources_blocked": (
+                '{"operation":"ingest","status":"blocked",'
+                '"source_identity":"multiple sources",'
+                '"observed_at":"2026-08-21T00:00:00Z",'
+                '"source_digest_or_version":"not_computed",'
+                '"route_plan":[],"writes_performed":false,'
+                '"confirmation_state":"not_applicable",'
+                '"next_action":"select exactly one source"}'
+            ),
+            "ingest_conflict_read_only": (
+                '{"operation":"ingest","status":"analyzed",'
+                '"source_identity":"sources/conflict.md",'
+                '"observed_at":"2026-08-21T00:00:00Z",'
+                '"source_digest_or_version":"sha256:test",'
+                '"route_plan":[{"candidate_action":"conflict"}],'
+                '"writes_performed":false,"confirmation_state":"not_applicable",'
+                '"next_action":"resolve conflict before maintenance"}'
+            ),
+            "ingest_natural_language_not_triggered": "普通文字概括：系统需要支持导出审计记录。",
+        }
         now = _fixed_now()
         return AgentTurn(
             session_id="session-1" if self.persist_sessions else None,
             exit_code=0,
-            result_text=(
+            result_text=ingest_results.get(
+                workspace.name,
                 "包含 user@example.com token=secret 的原始模型正文 "
-                "sha256:" + "a" * 64
+                "sha256:" + "a" * 64,
             ),
             structured_output=None,
             stderr="",
@@ -425,7 +456,7 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertEqual("claude", report["agent"])
         self.assertEqual("passed", report["status"])
         scenarios = report["scenarios"]
-        self.assertEqual(9, len(scenarios))
+        self.assertEqual(13, len(scenarios))
         self.assertEqual({"passed"}, {item["status"] for item in scenarios})
         serialized = json.dumps(report, ensure_ascii=False)
         for forbidden in (

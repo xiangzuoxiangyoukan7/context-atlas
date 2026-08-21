@@ -29,6 +29,7 @@
     "schemas/embedded-source.schema.json",
     "schemas/feature.schema.json",
     "schemas/governance-task.schema.json",
+    "schemas/ingest-report.schema.json",
     "schemas/initialization-proposal.schema.json",
     "schemas/initialization-report.schema.json",
     "schemas/interface.schema.json",

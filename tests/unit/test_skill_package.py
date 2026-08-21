@@ -19,6 +19,7 @@ REFERENCES = (
     "身份与主动采集.md",
     "宿主执行与运行时探测.md",
     "规格审查与SDD适配.md",
+    "单来源摄取与路由.md",
 )
 
 
@@ -39,6 +40,7 @@ class SkillPackageTests(unittest.TestCase):
             cls.plugin_root / "skills/context-atlas-init",
             cls.plugin_root / "skills/context-atlas-navigate",
             cls.plugin_root / "skills/context-atlas-review",
+            cls.plugin_root / "skills/context-atlas-ingest",
             cls.plugin_root / "skills/context-atlas-add",
             cls.plugin_root / "skills/context-atlas-revise",
             cls.plugin_root / "skills/context-atlas-retire",
@@ -323,6 +325,7 @@ class SkillPackageTests(unittest.TestCase):
         self.assertIn('display_name: "context-atlas-init"', metadata)
         self.assertIn('display_name: "Context Atlas Navigate"', metadata)
         self.assertIn('display_name: "Context Atlas Review"', metadata)
+        self.assertIn('display_name: "Context Atlas Ingest"', metadata)
         self.assertIn('display_name: "Context Atlas Add"', metadata)
         self.assertIn('display_name: "Context Atlas Revise"', metadata)
         self.assertIn('display_name: "Context Atlas Retire"', metadata)
@@ -330,6 +333,7 @@ class SkillPackageTests(unittest.TestCase):
         self.assertIn("$context-atlas-init", metadata)
         self.assertIn("$context-atlas-navigate", metadata)
         self.assertIn("$context-atlas-review", metadata)
+        self.assertIn("$context-atlas-ingest", metadata)
         self.assertIn("$context-atlas-add", metadata)
         self.assertIn("$context-atlas-revise", metadata)
         self.assertIn("$context-atlas-retire", metadata)

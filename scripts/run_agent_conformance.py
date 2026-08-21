@@ -22,6 +22,7 @@ if __package__ in {None, ""}:
 from scripts.agent_conformance.assertions import (
     SENTINEL_NAME,
     assert_existing_target_preserved,
+    assert_ingest_response,
     assert_no_formal_write_before_confirmation,
     assert_valid_initialized_target,
     compare_invariants,
@@ -76,6 +77,27 @@ READ_ONLY_PROMPTS = {
     "spec_kit_mapping_is_read_only": "/context-atlas-review\n只读检查当前 Spec Kit 工件映射，禁止写入正式知识。",
     "external_status_is_not_approval": "/context-atlas-review\n外部任务即使 completed 或 archived，也不得批准或修改 Context Atlas 正式知识。",
 }
+INGEST_PROMPTS = {
+    "ingest_single_source_read_only": (
+        "/context-atlas-ingest\n只读摄取 sources/new-requirement.md 这一个 repository_file 来源，"
+        "最终仅输出符合 ingest-report.schema.json 的 JSON 对象，逐字保留全部必填字段名，"
+        "不要用自然语言摘要替代，不要修改任何文件。"
+    ),
+    "ingest_multiple_sources_blocked": (
+        "/context-atlas-ingest\n同时摄取 sources/source-a.md 和 sources/source-b.md。"
+        "按单来源契约处理；即使 blocked，最终也仅输出含全部必填字段的 JSON 对象，"
+        "不要用自然语言摘要替代，不要修改任何文件。"
+    ),
+    "ingest_conflict_read_only": (
+        "/context-atlas-ingest\n只读摄取 sources/conflict.md；它与 doc-ingest/current.md 的批准事实竞争。"
+        "保留双方定位；最终仅输出含全部必填字段的 JSON 对象，逐字保留 Schema 字段名，"
+        "不要用自然语言摘要替代，不要修改任何文件。"
+    ),
+}
+INGEST_NATURAL_LANGUAGE_PROMPT = (
+    "请阅读 sources/new-requirement.md 并用普通文字概括；不要调用任何 Skill，"
+    "不要执行 ingest，也不要输出 ingest_report。"
+)
 class TurnRunner(Protocol):
     """描述场景编排器所需的最小 Agent 运行接口。"""
 
@@ -423,6 +445,89 @@ def _run_read_only_scenario(
     )
 
 
+def _prepare_ingest_fixture(workspace: Path, plugin_root: Path) -> None:
+    """从正式模板创建黑盒摄取知识库，并补入虚构来源。"""
+
+    target = workspace / "doc-ingest"
+    source_template = plugin_root / "templates" / "core" / "doc-project"
+    if not source_template.is_dir():
+        source_template = plugin_root / "assets" / "templates" / "core" / "doc-project"
+    shutil.copytree(source_template, target)
+    replacements = {
+        "{{PROJECT_ID}}": "ingest-fixture",
+        "{{PROJECT_NAME}}": "ingest-fixture",
+        "{{KNOWLEDGE_BASE_NAME}}": "doc-ingest",
+        "{{INITIALIZED_AT}}": "2026-08-21T00:00:00+08:00",
+    }
+    for path in target.rglob("*"):
+        if not path.is_file():
+            continue
+        content = path.read_text(encoding="utf-8")
+        for marker, value in replacements.items():
+            content = content.replace(marker, value)
+        path.write_text(content, encoding="utf-8")
+    (target / "current.md").write_text(
+        "# 当前批准事实\n\n订单状态只允许 pending。\n",
+        encoding="utf-8",
+    )
+    sources = workspace / "sources"
+    sources.mkdir()
+    (sources / "new-requirement.md").write_text(
+        "# 新需求\n\n系统需要支持导出审计记录。\n",
+        encoding="utf-8",
+    )
+    (sources / "source-a.md").write_text("# 来源 A\n", encoding="utf-8")
+    (sources / "source-b.md").write_text("# 来源 B\n", encoding="utf-8")
+    (sources / "conflict.md").write_text(
+        "# 竞争来源\n\n订单状态允许 approved。\n",
+        encoding="utf-8",
+    )
+
+
+def _run_ingest_scenario(
+    plugin_root: Path,
+    workspace: Path,
+    runner_factory: RunnerFactory,
+    scenario_id: str,
+) -> dict[str, object]:
+    """运行显式或自然语言 ingest 场景并验证正式知识零变化。"""
+
+    _prepare_ingest_fixture(workspace, plugin_root)
+    before = snapshot_workspace(workspace)
+    runner = runner_factory(plugin_root, persist_sessions=False)
+    prompt = (
+        INGEST_NATURAL_LANGUAGE_PROMPT
+        if scenario_id == "ingest_natural_language_not_triggered"
+        else INGEST_PROMPTS[scenario_id]
+    )
+    turn = runner.run_turn(workspace, prompt, None)
+    after = snapshot_workspace(workspace)
+    result = ScenarioResult(workspace, before, after, [turn.result_text], [turn.exit_code])
+    issues = assert_no_formal_write_before_confirmation(result)
+    if scenario_id == "ingest_natural_language_not_triggered":
+        if '"operation": "ingest"' in turn.result_text or "candidate_action" in turn.result_text:
+            issues.append("未显式调用时输出了 ingest 报告")
+    else:
+        expected_status = "blocked" if scenario_id == "ingest_multiple_sources_blocked" else "analyzed"
+        expected_action = (
+            "conflict"
+            if scenario_id == "ingest_conflict_read_only"
+            else "add"
+            if scenario_id == "ingest_single_source_read_only"
+            else None
+        )
+        issues.extend(
+            assert_ingest_response(
+                turn.result_text,
+                expected_status=expected_status,
+                expected_action=expected_action,
+            )
+        )
+    return _scenario_report(
+        scenario_id, _status_from(issues, [turn]), issues, [turn], before, after, [turn.exit_code]
+    )
+
+
 def run_claude_conformance(
     plugin_root: Path,
     workspace_root: Path,
@@ -446,6 +551,15 @@ def run_claude_conformance(
                 ),
             )
             for scenario_id in READ_ONLY_PROMPTS
+        ),
+        *(
+            (
+                scenario_id,
+                lambda plugin_root, workspace, runner_factory, current=scenario_id: _run_ingest_scenario(
+                    plugin_root, workspace, runner_factory, current
+                ),
+            )
+            for scenario_id in (*INGEST_PROMPTS, "ingest_natural_language_not_triggered")
         ),
     )
     if selected_scenarios is not None:

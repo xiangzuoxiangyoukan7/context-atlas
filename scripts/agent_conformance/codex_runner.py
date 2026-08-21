@@ -33,6 +33,7 @@ def _adapt_prompt(prompt: str) -> str:
         "/context-atlas-init": "$context-atlas-init",
         "/context-atlas-navigate": "$context-atlas-navigate",
         "/context-atlas-review": "$context-atlas-review",
+        "/context-atlas-ingest": "$context-atlas-ingest",
         "/context-atlas-add": "$context-atlas-add",
         "/context-atlas-revise": "$context-atlas-revise",
         "/context-atlas-retire": "$context-atlas-retire",

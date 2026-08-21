@@ -56,6 +56,35 @@ def assert_no_formal_write_before_confirmation(result: ScenarioResult) -> list[s
     return [f"未确认阶段修改了正式知识文件：{path}" for path in changed_paths]
 
 
+def assert_ingest_response(
+    result_text: str,
+    *,
+    expected_status: str,
+    expected_action: str | None = None,
+) -> list[str]:
+    """验证 ingest 正文包含跨平台稳定字段，不比较自然语言逐字内容。"""
+
+    issues: list[str] = []
+    required = (
+        "source_identity",
+        "observed_at",
+        "source_digest_or_version",
+        "route_plan",
+        "writes_performed",
+        "false",
+        "confirmation_state",
+        "not_applicable",
+        "next_action",
+        expected_status,
+    )
+    for phrase in required:
+        if phrase not in result_text:
+            issues.append(f"ingest 报告缺少核心字段或值：{phrase}")
+    if expected_action is not None and expected_action not in result_text:
+        issues.append(f"ingest 报告缺少预期候选动作：{expected_action}")
+    return issues
+
+
 def assert_existing_target_preserved(
     result: ScenarioResult,
     sentinel_sha256: str,

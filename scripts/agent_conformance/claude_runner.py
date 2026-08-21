@@ -110,7 +110,11 @@ class ClaudeRunner:
         resolved_plugin_root = plugin_root.resolve()
         marketplace_index = resolved_plugin_root / ".claude-plugin" / "marketplace.json"
         candidate_source_root = resolved_plugin_root.parent.parent
-        if marketplace_index.is_file() and (candidate_source_root / "skills").is_dir():
+        if (
+            marketplace_index.is_file()
+            and not (resolved_plugin_root / "skills").is_dir()
+            and (candidate_source_root / "skills").is_dir()
+        ):
             resolved_plugin_root = candidate_source_root
         self.plugin_root = resolved_plugin_root
         self.persist_sessions = persist_sessions
