@@ -155,7 +155,7 @@ class CodexRunner:
                     "plugins": [
                         {
                             "name": "context-atlas",
-                            "source": {"source": "url", "url": "./"},
+                            "source": {"source": "local", "path": "./"},
                             "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
                             "category": "Productivity",
                         }

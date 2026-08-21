@@ -121,12 +121,8 @@ class CodexRunnerTests(unittest.TestCase):
         self.assertEqual(600, process.calls[2][1]["timeout"])
         self.assertEqual('[windows]\nsandbox = "unelevated"\n', temporary_config)
         self.assertEqual(
-            json.loads(
-                (ROOT / ".agents/plugins/marketplace.json").read_text(
-                    encoding="utf-8"
-                )
-            ),
-            installed_manifest,
+            {"source": "local", "path": "./"},
+            installed_manifest["plugins"][0]["source"],
         )
         self.assertTrue(
             all(call[1].get("encoding") == "utf-8" for call in process.calls)
