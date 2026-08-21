@@ -91,6 +91,62 @@
       "invocation": "natural_language",
       "turns": 1,
       "invariants": ["ingest_not_triggered", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_sensitive_source_blocked",
+      "description": "含虚构敏感值的来源必须阻塞且不得回显值",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_blocked", "sensitive_value_not_echoed", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_ai_inference_source_blocked",
+      "description": "ai_inference 不得作为摄取主来源",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_blocked", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_missing_kb_routes_init",
+      "description": "知识库缺失时只路由初始化",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_routes_init", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_unsupported_format_routes_upgrade",
+      "description": "格式不兼容时只路由升级",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_routes_upgrade", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_revise_route",
+      "description": "同一稳定身份的更新路由为 revise",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_revise", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_retire_route",
+      "description": "停止使用的当前事实路由为 retire",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_retire", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_ignore_route",
+      "description": "与当前事实完全重复的来源路由为 ignore",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_ignore", "no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "ingest_composite_add_revise_route",
+      "description": "同一来源的新增与修订进入一个复合 route_plan",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["ingest_composite_route", "no_formal_write_before_confirmation"]
     }
   ]
 }

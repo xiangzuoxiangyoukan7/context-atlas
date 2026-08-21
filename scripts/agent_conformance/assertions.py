@@ -60,7 +60,8 @@ def assert_ingest_response(
     result_text: str,
     *,
     expected_status: str,
-    expected_action: str | None = None,
+    expected_action: str | tuple[str, ...] | None = None,
+    forbidden_values: tuple[str, ...] = (),
 ) -> list[str]:
     """验证 ingest 正文包含跨平台稳定字段，不比较自然语言逐字内容。"""
 
@@ -80,8 +81,15 @@ def assert_ingest_response(
     for phrase in required:
         if phrase not in result_text:
             issues.append(f"ingest 报告缺少核心字段或值：{phrase}")
-    if expected_action is not None and expected_action not in result_text:
-        issues.append(f"ingest 报告缺少预期候选动作：{expected_action}")
+    expected_actions = (
+        (expected_action,) if isinstance(expected_action, str) else expected_action or ()
+    )
+    for action in expected_actions:
+        if action not in result_text:
+            issues.append(f"ingest 报告缺少预期候选动作或路由：{action}")
+    for value in forbidden_values:
+        if value in result_text:
+            issues.append("ingest 报告回显了禁止公开的测试敏感值")
     return issues
 
 

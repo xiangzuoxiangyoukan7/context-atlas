@@ -93,6 +93,38 @@ INGEST_PROMPTS = {
         "保留双方定位；最终仅输出含全部必填字段的 JSON 对象，逐字保留 Schema 字段名，"
         "不要用自然语言摘要替代，不要修改任何文件。"
     ),
+    "ingest_sensitive_source_blocked": (
+        "/context-atlas-ingest\n只读摄取 sources/sensitive.md。该文件含虚构测试凭据，"
+        "必须阻塞且不得回显凭据；最终仅输出含全部必填字段的 JSON 对象，不要修改文件。"
+    ),
+    "ingest_ai_inference_source_blocked": (
+        "/context-atlas-ingest\n尝试把 ai_inference:推测系统需要缓存 作为主来源。"
+        "按来源契约处理，最终仅输出含全部必填字段的 JSON 对象，不要修改文件。"
+    ),
+    "ingest_missing_kb_routes_init": (
+        "/context-atlas-ingest\n只读摄取 sources/new-requirement.md；当前不存在知识库。"
+        "最终仅输出含全部必填字段的 JSON 对象并路由 context-atlas-init，不要修改文件。"
+    ),
+    "ingest_unsupported_format_routes_upgrade": (
+        "/context-atlas-ingest\n只读摄取 sources/new-requirement.md；知识库格式不兼容。"
+        "最终仅输出含全部必填字段的 JSON 对象并路由 context-atlas-upgrade，不要修改文件。"
+    ),
+    "ingest_revise_route": (
+        "/context-atlas-ingest\n只读摄取 sources/revise.md，它更新 doc-ingest/current.md 的同一稳定事实。"
+        "最终仅输出含全部必填字段的 JSON 对象并给出 revise 候选，不要修改文件。"
+    ),
+    "ingest_retire_route": (
+        "/context-atlas-ingest\n只读摄取 sources/retire.md，它要求退役 doc-ingest/current.md 的稳定事实。"
+        "最终仅输出含全部必填字段的 JSON 对象并给出 retire 候选，不要修改文件。"
+    ),
+    "ingest_ignore_route": (
+        "/context-atlas-ingest\n只读摄取 sources/duplicate.md，它与当前批准事实完全重复。"
+        "最终仅输出含全部必填字段的 JSON 对象并给出 ignore 候选，不要修改文件。"
+    ),
+    "ingest_composite_add_revise_route": (
+        "/context-atlas-ingest\n只读摄取 sources/composite.md，它同时包含一个新事实和一个同身份修订。"
+        "最终仅输出含全部必填字段的 JSON 对象，并在同一 route_plan 中保留 add 与 revise，不要修改文件。"
+    ),
 }
 INGEST_NATURAL_LANGUAGE_PROMPT = (
     "请阅读 sources/new-requirement.md 并用普通文字概括；不要调用任何 Skill，"
@@ -482,6 +514,26 @@ def _prepare_ingest_fixture(workspace: Path, plugin_root: Path) -> None:
         "# 竞争来源\n\n订单状态允许 approved。\n",
         encoding="utf-8",
     )
+    (sources / "sensitive.md").write_text(
+        "# 虚构敏感输入\n\n测试令牌：TEST_SECRET_DO_NOT_ECHO_7F3A\n",
+        encoding="utf-8",
+    )
+    (sources / "revise.md").write_text(
+        "# 修订来源\n\n订单状态规则的说明需要补充审计原因。\n",
+        encoding="utf-8",
+    )
+    (sources / "retire.md").write_text(
+        "# 退役来源\n\n订单状态旧规则已停止使用，需要受控退役。\n",
+        encoding="utf-8",
+    )
+    (sources / "duplicate.md").write_text(
+        "# 重复来源\n\n订单状态只允许 pending。\n",
+        encoding="utf-8",
+    )
+    (sources / "composite.md").write_text(
+        "# 复合来源\n\n订单状态规则需要补充审计原因。系统新增导出审计记录能力。\n",
+        encoding="utf-8",
+    )
 
 
 def _run_ingest_scenario(
@@ -493,6 +545,16 @@ def _run_ingest_scenario(
     """运行显式或自然语言 ingest 场景并验证正式知识零变化。"""
 
     _prepare_ingest_fixture(workspace, plugin_root)
+    if scenario_id == "ingest_missing_kb_routes_init":
+        shutil.rmtree(workspace / "doc-ingest")
+    elif scenario_id == "ingest_unsupported_format_routes_upgrade":
+        manifest = workspace / "doc-ingest" / "knowledge-base.yaml"
+        manifest.write_text(
+            manifest.read_text(encoding="utf-8").replace(
+                "format_version: 7", "format_version: 999"
+            ),
+            encoding="utf-8",
+        )
     before = snapshot_workspace(workspace)
     runner = runner_factory(plugin_root, persist_sessions=False)
     prompt = (
@@ -508,19 +570,32 @@ def _run_ingest_scenario(
         if '"operation": "ingest"' in turn.result_text or "candidate_action" in turn.result_text:
             issues.append("未显式调用时输出了 ingest 报告")
     else:
-        expected_status = "blocked" if scenario_id == "ingest_multiple_sources_blocked" else "analyzed"
-        expected_action = (
-            "conflict"
-            if scenario_id == "ingest_conflict_read_only"
-            else "add"
-            if scenario_id == "ingest_single_source_read_only"
-            else None
-        )
+        blocked_scenarios = {
+            "ingest_multiple_sources_blocked",
+            "ingest_sensitive_source_blocked",
+            "ingest_ai_inference_source_blocked",
+            "ingest_missing_kb_routes_init",
+            "ingest_unsupported_format_routes_upgrade",
+        }
+        expected_status = "blocked" if scenario_id in blocked_scenarios else "analyzed"
+        expected_actions: dict[str, str | tuple[str, ...]] = {
+            "ingest_single_source_read_only": "add",
+            "ingest_conflict_read_only": "conflict",
+            "ingest_missing_kb_routes_init": "context-atlas-init",
+            "ingest_unsupported_format_routes_upgrade": "context-atlas-upgrade",
+            "ingest_revise_route": "revise",
+            "ingest_retire_route": "retire",
+            "ingest_ignore_route": "ignore",
+            "ingest_composite_add_revise_route": ("add", "revise"),
+        }
         issues.extend(
             assert_ingest_response(
                 turn.result_text,
                 expected_status=expected_status,
-                expected_action=expected_action,
+                expected_action=expected_actions.get(scenario_id),
+                forbidden_values=("TEST_SECRET_DO_NOT_ECHO_7F3A",)
+                if scenario_id == "ingest_sensitive_source_blocked"
+                else (),
             )
         )
     return _scenario_report(

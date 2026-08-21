@@ -160,6 +160,47 @@ class ScriptedClaudeRunner:
             ),
             "ingest_natural_language_not_triggered": "普通文字概括：系统需要支持导出审计记录。",
         }
+        def ingest_result(status: str, *actions: str) -> str:
+            """生成覆盖扩展 ingest 场景的最小完整测试报告。"""
+
+            return json.dumps(
+                {
+                    "operation": "ingest",
+                    "status": status,
+                    "source_identity": {"type": "repository_file", "reference": "fixture"},
+                    "observed_at": "2026-08-21T00:00:00Z",
+                    "source_digest_or_version": "sha256:test",
+                    "scope": [],
+                    "candidates": [
+                        {"candidate_action": action} for action in actions
+                    ],
+                    "route_plan": list(actions),
+                    "blocked_reasons": ["fixture"] if status == "blocked" else [],
+                    "writes_performed": False,
+                    "confirmation_state": "not_applicable",
+                    "next_action": "fixture next action",
+                },
+                ensure_ascii=False,
+            )
+
+        ingest_results.update(
+            {
+                "ingest_sensitive_source_blocked": ingest_result("blocked"),
+                "ingest_ai_inference_source_blocked": ingest_result("blocked"),
+                "ingest_missing_kb_routes_init": ingest_result(
+                    "blocked", "context-atlas-init"
+                ),
+                "ingest_unsupported_format_routes_upgrade": ingest_result(
+                    "blocked", "context-atlas-upgrade"
+                ),
+                "ingest_revise_route": ingest_result("analyzed", "revise"),
+                "ingest_retire_route": ingest_result("analyzed", "retire"),
+                "ingest_ignore_route": ingest_result("analyzed", "ignore"),
+                "ingest_composite_add_revise_route": ingest_result(
+                    "analyzed", "add", "revise"
+                ),
+            }
+        )
         now = _fixed_now()
         return AgentTurn(
             session_id="session-1" if self.persist_sessions else None,
@@ -456,7 +497,7 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertEqual("claude", report["agent"])
         self.assertEqual("passed", report["status"])
         scenarios = report["scenarios"]
-        self.assertEqual(13, len(scenarios))
+        self.assertEqual(21, len(scenarios))
         self.assertEqual({"passed"}, {item["status"] for item in scenarios})
         serialized = json.dumps(report, ensure_ascii=False)
         for forbidden in (
