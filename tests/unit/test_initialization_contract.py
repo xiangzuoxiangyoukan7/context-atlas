@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 
 from scripts.project_kb.agent_operation import execute_initialization_proposal
 from scripts.project_kb.initialization_contract import canonical_revision, validate_initialization_proposal
@@ -116,6 +117,58 @@ class InitializationContractTests(InstalledPluginTestCase):
         )
         for fictional in ("MOD-001", "API-001", "EXT-001", "示例组件", "示例服务"):
             self.assertNotIn(fictional, combined)
+
+    def test_standard_profile_does_not_create_obsidian_settings(self) -> None:
+        """默认初始化必须记录 standard 且不引入工具专属展示配置。"""
+
+        proposal = self._proposal()
+        execute_initialization_proposal(
+            proposal, str(proposal["proposal_revision"]), self.assets_root
+        )
+
+        target = self.root / "doc-example"
+        self.assertFalse((target / ".obsidian").exists())
+        self.assertIn(
+            "workspace_profile: standard",
+            (target / "knowledge-base.yaml").read_text(encoding="utf-8"),
+        )
+
+    def test_obsidian_profile_creates_minimal_colored_graph(self) -> None:
+        """显式 Obsidian 模式只生成最小配置和基于知识类型的颜色组。"""
+
+        proposal = self._proposal()
+        proposal["project"]["workspace_profile"] = "obsidian"  # type: ignore[index]
+        proposal["proposal_revision"] = canonical_revision(proposal)
+        report = execute_initialization_proposal(
+            proposal, str(proposal["proposal_revision"]), self.assets_root
+        )
+
+        target = self.root / "doc-example"
+        settings = target / ".obsidian"
+        self.assertEqual(
+            {"app.json", "graph.json"},
+            {path.name for path in settings.iterdir()},
+        )
+        self.assertEqual({}, json.loads((settings / "app.json").read_text(encoding="utf-8")))
+        graph = json.loads((settings / "graph.json").read_text(encoding="utf-8"))
+        queries = {item["query"] for item in graph["colorGroups"]}
+        self.assertIn("[type:feature]", queries)
+        self.assertIn("[type:contract OR independent_contract]", queries)
+        self.assertEqual('-path:"90-历史归档"', graph["search"])
+        self.assertIn(".obsidian/app.json", report.written_files)
+        self.assertIn("workspace_profile: obsidian", (target / "knowledge-base.yaml").read_text(encoding="utf-8"))
+
+    def test_unknown_workspace_profile_is_rejected_before_writes(self) -> None:
+        """未支持的工作区配置不得进入暂存初始化。"""
+
+        proposal = self._proposal()
+        proposal["project"]["workspace_profile"] = "unknown"  # type: ignore[index]
+        proposal["proposal_revision"] = canonical_revision(proposal)
+        with self.assertRaisesRegex(ValueError, "workspace_profile is unsupported"):
+            execute_initialization_proposal(
+                proposal, str(proposal["proposal_revision"]), self.assets_root
+            )
+        self.assertFalse((self.root / "doc-example").exists())
 
     def test_ai_inference_cannot_be_confirmed(self) -> None:
         """AI 推测不能冒充经过确认的项目事实。"""

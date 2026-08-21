@@ -115,14 +115,16 @@ class ScriptedClaudeRunner:
         """在确认场景第二轮物化最小自包含知识库。"""
 
         self.turns += 1
-        if workspace.name == "initialize_after_confirmation" and resume_session_id:
+        if workspace.name in {"initialize_after_confirmation", "initialize_obsidian_after_confirmation"} and resume_session_id:
             target = workspace / "doc-example"
             scripts = target / ".project-kb" / "scripts"
             schemas = target / ".project-kb" / "schemas"
             scripts.mkdir(parents=True)
             schemas.mkdir(parents=True)
             (target / "knowledge-base.yaml").write_text(
-                "knowledge_base_name: doc-example\n",
+                "knowledge_base_name: doc-example\nworkspace_profile: "
+                + ("obsidian" if workspace.name == "initialize_obsidian_after_confirmation" else "standard")
+                + "\n",
                 encoding="utf-8",
             )
             (scripts / "check_knowledge_base.py").write_text(
@@ -130,6 +132,14 @@ class ScriptedClaudeRunner:
                 encoding="utf-8",
             )
             (schemas / "catalog.json").write_text("{}\n", encoding="utf-8")
+            if workspace.name == "initialize_obsidian_after_confirmation":
+                settings = target / ".obsidian"
+                settings.mkdir()
+                (settings / "app.json").write_text("{}\n", encoding="utf-8")
+                (settings / "graph.json").write_text(
+                    '{"search":"-path:\\"90-历史归档\\"","colorGroups":[{"query":"[type:feature]"}]}\n',
+                    encoding="utf-8",
+                )
         ingest_results = {
             "ingest_single_source_read_only": (
                 '{"operation":"ingest","status":"analyzed",'
@@ -216,7 +226,9 @@ class ScriptedClaudeRunner:
             session_id="session-1" if self.persist_sessions else None,
             exit_code=0,
             result_text=(
-                '{"path":".context-atlas/ingest-history/test.json","formal_knowledge_written":false}'
+                'workspace_profile: obsidian sha256:' + "a" * 64
+                if workspace.name == "initialize_obsidian_after_confirmation" and not resume_session_id
+                else '{"path":".context-atlas/ingest-history/test.json","formal_knowledge_written":false}'
                 if workspace.name == "ingest_history_explicit"
                 else '{"status":"findings","findings":[],"files_scanned":1,"writes_performed":false}'
                 if workspace.name == "health_is_read_only"
@@ -512,7 +524,7 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertEqual("claude", report["agent"])
         self.assertEqual("passed", report["status"])
         scenarios = report["scenarios"]
-        self.assertEqual(27, len(scenarios))
+        self.assertEqual(28, len(scenarios))
         self.assertEqual({"passed"}, {item["status"] for item in scenarios})
         serialized = json.dumps(report, ensure_ascii=False)
         for forbidden in (

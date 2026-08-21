@@ -211,6 +211,7 @@ class AgentConformanceTests(unittest.TestCase):
             {
                 "initialize_requires_confirmation",
                 "initialize_after_confirmation",
+                "initialize_obsidian_after_confirmation",
                 "existing_target_is_preserved",
                 "natural_language_triggers_skill",
                 "review_is_read_only",

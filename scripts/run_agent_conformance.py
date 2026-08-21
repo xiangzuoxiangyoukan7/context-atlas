@@ -70,6 +70,12 @@ NATURAL_LANGUAGE_PROMPT = (
     "请检查当前项目是否已经存在项目知识库；如需初始化，先给出提案并等待我明确确认，"
     "不要创建或修改正式知识文件。"
 )
+OBSIDIAN_INITIALIZE_PROMPT = (
+    "/context-atlas-init\n"
+    "请为当前项目以 Obsidian 模式初始化名为 example 的项目知识库。"
+    "Proposal 的 project.workspace_profile 必须为 obsidian。"
+    "现在只检查并提出带规范 proposal_revision 的 Proposal，不要确认，也不要创建或修改正式知识文件。"
+)
 READ_ONLY_PROMPTS = {
     "review_is_read_only": "/context-atlas-review\n只读审查当前项目规格，不要创建或修改正式知识。",
     "review_reports_blockers": "/context-atlas-review\n报告当前规格中的阻塞问题，不要猜测答案或修改文件。",
@@ -423,6 +429,11 @@ def _run_after_confirmation(
         exit_codes,
     )
     issues.extend(assert_valid_initialized_target(initialized, "example"))
+    manifest = target / "knowledge-base.yaml"
+    if not manifest.is_file() or "workspace_profile: standard" not in manifest.read_text(encoding="utf-8"):
+        issues.append("标准初始化目标未记录 workspace_profile: standard")
+    if (target / ".obsidian").exists():
+        issues.append("标准初始化不应创建 .obsidian 配置")
     turns = [first_turn, second_turn]
     return _scenario_report(
         scenario_id,
@@ -511,6 +522,68 @@ def _run_read_only_scenario(
     issues = assert_no_formal_write_before_confirmation(result)
     return _scenario_report(
         scenario_id, _status_from(issues, [turn]), issues, [turn], before, after, [turn.exit_code]
+    )
+
+
+def _run_obsidian_after_confirmation(
+    plugin_root: Path,
+    workspace: Path,
+    runner_factory: RunnerFactory,
+) -> dict[str, object]:
+    """验证显式 Obsidian Profile 在确认后生成最小 Vault。"""
+
+    scenario_id = "initialize_obsidian_after_confirmation"
+    before = snapshot_workspace(workspace)
+    runner = runner_factory(plugin_root, persist_sessions=True)
+    first_turn = runner.run_turn(workspace, OBSIDIAN_INITIALIZE_PROMPT, None)
+    middle = snapshot_workspace(workspace)
+    issues = assert_no_formal_write_before_confirmation(
+        ScenarioResult(workspace, before, middle, [first_turn.result_text], [first_turn.exit_code])
+    )
+    proposal_revision = extract_proposal_revision(first_turn.result_text)
+    if proposal_revision is None:
+        issues.append("Obsidian 初始化首轮没有返回符合 Schema 的 proposal_revision")
+    if "obsidian" not in first_turn.result_text.lower():
+        issues.append("Obsidian 初始化 Proposal 未声明 workspace_profile")
+    if not first_turn.session_id or proposal_revision is None:
+        return _scenario_report(
+            scenario_id, _status_from(issues, [first_turn]), issues, [first_turn],
+            before, middle, [first_turn.exit_code]
+        )
+    second_turn = runner.run_turn(
+        workspace, confirmation_prompt(proposal_revision), first_turn.session_id
+    )
+    target = workspace / "doc-example"
+    validator = target / ".project-kb" / "scripts" / "check_knowledge_base.py"
+    validator_exit_code = 1
+    if validator.is_file():
+        validator_exit_code = subprocess.run(
+            [sys.executable, str(validator), str(target)], cwd=workspace,
+            capture_output=True, text=True, timeout=120,
+        ).returncode
+    after = snapshot_workspace(workspace)
+    exit_codes = [first_turn.exit_code, second_turn.exit_code, validator_exit_code]
+    initialized = ScenarioResult(
+        workspace, before, after, [first_turn.result_text, second_turn.result_text], exit_codes
+    )
+    issues.extend(assert_valid_initialized_target(initialized, "example"))
+    manifest = target / "knowledge-base.yaml"
+    if not manifest.is_file() or "workspace_profile: obsidian" not in manifest.read_text(encoding="utf-8"):
+        issues.append("Obsidian 初始化目标未记录 workspace_profile: obsidian")
+    for relative in (".obsidian/app.json", ".obsidian/graph.json"):
+        if not (target / relative).is_file():
+            issues.append(f"Obsidian 初始化目标缺少配置：{relative}")
+    graph = target / ".obsidian" / "graph.json"
+    if graph.is_file():
+        graph_text = graph.read_text(encoding="utf-8")
+        for phrase in ("[type:feature]", "90-历史归档", "colorGroups"):
+            if phrase not in graph_text:
+                issues.append(f"Obsidian 图谱缺少预期规则：{phrase}")
+    turns = [first_turn, second_turn]
+    return _scenario_report(
+        scenario_id,
+        _status_from(issues, turns) if validator_exit_code == 0 else "failed",
+        issues, turns, before, after, exit_codes,
     )
 
 
@@ -715,6 +788,7 @@ def run_claude_conformance(
     scenario_functions = (
         ("initialize_requires_confirmation", _run_requires_confirmation),
         ("initialize_after_confirmation", _run_after_confirmation),
+        ("initialize_obsidian_after_confirmation", _run_obsidian_after_confirmation),
         ("existing_target_is_preserved", _run_existing_target),
         ("natural_language_triggers_skill", _run_natural_language),
         *(

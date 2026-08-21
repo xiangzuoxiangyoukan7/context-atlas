@@ -16,6 +16,13 @@
       "invariants": ["valid_initialized_target"]
     },
     {
+      "id": "initialize_obsidian_after_confirmation",
+      "description": "确认包含 Obsidian Profile 的 Proposal 后生成最小 Vault 和颜色图谱",
+      "invocation": "explicit",
+      "turns": 2,
+      "invariants": ["valid_initialized_target", "obsidian_profile_materialized"]
+    },
+    {
       "id": "existing_target_is_preserved",
       "description": "正式知识库目录已存在时保留全部文件和哨兵内容",
       "invocation": "explicit",

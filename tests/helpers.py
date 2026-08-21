@@ -69,6 +69,7 @@ def materialize_core_template(
         "{{PROJECT_ID}}": project_name,
         "{{PROJECT_NAME}}": project_name,
         "{{KNOWLEDGE_BASE_NAME}}": f"doc-{project_name}",
+        "{{WORKSPACE_PROFILE}}": "standard",
         "{{INITIALIZED_AT}}": "2026-08-10",
     }
     for path in knowledge_base.rglob("*"):
