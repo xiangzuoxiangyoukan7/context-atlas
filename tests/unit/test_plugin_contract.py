@@ -262,8 +262,8 @@ class PluginContractTests(unittest.TestCase):
         for phrase in (
             "需求来了怎么做",
             "只补充数据库信息",
-            "摄取一份外部资料",
-            "第一版一次只处理一个来源",
+            "摄取外部资料",
+            "最多 20 个分别定位的来源",
             "新增、修订、退役、冲突或不沉淀",
             "自然语言“摄取”请求不触发该 Skill",
             "$context-atlas-add",

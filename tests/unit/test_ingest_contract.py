@@ -24,7 +24,7 @@ class IngestContractTests(unittest.TestCase):
         )
 
         for phrase in (
-            "Use only when the user explicitly invokes context-atlas-ingest",
+            "Use only when explicitly invoked",
             "../../references/单来源摄取与路由.md",
             "../../assets/schemas/ingest-report.schema.json",
             "all early-return and `blocked` outcomes",
@@ -45,8 +45,8 @@ class IngestContractTests(unittest.TestCase):
         )
 
         for phrase in (
-            "第一版只处理一个主来源",
-            "多个独立来源返回 `blocked`",
+            "增强模式允许一次处理 1～20 个",
+            "超过 20 个来源或重复来源身份返回 `blocked`",
             "`add`",
             "`revise`",
             "`retire`",

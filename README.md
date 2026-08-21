@@ -12,7 +12,7 @@
 - [初始化 Skill](./skills/context-atlas-init/SKILL.md)
 - [渐进导航 Skill](./skills/context-atlas-navigate/SKILL.md)
 - [规格审查 Skill](./skills/context-atlas-review/SKILL.md)
-- [单来源摄取 Skill](./skills/context-atlas-ingest/SKILL.md)
+- [增强摄取 Skill](./skills/context-atlas-ingest/SKILL.md)
 - [知识新增 Skill](./skills/context-atlas-add/SKILL.md)
 - [知识修订 Skill](./skills/context-atlas-revise/SKILL.md)
 - [知识退役 Skill](./skills/context-atlas-retire/SKILL.md)

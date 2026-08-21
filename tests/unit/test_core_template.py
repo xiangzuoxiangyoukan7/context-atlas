@@ -29,7 +29,7 @@ class CoreTemplateTests(TempDirectoryTestCase):
             "context-atlas-revise",
             "context-atlas-retire",
             "context-atlas-upgrade",
-            "第一版一次只处理一个来源",
+            "最多 20 个分别定位的来源",
             "新增、修订、退役、冲突或不沉淀",
             "自然语言“摄取”请求不触发该 Skill",
             "查询答案默认只存在于当前对话，不自动归档为正式知识",

@@ -196,7 +196,7 @@ class SkillPackageTests(unittest.TestCase):
 
         self.assertTrue(guide.is_file())
         content = guide.read_text(encoding="utf-8")
-        self.assertIn("第一版一次只处理一个来源", content)
+        self.assertIn("最多 20 个分别定位的来源", content)
         self.assertIn("Proposal 确认边界", content)
 
     def test_database_reference_and_simplified_templates_are_packaged(self) -> None:
