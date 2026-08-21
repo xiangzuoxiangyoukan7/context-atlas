@@ -141,8 +141,9 @@ INGEST_PROMPTS = {
     ),
     "ingest_batch_over_limit": (
         "/context-atlas-ingest\n批量摄取 sources/batch-01.md 到 sources/batch-21.md 共 21 个来源。"
-        "按批次上限拒绝整个请求，仅输出说明 batch_ingest、blocked、source_count、writes_performed=false、"
-        "confirmation_state=not_applicable 的 JSON，不要修改文件。"
+        "按批次上限拒绝整个请求，不得分析任一来源。仅输出完整 JSON：operation=batch_ingest、status=blocked、"
+        "source_count=21、reports=[]、route_plan=[]、writes_performed=false、confirmation_state=not_applicable，"
+        "不得省略任何字段，不要修改文件。"
     ),
     "ingest_untrusted_web_snapshot": (
         "/context-atlas-ingest\n把 sources/untrusted-web.html 视为从 https://example.com/requirements 得到的网页快照进行只读摄取。"
