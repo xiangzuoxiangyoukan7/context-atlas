@@ -159,12 +159,15 @@ def _revision(
 
 
 def _format_seven_creations(root: Path) -> tuple[MigrationCreation, ...]:
-    """从随插件发布的核心模板生成格式七新增目录说明文件。"""
+    """从随插件发布的核心模板生成格式七新增目录及其可达模板。"""
 
     template_root = Path(__file__).resolve().parents[2] / "templates" / "core" / "doc-project"
     relatives = (
         Path("03-变更与证据/变更/README.md"),
+        Path("03-变更与证据/变更/TEMPLATE.md"),
+        Path("03-变更与证据/变更/Delta/TEMPLATE.md"),
         Path("03-变更与证据/验收契约/README.md"),
+        Path("03-变更与证据/验收契约/TEMPLATE.md"),
     )
     creations: list[MigrationCreation] = []
     for relative in relatives:
