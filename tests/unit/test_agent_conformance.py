@@ -230,6 +230,12 @@ class AgentConformanceTests(unittest.TestCase):
                 "ingest_retire_route",
                 "ingest_ignore_route",
                 "ingest_composite_add_revise_route",
+                "ingest_batch_success",
+                "ingest_batch_partial_blocked",
+                "ingest_batch_over_limit",
+                "ingest_untrusted_web_snapshot",
+                "ingest_history_explicit",
+                "health_is_read_only",
             },
             scenario_ids,
         )

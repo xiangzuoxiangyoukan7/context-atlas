@@ -199,16 +199,31 @@ class ScriptedClaudeRunner:
                 "ingest_composite_add_revise_route": ingest_result(
                     "analyzed", "add", "revise"
                 ),
+                "ingest_batch_success": json.dumps({"operation": "batch_ingest", "status": "analyzed", "source_count": 2, "reports": [], "route_plan": ["add"], "writes_performed": False, "confirmation_state": "not_applicable"}),
+                "ingest_batch_partial_blocked": json.dumps({"operation": "batch_ingest", "status": "analyzed", "source_count": 2, "reports": [{"status": "blocked"}], "route_plan": ["add"], "writes_performed": False, "confirmation_state": "not_applicable"}),
+                "ingest_batch_over_limit": json.dumps({"operation": "batch_ingest", "status": "blocked", "source_count": 21, "reports": [], "route_plan": [], "writes_performed": False, "confirmation_state": "not_applicable"}),
+                "ingest_untrusted_web_snapshot": ingest_result("analyzed", "add"),
             }
         )
+        if workspace.name == "ingest_history_explicit":
+            history = workspace / ".context-atlas" / "ingest-history"
+            history.mkdir(parents=True, exist_ok=True)
+            (history / "test.json").write_text(
+                '{"report":{"token":"[REDACTED]"}}\n', encoding="utf-8"
+            )
         now = _fixed_now()
         return AgentTurn(
             session_id="session-1" if self.persist_sessions else None,
             exit_code=0,
-            result_text=ingest_results.get(
-                workspace.name,
-                "包含 user@example.com token=secret 的原始模型正文 "
-                "sha256:" + "a" * 64,
+            result_text=(
+                '{"path":".context-atlas/ingest-history/test.json","formal_knowledge_written":false}'
+                if workspace.name == "ingest_history_explicit"
+                else '{"status":"findings","findings":[],"files_scanned":1,"writes_performed":false}'
+                if workspace.name == "health_is_read_only"
+                else ingest_results.get(
+                    workspace.name,
+                    "包含 user@example.com token=secret 的原始模型正文 sha256:" + "a" * 64,
+                )
             ),
             structured_output=None,
             stderr="",
@@ -497,7 +512,7 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertEqual("claude", report["agent"])
         self.assertEqual("passed", report["status"])
         scenarios = report["scenarios"]
-        self.assertEqual(21, len(scenarios))
+        self.assertEqual(27, len(scenarios))
         self.assertEqual({"passed"}, {item["status"] for item in scenarios})
         serialized = json.dumps(report, ensure_ascii=False)
         for forbidden in (
