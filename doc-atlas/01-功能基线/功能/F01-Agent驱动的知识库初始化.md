@@ -7,10 +7,10 @@ phase: mvp
 priority: P0
 current_slice: included
 depends_on: []
-acceptance: [F01-AC-01, F01-AC-02]
+acceptance: [F01-AC-01, F01-AC-02, F01-AC-03]
 contracts: [CONTRACT-INIT-001]
-adr: [ADR-002]
-last_updated: 2026-08-10
+adr: [ADR-002, ADR-008]
+last_updated: 2026-08-22
 ---
 
 # F01：Agent 驱动的知识库初始化
@@ -24,6 +24,7 @@ last_updated: 2026-08-10
 - 根据当前目录名生成默认知识库名称。
 - 允许用户明确覆盖项目名称。
 - 初始化统一知识库，不选择技术栈或技术栈模板。
+- 默认使用标准工作区；用户可明确选择 Obsidian 模式并获得最小 Vault 与关系图谱颜色配置。
 - 初始化前展示目录和首版候选内容。
 - 目标存在时停止并转入更新流程。
 
@@ -37,3 +38,4 @@ last_updated: 2026-08-10
 
 - `F01-AC-01`：Agent 能按初始化产物契约生成完整、自包含的 `doc-<项目名>/`。
 - `F01-AC-02`：初始化不会覆盖已有目录，也不会生成 `AGENTS.md`、`CLAUDE.md` 等专属文件。
+- `F01-AC-03`：标准和 Obsidian 初始化模式均产生可验证且不覆盖已有配置的目标，Obsidian 展示配置不进入正式知识治理。
