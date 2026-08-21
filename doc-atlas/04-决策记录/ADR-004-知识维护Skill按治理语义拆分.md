@@ -46,7 +46,7 @@ last_updated: 2026-08-21
 - `user_statement`：2026-08-21 用户明确要求直接删除 `context-atlas-update`，并替换为新的维护 Skills。
 - `repository_file`：`skills/context-atlas-update/SKILL.md` 当前记录了通用更新入口的过渡性质和职责范围。
 - `existing_document`：ADR-003 已确立薄 Skill 与共享执行协议的权威边界。
-- `repository_file`：`docs/marketplace-installation.md` 当前声明未来业务知识更新将拆分为更细的 Skills。
+- `repository_file`：`packaging/marketplace-installation.md` 当前声明未来业务知识更新将拆分为更细的 Skills。
 
 ## 回滚条件
 

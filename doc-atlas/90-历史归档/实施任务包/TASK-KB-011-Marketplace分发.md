@@ -28,4 +28,4 @@ last_updated: 2026-08-17
 - `KB-AC-42`：两个平台能在项目隔离范围内发现并安装同一个 Skill，使用各自固定操作符；Claude 的真实确认后初始化行为仍单独记录。
 - `KB-AC-43`：安装不依赖 `pip install`，不会写入用户级插件配置，正式知识写入遵守固定操作符、Proposal 和明确确认门禁。
 
-证据见 [Marketplace 安装与使用](../../../docs/marketplace-installation.md)。
+证据见 [Marketplace 安装与使用](../../../packaging/marketplace-installation.md)。

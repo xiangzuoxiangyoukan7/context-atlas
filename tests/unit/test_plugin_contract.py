@@ -195,7 +195,7 @@ class PluginContractTests(unittest.TestCase):
         """Marketplace 文档必须覆盖两平台安装、确认门禁和路径替换说明。"""
 
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        guide_path = ROOT / "docs/marketplace-installation.md"
+        guide_path = ROOT / "packaging/marketplace-installation.md"
         self.assertTrue(guide_path.is_file(), "缺少 Marketplace 安装文档")
         guide = guide_path.read_text(encoding="utf-8")
         matrix = (ROOT / "doc-atlas/03-变更与证据/验收矩阵.md").read_text(encoding="utf-8")

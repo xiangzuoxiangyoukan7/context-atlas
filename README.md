@@ -18,7 +18,7 @@
 - [知识退役 Skill](./skills/context-atlas-retire/SKILL.md)
 - [知识库升级 Skill](./skills/context-atlas-upgrade/SKILL.md)
 - [场景化使用指南](./templates/core/doc-project/05-知识治理/使用场景.md)
-- [Marketplace 安装与使用](./docs/marketplace-installation.md)
+- [Marketplace 安装与使用](./packaging/marketplace-installation.md)
 
 ## Marketplace 安装
 
@@ -33,7 +33,7 @@ Codex Marketplace 位于 `.agents/plugins/marketplace.json`，Claude Code Market
 `/context-atlas-init`、`/context-atlas-navigate`、`/context-atlas-review`、`/context-atlas-ingest`、`/context-atlas-add`、`/context-atlas-revise`、`/context-atlas-retire`、`/context-atlas-upgrade`。两个平台共用同一组 Skills，不发布 `commands/`；
 没有明确调用对应 Skill 的自然语言不得触发知识库写入。
 
-完整的 Codex、Claude Code 操作步骤和当前验收状态见[Marketplace 安装与使用](./docs/marketplace-installation.md)。
+完整的 Codex、Claude Code 操作步骤和当前验收状态见[Marketplace 安装与使用](./packaging/marketplace-installation.md)。
 
 ### 项目级卸载
 
