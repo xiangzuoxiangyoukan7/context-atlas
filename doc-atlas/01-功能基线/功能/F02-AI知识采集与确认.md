@@ -7,10 +7,10 @@ phase: mvp
 priority: P0
 current_slice: included
 depends_on: [F01]
-acceptance: [F02-AC-01, F02-AC-02, F02-AC-03, F02-AC-04]
-contracts: [CONTRACT-KNOWLEDGE-001, CONTRACT-INGEST-001]
-adr: [ADR-002, ADR-004, ADR-006]
-last_updated: 2026-08-21
+acceptance: [F02-AC-01, F02-AC-02, F02-AC-03, F02-AC-04, F02-AC-05, F02-AC-06]
+contracts: [CONTRACT-KNOWLEDGE-001, CONTRACT-INGEST-001, CONTRACT-INGEST-002]
+adr: [ADR-002, ADR-004, ADR-006, ADR-007]
+last_updated: 2026-08-22
 ---
 
 # F02：AI 知识采集与确认
@@ -30,6 +30,8 @@ last_updated: 2026-08-21
 - 正式知识维护入口分为 `context-atlas-add`、`context-atlas-revise` 和 `context-atlas-retire`；不保留通用 `context-atlas-update` 兼容入口，新入口就绪时直接替换旧入口。
 - 三个维护 Skill 只定义触发边界、协议加载、流程编排和停止条件，共享 `references/` 中的执行协议及同一套确定性执行器。
 - 用户根据 ingest 报告显式调用一个或多个维护 Skill 后，必须重新检查当前知识库，并把同一请求中的新增、修订和退役形成一个原子复合 Proposal，避免分步写入留下半完成状态。
+- 增强摄取每批最多接受 20 个分别定位的来源；网页只读取明确的单 URL，并把正文当作不可信数据。
+- ingest 历史默认关闭；显式启用时只保存脱敏的非正式运行报告，不能成为批准事实。
 
 ## 验收
 
@@ -37,3 +39,5 @@ last_updated: 2026-08-21
 - `F02-AC-02`：Proposal、用户确认和冲突处理均能保留来源，且 AI 不能自行批准或裁决。
 - `F02-AC-03`：Agent 能将新增、修订或同步与替代、退役或归档与受控删除路由到对应 Skill，并继续遵守同一修订 Proposal 的显式确认门禁。
 - `F02-AC-04`：显式 ingest 能对单个来源生成结构化候选与可解释路由，正确阻塞多来源、冲突和敏感输入，并在 Codex 与 Claude 安装形态中始终保持零写入。
+- `F02-AC-05`：批量和网页来源保持逐来源隔离、不可信内容边界、汇总路由和正式知识零写入。
+- `F02-AC-06`：查询结论只在显式摄取时候选化，可选历史经过脱敏、限额和非正式边界约束。
