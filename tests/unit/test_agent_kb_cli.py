@@ -6,6 +6,7 @@ from contextlib import redirect_stdout
 from io import StringIO
 import json
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.agent_kb_operation import main
 from tests.helpers import InstalledPluginTestCase
@@ -120,6 +121,41 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         self.assertEqual(0, exit_code)
         self.assertEqual("updated", payload["operation"])
         self.assertEqual("# 已确认更新\n", (target / "README.md").read_text(encoding="utf-8"))
+
+    def test_update_rolls_back_when_validator_raises(self) -> None:
+        """校验器异常时也必须恢复既有文件并移除本次新增文件。"""
+
+        from scripts.project_kb.initializer import initialize_from_assets
+        from scripts.project_kb.updater import UpdateChange, execute_update
+
+        target = initialize_from_assets(
+            self.root,
+            assets_root=self.assets_root,
+        )
+        readme = target / "README.md"
+        original = readme.read_bytes()
+        replacement = self.root / "replacement.md"
+        replacement.write_text("# 不应保留\n", encoding="utf-8")
+        addition = self.root / "addition.md"
+        addition.write_text("# 同样不应保留\n", encoding="utf-8")
+
+        with patch(
+            "scripts.project_kb.updater.validate",
+            side_effect=RuntimeError("validator unavailable"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "validator unavailable"):
+                execute_update(
+                    target,
+                    "proposal-update-rollback",
+                    "proposal-update-rollback",
+                    (
+                        UpdateChange("README.md", replacement),
+                        UpdateChange("新增.md", addition),
+                    ),
+                )
+
+        self.assertEqual(original, readme.read_bytes())
+        self.assertFalse((target / "新增.md").exists())
 
     def test_capture_creates_proposed_knowledge_only(self) -> None:
         """捕获命令应写入待确认队列并返回提案路径。"""
