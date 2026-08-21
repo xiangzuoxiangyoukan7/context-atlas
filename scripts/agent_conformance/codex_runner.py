@@ -277,13 +277,9 @@ class CodexRunner:
             and exit_code == 0
             and result_text
         ):
-            revision_match = re.search(
-                r"(?:proposal_revision|Proposal(?: 修订号)?)[`：:\s]*([A-Za-z0-9._-]+)",
-                result_text,
-                flags=re.IGNORECASE,
-            )
+            revision_match = re.search(r"sha256:[a-f0-9]{64}", result_text, re.IGNORECASE)
             proposal_revision = (
-                revision_match.group(1) if revision_match else "未解析"
+                revision_match.group(0).lower() if revision_match else "未解析"
             )
             # 只保留用户首轮请求和机器提取的修订号，不重放模型长正文或敏感信息。
             self.continuation_contexts[session_id] = (

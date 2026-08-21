@@ -7,6 +7,7 @@ from contextlib import contextmanager
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -37,17 +38,29 @@ from scripts.agent_conformance.codex_runner import (
 )
 
 
-CONFORMANCE_PROPOSAL_REVISION = "CONFORMANCE-001"
 EXPLICIT_INITIALIZE_PROMPT = (
     "/context-atlas-init\n"
     "请为当前项目初始化名为 example 的项目知识库。"
-    f"现在只检查并提出 proposal_revision 为 {CONFORMANCE_PROPOSAL_REVISION} 的 Proposal，"
+    "现在只检查并提出带规范 proposal_revision 的 Proposal，"
     "不要确认，也不要创建或修改正式知识文件。"
 )
-CONFIRM_PROMPT = (
-    f"我明确确认你上一轮提供的 Proposal 修订号 {CONFORMANCE_PROPOSAL_REVISION}。"
-    "请严格按已确认范围初始化 doc-example，并运行目标内置检查器后报告。"
-)
+PROPOSAL_REVISION_RE = re.compile(r"sha256:[a-f0-9]{64}", re.IGNORECASE)
+
+
+def extract_proposal_revision(result_text: str) -> str | None:
+    """从首轮正文提取符合正式 Schema 的 Proposal 修订摘要。"""
+
+    match = PROPOSAL_REVISION_RE.search(result_text)
+    return match.group(0).lower() if match else None
+
+
+def confirmation_prompt(proposal_revision: str) -> str:
+    """构造只确认首轮真实 Proposal 修订号的第二轮消息。"""
+
+    return (
+        f"我明确确认你上一轮提供的 Proposal 修订号 {proposal_revision}。"
+        "请严格按已确认范围初始化 doc-example，并运行目标内置检查器后报告。"
+    )
 EXISTING_TARGET_PROMPT = (
     "/context-atlas-revise\n请检查已有 doc-existing。"
     "不要覆盖、重建或修改已有正式知识库；只报告下一步提案。"
@@ -261,8 +274,21 @@ def _run_after_confirmation(
         [first_turn.exit_code],
     )
     issues = assert_no_formal_write_before_confirmation(pre_confirmation)
+    proposal_revision = extract_proposal_revision(first_turn.result_text)
+    if proposal_revision is None:
+        issues.append("首轮没有返回符合 Schema 的 proposal_revision")
     if not first_turn.session_id:
         issues.append("可续接首轮没有返回会话编号")
+        return _scenario_report(
+            scenario_id,
+            _status_from(issues, [first_turn]),
+            issues,
+            [first_turn],
+            before,
+            middle,
+            [first_turn.exit_code],
+        )
+    if proposal_revision is None:
         return _scenario_report(
             scenario_id,
             _status_from(issues, [first_turn]),
@@ -275,7 +301,7 @@ def _run_after_confirmation(
 
     second_turn = runner.run_turn(
         workspace,
-        CONFIRM_PROMPT,
+        confirmation_prompt(proposal_revision),
         first_turn.session_id,
     )
     target = workspace / "doc-example"
@@ -403,6 +429,7 @@ def run_claude_conformance(
     runner_factory: RunnerFactory = ClaudeRunner,
     agent_version: str = "unknown",
     agent_name: str = "claude",
+    selected_scenarios: set[str] | None = None,
 ) -> dict[str, object]:
     """在四个隔离目录运行指定 Agent 的共享场景并汇总状态。"""
 
@@ -421,8 +448,13 @@ def run_claude_conformance(
             for scenario_id in READ_ONLY_PROMPTS
         ),
     )
+    if selected_scenarios is not None:
+        scenario_functions = tuple(
+            item for item in scenario_functions if item[0] in selected_scenarios
+        )
     scenarios: list[dict[str, object]] = []
     for index, (scenario_id, scenario_function) in enumerate(scenario_functions):
+        print(f"[{agent_name}] 开始场景 {scenario_id}", file=sys.stderr, flush=True)
         workspace = workspace_root / scenario_id
         workspace.mkdir(parents=True, exist_ok=True)
         try:
@@ -430,6 +462,11 @@ def run_claude_conformance(
                 plugin_root.resolve(), workspace, runner_factory
             )
             scenarios.append(scenario_report)
+            print(
+                f"[{agent_name}] 场景 {scenario_id}: {scenario_report['status']}",
+                file=sys.stderr,
+                flush=True,
+            )
             if scenario_report["status"] == "blocked":
                 # 非零进程结果与异常一样表示全局外部条件不可用，停止重复调用。
                 scenarios.extend(
@@ -523,6 +560,14 @@ def main() -> int:
     mode.add_argument("--compare", nargs=2, type=Path, metavar=("CLAUDE", "CODEX"))
     parser.add_argument("--plugin-root", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument(
+        "--scenario",
+        action="append",
+        choices=tuple(item["id"] for item in json.loads(
+            (Path(__file__).resolve().parents[1] / "tests" / "agent_conformance" / "scenarios.json").read_text(encoding="utf-8")
+        )["scenarios"]),
+        help="只运行指定场景；可重复传入",
+    )
     arguments = parser.parse_args()
     if arguments.compare:
         try:
@@ -557,6 +602,7 @@ def main() -> int:
                 runner_factory=runner_factory,
                 agent_version=version,
                 agent_name=agent_name,
+                selected_scenarios=set(arguments.scenario) if arguments.scenario else None,
             )
     except (OSError, subprocess.SubprocessError, RuntimeError, ValueError):
         report = {

@@ -134,7 +134,10 @@ class ScriptedClaudeRunner:
         return AgentTurn(
             session_id="session-1" if self.persist_sessions else None,
             exit_code=0,
-            result_text="包含 user@example.com token=secret 的原始模型正文",
+            result_text=(
+                "包含 user@example.com token=secret 的原始模型正文 "
+                "sha256:" + "a" * 64
+            ),
             structured_output=None,
             stderr="",
             started_at=now,
@@ -452,6 +455,21 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertEqual("blocked", report["status"])
         self.assertEqual({"blocked"}, {item["status"] for item in report["scenarios"]})
         self.assertEqual(1, FailingClaudeRunner.constructions)
+
+    def test_selected_scenarios_run_independently(self) -> None:
+        """单场景补跑不得执行目录中的其他场景。"""
+
+        orchestration = importlib.import_module("scripts.run_agent_conformance")
+        with tempfile.TemporaryDirectory() as directory:
+            report = orchestration.run_claude_conformance(
+                plugin_root=ROOT,
+                workspace_root=Path(directory),
+                runner_factory=ScriptedClaudeRunner,
+                selected_scenarios={"review_is_read_only"},
+            )
+
+        self.assertEqual("passed", report["status"])
+        self.assertEqual(["review_is_read_only"], [item["id"] for item in report["scenarios"]])
 
     def test_script_entrypoint_can_load_repository_packages(self) -> None:
         """计划规定的直接脚本命令必须能加载顶层 scripts 包。"""

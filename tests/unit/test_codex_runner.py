@@ -43,6 +43,31 @@ class RecordingProcess:
         return subprocess.CompletedProcess(command, 0, output, "")
 
 
+class ProposalRecordingProcess(RecordingProcess):
+    """让首轮返回规范 Proposal 摘要，验证续接上下文不会截断它。"""
+
+    def __call__(self, command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        """安装命令沿用父实现，执行命令返回带摘要的事件流。"""
+
+        completed = super().__call__(command, **kwargs)
+        if "exec" not in command:
+            return completed
+        revision = "sha256:" + "b" * 64
+        events = (
+            {"type": "thread.started", "thread_id": "thread-1"},
+            {
+                "type": "item.completed",
+                "item": {
+                    "type": "agent_message",
+                    "text": f"proposal_revision: {revision}",
+                },
+            },
+            {"type": "turn.completed"},
+        )
+        output = "\n".join(json.dumps(event) for event in events) + "\n"
+        return subprocess.CompletedProcess(command, 0, output, "")
+
+
 def _now() -> datetime:
     """返回稳定 UTC 时间。"""
 
@@ -165,6 +190,30 @@ class CodexRunnerTests(unittest.TestCase):
         self.assertIn("第二轮", second[-1])
         self.assertEqual(1, second[-1].count("完成"))
 
+    def test_continuation_preserves_full_sha256_revision(self) -> None:
+        """续接上下文必须保留包含冒号和 64 位摘要的完整修订号。"""
+
+        api = importlib.import_module("scripts.agent_conformance.codex_runner")
+        process = ProposalRecordingProcess()
+        revision = "sha256:" + "b" * 64
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workspace = root / "project"
+            workspace.mkdir()
+            runner = api.CodexRunner(
+                plugin_root=ROOT,
+                codex_home=root / "home",
+                persist_sessions=True,
+                process_runner=process,
+                now=_now,
+                executable="codex",
+                auth_source=None,
+            )
+            runner.run_turn(workspace, "$context-atlas-init\n第一轮", None)
+            runner.run_turn(workspace, f"确认 {revision}", "thread-1")
+
+        self.assertIn(revision, process.calls[3][0][-1])
+
     def test_compare_invariants_reports_platform_behavior_difference(self) -> None:
         """任一平台场景失败或退出码不同都必须导致对照失败。"""
 
@@ -263,18 +312,17 @@ class CodexRunnerTests(unittest.TestCase):
         self.assertEqual("passed", report["status"])
 
     def test_confirmation_prompt_names_the_exact_proposal_revision(self) -> None:
-        """两轮提示必须携带同一固定修订号，不能让 Agent 猜测用户确认对象。"""
+        """第二轮必须确认从首轮提取的规范修订号。"""
 
         orchestration = importlib.import_module("scripts.run_agent_conformance")
+        revision = "sha256:" + "a" * 64
 
-        self.assertIn(
-            orchestration.CONFORMANCE_PROPOSAL_REVISION,
-            orchestration.EXPLICIT_INITIALIZE_PROMPT,
+        self.assertEqual(
+            revision,
+            orchestration.extract_proposal_revision(f"proposal_revision: {revision}"),
         )
-        self.assertIn(
-            orchestration.CONFORMANCE_PROPOSAL_REVISION,
-            orchestration.CONFIRM_PROMPT,
-        )
+        self.assertIn(revision, orchestration.confirmation_prompt(revision))
+        self.assertNotIn("CONFORMANCE-001", orchestration.EXPLICIT_INITIALIZE_PROMPT)
 
 
 if __name__ == "__main__":
