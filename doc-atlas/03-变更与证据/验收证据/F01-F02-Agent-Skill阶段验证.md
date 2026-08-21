@@ -4,17 +4,20 @@
 
 | 检查 | 结果 | 证据版本 |
 | --- | --- | --- |
-| Skill 渐进式结构、行为边界与 UTF-8 元数据 | passed | skill-v1 |
-| manifest 资产完整且与规范源一致 | passed | skill-v1 |
-| 路径越界拒绝、未声明文件保留 | passed | skill-v1 |
-| 初始化/采集/冲突/归档/报告协议 | passed | skill-v1 |
-| 四类真实初始化样例 | partial | 待 Task 6 |
-| 第二 Agent 独立执行 | partial | 当前会话不可用 |
+| Skill 渐进式结构、行为边界与 UTF-8 元数据 | passed | 0c91abb |
+| 构建资产完整且与规范源一致 | passed | 0c91abb |
+| 路径越界拒绝、未声明文件保留 | passed | 0c91abb |
+| 初始化、采集、冲突、归档和报告协议 | passed | 0c91abb |
+| 初始化产物、自包含性、覆盖保护及 Agent 专属文件排除 | passed | 0c91abb |
+| 新增、修订和退役 Skill 路由及同修订确认门禁 | passed | 0c91abb |
+| Codex 独立确认后初始化 | passed | a9c7563 |
+| Claude 确认后初始化 | blocked | 外部调用超时，继续由 KB-AC-27～29 跟踪 |
 
-## 命令
+## 复验命令
 
-- `py scripts/sync_skill_assets.py --check`：通过。
-- `py -m unittest tests.unit.test_skill_package -v`：7 个测试通过。
-- 官方 `quick_validate.py`：环境缺少其外部依赖 PyYAML，脚本未启动；相同 frontmatter、命名、长度和字段规则已由标准库测试通过。
+- `py -m unittest discover -s tests -p 'test_*.py'`：231 个测试通过。
+- `py scripts/check_knowledge_base.py doc-atlas --schema-root schemas`：通过。
+- 插件校验：通过。
+- Claude 和 Codex 插件构建：通过。
 
-本证据不把静态协议等同于真实跨 Agent 初始化验收。
+本证据只将确定性测试和已有 Codex 真实执行用于 F01/F02 产品验收，不把 Claude 外部超时推断为通过或失败。Claude 剩余状态继续由跨 Agent 验收项独立追踪。
