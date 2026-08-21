@@ -76,7 +76,7 @@ class PluginContractTests(unittest.TestCase):
             encoding="utf-8",
         )
         PluginContractTests._write_valid_marketplaces(root)
-        for name in ("context-atlas-init", "context-atlas-navigate", "context-atlas-update", "context-atlas-upgrade"):
+        for name in ("context-atlas-init", "context-atlas-navigate", "context-atlas-review", "context-atlas-add", "context-atlas-revise", "context-atlas-retire", "context-atlas-upgrade"):
             skill = root / "skills" / name / "SKILL.md"
             skill.parent.mkdir(parents=True, exist_ok=True)
             skill.write_text(f"---\nname: {name}\n---\n", encoding="utf-8")
@@ -158,8 +158,8 @@ class PluginContractTests(unittest.TestCase):
         self.assertEqual(codex["name"], codex["interface"]["displayName"])
         self.assertTrue(codex["interface"]["defaultPrompt"])
 
-    def test_plugin_exposes_three_capability_skills(self) -> None:
-        """插件公开初始化、只读导航和更新三个能力 Skill。"""
+    def test_plugin_exposes_seven_capability_skills(self) -> None:
+        """插件公开初始化、导航、审查、三类维护和升级七个能力 Skill。"""
 
         skill_files = sorted(
             path
@@ -173,9 +173,12 @@ class PluginContractTests(unittest.TestCase):
         ]
 
         self.assertEqual([
+            ROOT / "skills" / "context-atlas-add" / "SKILL.md",
             ROOT / "skills" / "context-atlas-init" / "SKILL.md",
             ROOT / "skills" / "context-atlas-navigate" / "SKILL.md",
-            ROOT / "skills" / "context-atlas-update" / "SKILL.md",
+            ROOT / "skills" / "context-atlas-retire" / "SKILL.md",
+            ROOT / "skills" / "context-atlas-review" / "SKILL.md",
+            ROOT / "skills" / "context-atlas-revise" / "SKILL.md",
             ROOT / "skills" / "context-atlas-upgrade" / "SKILL.md",
         ], named)
         self.assertFalse(any((ROOT / "commands").glob("*.md")))
@@ -205,11 +208,17 @@ class PluginContractTests(unittest.TestCase):
             "新建会话",
             "$context-atlas-init",
             "$context-atlas-navigate",
-            "$context-atlas-update",
+            "$context-atlas-review",
+            "$context-atlas-add",
+            "$context-atlas-revise",
+            "$context-atlas-retire",
             "$context-atlas-upgrade",
             "/context-atlas-init",
             "/context-atlas-navigate",
-            "/context-atlas-update",
+            "/context-atlas-review",
+            "/context-atlas-add",
+            "/context-atlas-revise",
+            "/context-atlas-retire",
             "/context-atlas-upgrade",
             "Proposal",
             "用户确认",
@@ -351,7 +360,7 @@ class PluginContractTests(unittest.TestCase):
             shutil.copytree(ROOT / ".claude-plugin", root / ".claude-plugin")
             shutil.copytree(ROOT / ".codex-plugin", root / ".codex-plugin")
             self._write_valid_marketplaces(root)
-            for name in ("context-atlas-init", "context-atlas-navigate", "context-atlas-update", "context-atlas-upgrade"):
+            for name in ("context-atlas-init", "context-atlas-navigate", "context-atlas-review", "context-atlas-add", "context-atlas-revise", "context-atlas-retire", "context-atlas-upgrade"):
                 canonical = root / "skills" / name / "SKILL.md"
                 canonical.parent.mkdir(parents=True, exist_ok=True)
                 canonical.write_text(f"---\nname: {name}\n---\n", encoding="utf-8")

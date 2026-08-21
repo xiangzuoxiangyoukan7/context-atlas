@@ -18,6 +18,7 @@ REFERENCES = (
     "兼容与迁移.md",
     "身份与主动采集.md",
     "宿主执行与运行时探测.md",
+    "规格审查与SDD适配.md",
 )
 
 
@@ -37,12 +38,17 @@ class SkillPackageTests(unittest.TestCase):
         cls.skill_roots = (
             cls.plugin_root / "skills/context-atlas-init",
             cls.plugin_root / "skills/context-atlas-navigate",
-            cls.plugin_root / "skills/context-atlas-update",
+            cls.plugin_root / "skills/context-atlas-review",
+            cls.plugin_root / "skills/context-atlas-add",
+            cls.plugin_root / "skills/context-atlas-revise",
+            cls.plugin_root / "skills/context-atlas-retire",
             cls.plugin_root / "skills/context-atlas-upgrade",
         )
         cls.write_skill_roots = (
             cls.plugin_root / "skills/context-atlas-init",
-            cls.plugin_root / "skills/context-atlas-update",
+            cls.plugin_root / "skills/context-atlas-add",
+            cls.plugin_root / "skills/context-atlas-revise",
+            cls.plugin_root / "skills/context-atlas-retire",
         )
 
     @classmethod
@@ -104,7 +110,9 @@ class SkillPackageTests(unittest.TestCase):
 
         for command in (
             "$context-atlas-init",
-            "$context-atlas-update",
+            "$context-atlas-add",
+            "$context-atlas-revise",
+            "$context-atlas-retire",
             "Formal writes require explicit invocation",
         ):
             self.assertIn(command, content)
@@ -123,7 +131,7 @@ class SkillPackageTests(unittest.TestCase):
                 "py -3",
                 "python3",
                 "Windows Store",
-                "exit code 9009",
+                "9009",
                 "zero formal writes",
                 "只记录候选命令",
             ):
@@ -301,25 +309,36 @@ class SkillPackageTests(unittest.TestCase):
 
         self.assertIn('display_name: "context-atlas-init"', metadata)
         self.assertIn('display_name: "Context Atlas Navigate"', metadata)
-        self.assertIn('display_name: "Context Atlas Update"', metadata)
+        self.assertIn('display_name: "Context Atlas Review"', metadata)
+        self.assertIn('display_name: "Context Atlas Add"', metadata)
+        self.assertIn('display_name: "Context Atlas Revise"', metadata)
+        self.assertIn('display_name: "Context Atlas Retire"', metadata)
         self.assertIn('display_name: "Context Atlas Upgrade"', metadata)
         self.assertIn("$context-atlas-init", metadata)
         self.assertIn("$context-atlas-navigate", metadata)
-        self.assertIn("$context-atlas-update", metadata)
+        self.assertIn("$context-atlas-review", metadata)
+        self.assertIn("$context-atlas-add", metadata)
+        self.assertIn("$context-atlas-revise", metadata)
+        self.assertIn("$context-atlas-retire", metadata)
         self.assertIn("$context-atlas-upgrade", metadata)
         self.assertFalse(Path("skills/project-knowledge-context").exists())
         self.assertFalse(Path("profiles").exists())
         self.assertFalse(any(path.startswith("profiles/") for path in manifest["files"]))
 
-    def test_update_and_upgrade_skills_have_separate_responsibilities(self) -> None:
-        """业务知识更新与格式升级必须由两个独立 Skill 承担。"""
+    def test_maintenance_and_upgrade_skills_have_separate_responsibilities(self) -> None:
+        """三类业务知识维护与格式升级必须具有独立职责。"""
 
-        update = (self.plugin_root / "skills/context-atlas-update/SKILL.md").read_text(encoding="utf-8")
+        add = (self.plugin_root / "skills/context-atlas-add/SKILL.md").read_text(encoding="utf-8")
+        revise = (self.plugin_root / "skills/context-atlas-revise/SKILL.md").read_text(encoding="utf-8")
+        retire = (self.plugin_root / "skills/context-atlas-retire/SKILL.md").read_text(encoding="utf-8")
         upgrade = (self.plugin_root / "skills/context-atlas-upgrade/SKILL.md").read_text(encoding="utf-8")
 
-        self.assertIn("Do not use it to upgrade", update)
-        self.assertIn("$context-atlas-upgrade", update)
-        self.assertNotIn("upgrade-diagnose -> upgrade-propose", update)
+        for maintenance in (add, revise, retire):
+            self.assertIn("$context-atlas-upgrade", maintenance)
+            self.assertNotIn("upgrade-diagnose -> upgrade-propose", maintenance)
+        self.assertIn("stable IDs", add)
+        self.assertIn("`patch`", revise)
+        self.assertIn("archive-propose", retire)
         self.assertIn("upgrade-diagnose -> upgrade-propose", upgrade)
         self.assertIn("Do not use it to add or revise business knowledge", upgrade)
 

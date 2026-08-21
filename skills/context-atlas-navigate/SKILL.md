@@ -42,4 +42,6 @@ Use `--all` instead of `--start` only for an explicit whole-graph question. Opti
 
 Inspect the result and choose only neighbors relevant to the user's task. Read those files normally; if another hop is needed, query the selected neighbor as a new starting node. Treat a relation as navigation evidence, not as proof that the neighbor must change.
 
-If an operation reports invalid tree metadata, invalid relationships, missing stable identity, ambiguity, or an absent node, report the issue without guessing content or links. This Skill is read-only and does not require confirmation, but any later formal knowledge write must use `$context-atlas-update`.
+If an operation reports invalid tree metadata, invalid relationships, missing stable identity, ambiguity, or an absent node, report the issue without guessing content or links. This Skill is read-only and does not require confirmation, but any later formal knowledge write must use `$context-atlas-add`, `$context-atlas-revise`, or `$context-atlas-retire` according to intent.
+
+Route specification clarity, coverage, or readiness assessment to `$context-atlas-review`; navigation itself does not judge or change readiness.

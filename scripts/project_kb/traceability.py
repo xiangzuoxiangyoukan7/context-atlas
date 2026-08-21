@@ -11,7 +11,7 @@ from .model import DocumentRecord, Issue
 # context-atlas-rules: [[rules/知识治理规则#RULE-SRC-001|RULE-SRC-001]]
 
 
-ACCEPTANCE_PATTERN = re.compile(r"(?:F\d{2}|KB)-AC-\d{2}\Z")
+ACCEPTANCE_PATTERN = re.compile(r"(?:(?:F\d{2}|KB)-AC-\d{2}|AC-[A-Z0-9]+-[0-9]{3})\Z")
 ACCEPTANCE_RESULTS = {"not_started", "partial", "passed", "not_applicable"}
 SOURCE_TYPES = {"user_statement", "repository_file", "command_output", "existing_document", "external_document", "ai_inference"}
 REFERENCE_FIELDS = (

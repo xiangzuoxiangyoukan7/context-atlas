@@ -250,7 +250,9 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertIn(".claude-plugin/plugin.json", process.plugin_release_files[0])
         self.assertIn(".claude-plugin/marketplace.json", process.plugin_release_files[0])
         self.assertIn("skills/context-atlas-init/SKILL.md", process.plugin_release_files[0])
-        self.assertIn("skills/context-atlas-update/SKILL.md", process.plugin_release_files[0])
+        self.assertIn("skills/context-atlas-add/SKILL.md", process.plugin_release_files[0])
+        self.assertIn("skills/context-atlas-revise/SKILL.md", process.plugin_release_files[0])
+        self.assertIn("skills/context-atlas-retire/SKILL.md", process.plugin_release_files[0])
         self.assertNotIn("AGENTS.md", process.plugin_release_files[0])
         self.assertNotIn("CLAUDE.md", process.plugin_release_files[0])
         self.assertFalse(any(path.startswith("tests/") for path in process.plugin_release_files[0]))
@@ -402,8 +404,8 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertNotIn("secret", serialized)
         self.assertNotIn("C:\\Users\\Seven", serialized)
 
-    def test_scenario_orchestrator_records_four_sanitized_behavior_results(self) -> None:
-        """四个场景必须共享断言器并只输出脱敏结构证据。"""
+    def test_scenario_orchestrator_records_sanitized_behavior_results(self) -> None:
+        """全部场景必须共享断言器并只输出脱敏结构证据。"""
 
         try:
             orchestration = importlib.import_module("scripts.run_agent_conformance")
@@ -420,7 +422,7 @@ class ClaudeRunnerTests(unittest.TestCase):
         self.assertEqual("claude", report["agent"])
         self.assertEqual("passed", report["status"])
         scenarios = report["scenarios"]
-        self.assertEqual(4, len(scenarios))
+        self.assertEqual(9, len(scenarios))
         self.assertEqual({"passed"}, {item["status"] for item in scenarios})
         serialized = json.dumps(report, ensure_ascii=False)
         for forbidden in (

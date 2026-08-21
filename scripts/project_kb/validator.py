@@ -17,6 +17,7 @@ from .security import validate_security
 from .traceability import validate_traceability
 from .structure import validate_structure
 from .archive_validation import discover_archive, validate_current_archive_links
+from .specification import validate_specifications
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,7 @@ class ValidationConfig:
 
     schema_root: Path
     relation_catalog_path: Path | None = None
+    level: str = "all"
     excluded_directories: frozenset[str] = frozenset(
         {".obsidian", "Excalidraw", "90-历史归档"}
     )
@@ -49,6 +51,7 @@ def validate(root: Path, config: ValidationConfig) -> list[Issue]:
         if config.relation_catalog_path is not None
         else config.schema_root / "relation-catalog.json"
     )
+    relation_index: RelationIndex | None = None
     try:
         relation_catalog = RelationCatalog.load(relation_catalog_path)
     except (OSError, ValueError) as error:
@@ -77,5 +80,7 @@ def validate(root: Path, config: ValidationConfig) -> list[Issue]:
         if isinstance(record.metadata.get("id"), str)
     )
     issues.extend(validate_traceability(resolved_root, records, archived_ids))
+    if config.level in {"all", "spec", "readiness"}:
+        issues.extend(validate_specifications(records, relation_index))
     issues.extend(validate_security(records))
     return sorted(issues, key=lambda issue: (str(issue.path), issue.code, issue.message))

@@ -48,6 +48,15 @@ class MigrationRewrite:
 
 
 @dataclass(frozen=True)
+class MigrationCreation:
+    """描述格式升级需要创建且提案时不存在的标准文件。"""
+
+    path: Path
+    content: str
+    content_digest: str
+
+
+@dataclass(frozen=True)
 class MigrationUnresolved:
     """描述无法唯一定位、必须由用户确认的旧来源编号。"""
 
@@ -67,6 +76,7 @@ class MigrationProposal:
     moves: tuple[MigrationMove, ...]
     removals: tuple[MigrationRemoval, ...]
     rewrites: tuple[MigrationRewrite, ...]
+    creations: tuple[MigrationCreation, ...]
     unresolved: tuple[MigrationUnresolved, ...]
 
 
@@ -105,6 +115,7 @@ def _revision(
     moves: Iterable[MigrationMove],
     removals: Iterable[MigrationRemoval],
     rewrites: Iterable[MigrationRewrite],
+    creations: Iterable[MigrationCreation],
     unresolved: Iterable[MigrationUnresolved],
 ) -> str:
     """根据完整提案内容生成稳定且不可猜测的短修订号。"""
@@ -122,10 +133,31 @@ def _revision(
     )
     parts.extend(f"rewrite:{rewrite.path}:{rewrite.original_digest}" for rewrite in rewrites)
     parts.extend(
+        f"create:{creation.path}:{creation.content_digest}" for creation in creations
+    )
+    parts.extend(
         f"unresolved:{item.path}:{item.source_id}:{item.reason}"
         for item in unresolved
     )
     return "migration-" + hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()[:12]
+
+
+def _format_seven_creations(root: Path) -> tuple[MigrationCreation, ...]:
+    """从随插件发布的核心模板生成格式七新增目录说明文件。"""
+
+    template_root = Path(__file__).resolve().parents[2] / "templates" / "core" / "doc-project"
+    relatives = (
+        Path("03-变更与证据/变更/README.md"),
+        Path("03-变更与证据/验收契约/README.md"),
+    )
+    creations: list[MigrationCreation] = []
+    for relative in relatives:
+        target = root / relative
+        if target.exists():
+            continue
+        content = (template_root / relative).read_text(encoding="utf-8")
+        creations.append(MigrationCreation(target.resolve(), content, _digest(content.encode("utf-8"))))
+    return tuple(creations)
 
 
 LEGACY_PLACEHOLDERS = {
@@ -326,6 +358,7 @@ def build_migration_proposal(
     ordered_unresolved = tuple(
         sorted(unresolved, key=lambda item: (str(item.path), item.source_id))
     )
+    creations = _format_seven_creations(resolved_root)
     return MigrationProposal(
         proposal_revision=_revision(
             result.format_version,
@@ -334,6 +367,7 @@ def build_migration_proposal(
             moves,
             removals,
             rewrites,
+            creations,
             ordered_unresolved,
         ),
         source_version=result.format_version,
@@ -342,6 +376,7 @@ def build_migration_proposal(
         moves=moves,
         removals=removals,
         rewrites=rewrites,
+        creations=creations,
         unresolved=ordered_unresolved,
     )
 
@@ -454,12 +489,17 @@ def apply_migration(
     for rewrite in proposal.rewrites:
         if _digest(rewrite.path.read_bytes()) != rewrite.original_digest:
             raise ValueError(f"migration target changed after proposal: {rewrite.path.name}")
+    for creation in proposal.creations:
+        if creation.path.exists():
+            raise ValueError(f"migration creation target already exists: {creation.path}")
+        if _digest(creation.content.encode("utf-8")) != creation.content_digest:
+            raise ValueError(f"migration creation content changed: {creation.path.name}")
     manifest = resolved_root / "knowledge-base.yaml"
     manifest_content = _set_format_version(
         manifest.read_text(encoding="utf-8"), proposal.target_version
     )
     manifest_content = _rewrite_governance_paths(manifest_content)
-    affected = {path for path, _ in prepared} | {item.source for item in proposal.moves} | {item.target for item in proposal.moves} | {item.path for item in proposal.removals} | {item.path for item in proposal.rewrites} | {manifest}
+    affected = {path for path, _ in prepared} | {item.source for item in proposal.moves} | {item.target for item in proposal.moves} | {item.path for item in proposal.removals} | {item.path for item in proposal.rewrites} | {item.path for item in proposal.creations} | {manifest}
     backups = {path: path.read_bytes() if path.is_file() else None for path in affected}
     try:
         for path, content in prepared:
@@ -479,6 +519,9 @@ def apply_migration(
                 rewrite.path,
                 _rewrite_governance_paths(rewrite.path.read_text(encoding="utf-8")),
             )
+        for creation in proposal.creations:
+            creation.path.parent.mkdir(parents=True, exist_ok=True)
+            _atomic_write(creation.path, creation.content)
         _atomic_write(manifest, manifest_content)
     except Exception:
         for path, content in backups.items():
@@ -493,6 +536,7 @@ def apply_migration(
         + [move.target.relative_to(resolved_root).as_posix() for move in proposal.moves]
         + [removal.path.relative_to(resolved_root).as_posix() for removal in proposal.removals]
         + [rewrite.path.relative_to(resolved_root).as_posix() for rewrite in proposal.rewrites]
+        + [creation.path.relative_to(resolved_root).as_posix() for creation in proposal.creations]
         + ["knowledge-base.yaml"]
     )
     return MigrationReport("migrated", changed, proposal.target_version)

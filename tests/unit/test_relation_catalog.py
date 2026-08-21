@@ -30,6 +30,8 @@ CORE_RELATIONS = {
     "rel_evidenced_by",
     "rel_executes",
     "rel_belongs_to",
+    "rel_scenario_for",
+    "rel_changed_by",
 }
 
 

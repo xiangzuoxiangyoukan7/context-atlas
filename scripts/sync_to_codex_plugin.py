@@ -165,12 +165,15 @@ def sync(destination: Path) -> list[str]:
     expected_skills = {
         destination / "skills" / "context-atlas-init" / "SKILL.md",
         destination / "skills" / "context-atlas-navigate" / "SKILL.md",
-        destination / "skills" / "context-atlas-update" / "SKILL.md",
+        destination / "skills" / "context-atlas-review" / "SKILL.md",
+        destination / "skills" / "context-atlas-add" / "SKILL.md",
+        destination / "skills" / "context-atlas-revise" / "SKILL.md",
+        destination / "skills" / "context-atlas-retire" / "SKILL.md",
         destination / "skills" / "context-atlas-upgrade" / "SKILL.md",
     }
     actual_skills = set(destination.rglob("SKILL.md"))
     if actual_skills != expected_skills:
-        raise ValueError("Codex 发布仓库必须且只能包含 context-atlas-init、context-atlas-navigate、context-atlas-update 和 context-atlas-upgrade 四个 Skills")
+        raise ValueError("Codex 发布仓库必须且只能包含 context-atlas-init、context-atlas-navigate、context-atlas-review、context-atlas-add、context-atlas-revise、context-atlas-retire 和 context-atlas-upgrade 七个 Skills")
     return [
         path.relative_to(destination).as_posix()
         for path in sorted(destination.rglob("*"))

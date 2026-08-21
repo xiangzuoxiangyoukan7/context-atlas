@@ -218,7 +218,10 @@ def validate_plugin_contract(root: Path) -> list[str]:
     expected_skills = {
         (root / "skills" / "context-atlas-init" / "SKILL.md").resolve(),
         (root / "skills" / "context-atlas-navigate" / "SKILL.md").resolve(),
-        (root / "skills" / "context-atlas-update" / "SKILL.md").resolve(),
+        (root / "skills" / "context-atlas-review" / "SKILL.md").resolve(),
+        (root / "skills" / "context-atlas-add" / "SKILL.md").resolve(),
+        (root / "skills" / "context-atlas-revise" / "SKILL.md").resolve(),
+        (root / "skills" / "context-atlas-retire" / "SKILL.md").resolve(),
         (root / "skills" / "context-atlas-upgrade" / "SKILL.md").resolve(),
     }
     named_skills: set[Path] = set()
@@ -232,7 +235,7 @@ def validate_plugin_contract(root: Path) -> list[str]:
         except (OSError, UnicodeDecodeError):
             continue
     if named_skills != expected_skills:
-        errors.append("仓库必须且只能存在 context-atlas-init、context-atlas-navigate、context-atlas-update 和 context-atlas-upgrade 四个 Skills")
+        errors.append("仓库必须且只能存在 context-atlas-init、context-atlas-navigate、context-atlas-review、context-atlas-add、context-atlas-revise、context-atlas-retire 和 context-atlas-upgrade 七个 Skills")
     if (root / "commands").is_dir() and any((root / "commands").iterdir()):
         errors.append("插件不得包含 commands；Codex 与 Claude Code 必须共用 Skills")
     for directory in (root / ".claude-plugin" / "skills", root / ".codex-plugin" / "skills"):

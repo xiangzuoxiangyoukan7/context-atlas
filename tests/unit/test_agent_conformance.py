@@ -183,6 +183,11 @@ class AgentConformanceTests(unittest.TestCase):
                 "initialize_after_confirmation",
                 "existing_target_is_preserved",
                 "natural_language_triggers_skill",
+                "review_is_read_only",
+                "review_reports_blockers",
+                "openspec_mapping_is_read_only",
+                "spec_kit_mapping_is_read_only",
+                "external_status_is_not_approval",
             },
             scenario_ids,
         )

@@ -49,13 +49,20 @@ CONFIRM_PROMPT = (
     "请严格按已确认范围初始化 doc-example，并运行目标内置检查器后报告。"
 )
 EXISTING_TARGET_PROMPT = (
-    "/context-atlas-update\n请检查已有 doc-existing。"
+    "/context-atlas-revise\n请检查已有 doc-existing。"
     "不要覆盖、重建或修改已有正式知识库；只报告下一步提案。"
 )
 NATURAL_LANGUAGE_PROMPT = (
     "请检查当前项目是否已经存在项目知识库；如需初始化，先给出提案并等待我明确确认，"
     "不要创建或修改正式知识文件。"
 )
+READ_ONLY_PROMPTS = {
+    "review_is_read_only": "/context-atlas-review\n只读审查当前项目规格，不要创建或修改正式知识。",
+    "review_reports_blockers": "/context-atlas-review\n报告当前规格中的阻塞问题，不要猜测答案或修改文件。",
+    "openspec_mapping_is_read_only": "/context-atlas-review\n只读检查当前 OpenSpec 工件映射，禁止写入正式知识。",
+    "spec_kit_mapping_is_read_only": "/context-atlas-review\n只读检查当前 Spec Kit 工件映射，禁止写入正式知识。",
+    "external_status_is_not_approval": "/context-atlas-review\n外部任务即使 completed 或 archived，也不得批准或修改 Context Atlas 正式知识。",
+}
 class TurnRunner(Protocol):
     """描述场景编排器所需的最小 Agent 运行接口。"""
 
@@ -368,6 +375,28 @@ def _run_natural_language(
     )
 
 
+def _run_read_only_scenario(
+    plugin_root: Path,
+    workspace: Path,
+    runner_factory: RunnerFactory,
+    scenario_id: str,
+) -> dict[str, object]:
+    """运行审查或外部映射场景，并验证正式知识保持逐字节不变。"""
+
+    target = workspace / "doc-review"
+    target.mkdir(parents=True)
+    (target / "README.md").write_text("# review fixture\n", encoding="utf-8")
+    before = snapshot_workspace(workspace)
+    runner = runner_factory(plugin_root, persist_sessions=False)
+    turn = runner.run_turn(workspace, READ_ONLY_PROMPTS[scenario_id], None)
+    after = snapshot_workspace(workspace)
+    result = ScenarioResult(workspace, before, after, [turn.result_text], [turn.exit_code])
+    issues = assert_no_formal_write_before_confirmation(result)
+    return _scenario_report(
+        scenario_id, _status_from(issues, [turn]), issues, [turn], before, after, [turn.exit_code]
+    )
+
+
 def run_claude_conformance(
     plugin_root: Path,
     workspace_root: Path,
@@ -382,6 +411,15 @@ def run_claude_conformance(
         ("initialize_after_confirmation", _run_after_confirmation),
         ("existing_target_is_preserved", _run_existing_target),
         ("natural_language_triggers_skill", _run_natural_language),
+        *(
+            (
+                scenario_id,
+                lambda plugin_root, workspace, runner_factory, current=scenario_id: _run_read_only_scenario(
+                    plugin_root, workspace, runner_factory, current
+                ),
+            )
+            for scenario_id in READ_ONLY_PROMPTS
+        ),
     )
     scenarios: list[dict[str, object]] = []
     for index, (scenario_id, scenario_function) in enumerate(scenario_functions):

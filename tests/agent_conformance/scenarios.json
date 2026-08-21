@@ -28,6 +28,41 @@
       "invocation": "natural_language",
       "turns": 1,
       "invariants": ["skill_trigger_observed"]
+    },
+    {
+      "id": "review_is_read_only",
+      "description": "规格审查不得修改正式知识",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "review_reports_blockers",
+      "description": "阻塞问题审查不得猜测或写回答案",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "openspec_mapping_is_read_only",
+      "description": "OpenSpec 映射保持只读",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "spec_kit_mapping_is_read_only",
+      "description": "Spec Kit 映射保持只读",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["no_formal_write_before_confirmation"]
+    },
+    {
+      "id": "external_status_is_not_approval",
+      "description": "外部完成或归档状态不得批准正式知识",
+      "invocation": "explicit",
+      "turns": 1,
+      "invariants": ["no_formal_write_before_confirmation"]
     }
   ]
 }

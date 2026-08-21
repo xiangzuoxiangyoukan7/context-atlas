@@ -1,5 +1,6 @@
 {
   "acceptance": "acceptance.schema.json",
+  "acceptance_contract": "acceptance-contract.schema.json",
   "independent_contract": "contract.schema.json",
   "data_asset": "data-asset.schema.json",
   "data_source": "data-source.schema.json",
@@ -14,6 +15,8 @@
   "module": "module.schema.json",
   "project_manifest": "project-manifest.schema.json",
   "requirement": "requirement.schema.json",
+  "specification_change": "specification-change.schema.json",
+  "specification_delta": "specification-delta.schema.json",
   "source": "source.schema.json",
   "task": "task.schema.json"
 }

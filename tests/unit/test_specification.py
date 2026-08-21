@@ -1,0 +1,66 @@
+"""规格就绪度与 Delta 校验测试。"""
+
+from pathlib import Path
+
+from scripts.project_kb.frontmatter import parse_document
+from scripts.project_kb.model import DocumentRecord
+from scripts.project_kb.specification import validate_specifications
+from tests.helpers import TempDirectoryTestCase
+
+
+class SpecificationValidationTests(TempDirectoryTestCase):
+    """验证规格就绪度、验收覆盖和 Delta 条件规则。"""
+
+    def record(self, name: str, metadata: str, body: str = "") -> DocumentRecord:
+        """写入并解析一份隔离的规格记录。"""
+
+        path = self.root / name
+        path.write_text(f"---\n{metadata}\n---\n{body}", encoding="utf-8")
+        return parse_document(path)
+
+    def test_ready_specification_cannot_retain_blockers(self) -> None:
+        """就绪规格不得继续保留阻塞问题。"""
+
+        record = self.record(
+            "feature.md",
+            "id: F01\ntype: feature\nspec_readiness: ready\nblocking_questions: [Q-F01-001]",
+        )
+        self.assertIn("KB_SPEC_READY_BLOCKED", [item.code for item in validate_specifications([record])])
+
+    def test_removed_delta_requires_migration_and_existing_change(self) -> None:
+        """删除增量必须指向变更并提供真实迁移信息。"""
+
+        target = self.record("target.md", "id: F01\ntype: feature")
+        delta = self.record(
+            "delta.md",
+            "id: DELTA-CHG-1\ntype: specification_delta\nchange_id: CHG-1\ntarget_id: F01\noperation: removed\nreason: 待确认\nmigration: 待确认\nrollback: 待确认",
+            "## REMOVED Requirements\n",
+        )
+        codes = {item.code for item in validate_specifications([target, delta])}
+        self.assertIn("KB_DELTA_CHANGE", codes)
+        self.assertIn("KB_DELTA_MIGRATION", codes)
+
+    def test_acceptance_contract_requires_subject_and_sections(self) -> None:
+        """验收契约必须指向对象并包含完整场景区段。"""
+
+        acceptance = self.record(
+            "acceptance.md",
+            "id: AC-DOMAIN-001\ntype: acceptance_contract\nsubject_id: F01",
+            "## WHEN\n",
+        )
+        codes = [item.code for item in validate_specifications([acceptance])]
+        self.assertIn("KB_SPEC_ACCEPTANCE_SUBJECT", codes)
+        self.assertEqual(3, codes.count("KB_SPEC_ACCEPTANCE_SECTION"))
+
+    def test_ready_feature_requires_normative_scenario_and_acceptance_contract(self) -> None:
+        """就绪功能必须具有规范行为、四级场景和独立验收契约。"""
+
+        feature = self.record(
+            "feature.md",
+            "id: F01\ntype: feature\nspec_readiness: ready\nblocking_questions: []",
+            "# Feature\n",
+        )
+        self.assertEqual(
+            {"KB_SPEC_COVERAGE", "KB_SPEC_NORMATIVE", "KB_SPEC_SCENARIO"},
+            {item.code for item in validate_specifications([feature])},
+        )

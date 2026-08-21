@@ -192,6 +192,26 @@
       "impact_rules": {"evidence_invalid": "required", "evidence_stale": "review_required", "formatting_only": "informational", "file_moved": "informational"}
     },
     {
+      "field": "rel_scenario_for",
+      "name_zh": "验收该规范行为",
+      "source_prefixes": ["AC"],
+      "target_prefixes": ["REQ", "F", "FEATURE", "API", "RPC", "EVENT", "WEBHOOK", "FILE", "CLI", "AGENT", "CONTRACT"],
+      "direction": "forward_only",
+      "status": "active",
+      "default_impact": "review_required",
+      "impact_rules": {"behavior_changed": "review_required", "removed": "required", "formatting_only": "informational", "file_moved": "informational"}
+    },
+    {
+      "field": "rel_changed_by",
+      "name_zh": "由该规格变更修改",
+      "source_prefixes": ["DELTA"],
+      "target_prefixes": ["CHG"],
+      "direction": "forward_only",
+      "status": "active",
+      "default_impact": "review_required",
+      "impact_rules": {"change_cancelled": "required", "formatting_only": "informational", "file_moved": "informational"}
+    },
+    {
       "field": "rel_executes",
       "name_zh": "执行该变更集中的工作",
       "source_prefixes": ["TASK"],
