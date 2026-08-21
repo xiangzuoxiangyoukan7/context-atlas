@@ -64,3 +64,17 @@ class SpecificationValidationTests(TempDirectoryTestCase):
             {"KB_SPEC_COVERAGE", "KB_SPEC_NORMATIVE", "KB_SPEC_SCENARIO"},
             {item.code for item in validate_specifications([feature])},
         )
+
+    def test_external_task_requires_traceability_and_verification(self) -> None:
+        """外部任务必须可回溯到功能或变更并说明验证方式。"""
+
+        task = self.record(
+            "task.md",
+            "id: TASK-F01-001\ntype: task\nfeature: F01\nacceptance: [F01-AC-01]",
+            "# Task\n",
+        )
+
+        codes = {item.code for item in validate_specifications([task])}
+
+        self.assertIn("KB_COVERAGE_TASK_ORIGIN", codes)
+        self.assertIn("KB_COVERAGE_TASK_VERIFICATION", codes)

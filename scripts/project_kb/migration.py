@@ -57,6 +57,16 @@ class MigrationCreation:
 
 
 @dataclass(frozen=True)
+class MigrationAsset:
+    """描述格式升级需要创建或替换的自包含运行资产。"""
+
+    path: Path
+    content: bytes
+    original_digest: str | None
+    content_digest: str
+
+
+@dataclass(frozen=True)
 class MigrationUnresolved:
     """描述无法唯一定位、必须由用户确认的旧来源编号。"""
 
@@ -77,6 +87,7 @@ class MigrationProposal:
     removals: tuple[MigrationRemoval, ...]
     rewrites: tuple[MigrationRewrite, ...]
     creations: tuple[MigrationCreation, ...]
+    assets: tuple[MigrationAsset, ...]
     unresolved: tuple[MigrationUnresolved, ...]
 
 
@@ -116,6 +127,7 @@ def _revision(
     removals: Iterable[MigrationRemoval],
     rewrites: Iterable[MigrationRewrite],
     creations: Iterable[MigrationCreation],
+    assets: Iterable[MigrationAsset],
     unresolved: Iterable[MigrationUnresolved],
 ) -> str:
     """根据完整提案内容生成稳定且不可猜测的短修订号。"""
@@ -134,6 +146,10 @@ def _revision(
     parts.extend(f"rewrite:{rewrite.path}:{rewrite.original_digest}" for rewrite in rewrites)
     parts.extend(
         f"create:{creation.path}:{creation.content_digest}" for creation in creations
+    )
+    parts.extend(
+        f"asset:{asset.path}:{asset.original_digest or 'missing'}:{asset.content_digest}"
+        for asset in assets
     )
     parts.extend(
         f"unresolved:{item.path}:{item.source_id}:{item.reason}"
@@ -158,6 +174,57 @@ def _format_seven_creations(root: Path) -> tuple[MigrationCreation, ...]:
         content = (template_root / relative).read_text(encoding="utf-8")
         creations.append(MigrationCreation(target.resolve(), content, _digest(content.encode("utf-8"))))
     return tuple(creations)
+
+
+def _asset_source_root() -> Path:
+    """定位源码仓库或已安装插件中的运行资产根。"""
+
+    module_root = Path(__file__).resolve().parents[2]
+    if (module_root / "assets" / "manifest.json").is_file():
+        return module_root
+    if (module_root / "manifest.json").is_file():
+        return module_root
+    raise FileNotFoundError("cannot locate plugin asset manifest")
+
+
+def _format_seven_assets(root: Path) -> tuple[MigrationAsset, ...]:
+    """为格式七提案枚举需要写入 `.project-kb` 的全部运行资产。"""
+
+    source_root = _asset_source_root()
+    manifest_path = (
+        source_root / "assets" / "manifest.json"
+        if (source_root / "assets" / "manifest.json").is_file()
+        else source_root / "manifest.json"
+    )
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    relative_paths = payload.get("files")
+    if not isinstance(relative_paths, list):
+        raise ValueError("plugin asset manifest has no files list")
+    selected = [
+        relative
+        for relative in relative_paths
+        if isinstance(relative, str)
+        and (
+            relative == "compatibility.json"
+            or relative.startswith(("schemas/", "scripts/", "rules/", "operations/", "templates/"))
+        )
+    ]
+    selected = sorted([*selected, "manifest.json"])
+    assets: list[MigrationAsset] = []
+    for relative_text in selected:
+        relative = Path(relative_text)
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError(f"unsafe plugin asset path: {relative_text}")
+        source = manifest_path if relative_text == "manifest.json" else source_root / relative
+        content = source.read_bytes()
+        target = (root / ".project-kb" / relative).resolve()
+        original_digest = _digest(target.read_bytes()) if target.is_file() else None
+        if original_digest == _digest(content):
+            continue
+        assets.append(
+            MigrationAsset(target, content, original_digest, _digest(content))
+        )
+    return tuple(assets)
 
 
 LEGACY_PLACEHOLDERS = {
@@ -359,6 +426,7 @@ def build_migration_proposal(
         sorted(unresolved, key=lambda item: (str(item.path), item.source_id))
     )
     creations = _format_seven_creations(resolved_root)
+    assets = _format_seven_assets(resolved_root)
     return MigrationProposal(
         proposal_revision=_revision(
             result.format_version,
@@ -368,6 +436,7 @@ def build_migration_proposal(
             removals,
             rewrites,
             creations,
+            assets,
             ordered_unresolved,
         ),
         source_version=result.format_version,
@@ -377,6 +446,7 @@ def build_migration_proposal(
         removals=removals,
         rewrites=rewrites,
         creations=creations,
+        assets=assets,
         unresolved=ordered_unresolved,
     )
 
@@ -450,6 +520,21 @@ def _atomic_write(path: Path, content: str) -> None:
     temporary.replace(path)
 
 
+def _atomic_write_bytes(path: Path, content: bytes) -> None:
+    """在目标目录写入二进制临时文件并原子替换运行资产。"""
+
+    with tempfile.NamedTemporaryFile(
+        mode="wb",
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".migrating",
+        delete=False,
+    ) as handle:
+        handle.write(content)
+        temporary = Path(handle.name)
+    temporary.replace(path)
+
+
 def apply_migration(
     root: Path,
     proposal: MigrationProposal,
@@ -494,13 +579,28 @@ def apply_migration(
             raise ValueError(f"migration creation target already exists: {creation.path}")
         if _digest(creation.content.encode("utf-8")) != creation.content_digest:
             raise ValueError(f"migration creation content changed: {creation.path.name}")
+    for asset in proposal.assets:
+        try:
+            asset.path.relative_to(resolved_root / ".project-kb")
+        except ValueError as error:
+            raise ValueError("migration asset escapes runtime root") from error
+        current_digest = _digest(asset.path.read_bytes()) if asset.path.is_file() else None
+        if current_digest != asset.original_digest:
+            raise ValueError(f"migration asset changed after proposal: {asset.path}")
+        if _digest(asset.content) != asset.content_digest:
+            raise ValueError(f"migration asset content changed: {asset.path}")
     manifest = resolved_root / "knowledge-base.yaml"
     manifest_content = _set_format_version(
         manifest.read_text(encoding="utf-8"), proposal.target_version
     )
     manifest_content = _rewrite_governance_paths(manifest_content)
-    affected = {path for path, _ in prepared} | {item.source for item in proposal.moves} | {item.target for item in proposal.moves} | {item.path for item in proposal.removals} | {item.path for item in proposal.rewrites} | {item.path for item in proposal.creations} | {manifest}
+    affected = {path for path, _ in prepared} | {item.source for item in proposal.moves} | {item.target for item in proposal.moves} | {item.path for item in proposal.removals} | {item.path for item in proposal.rewrites} | {item.path for item in proposal.creations} | {item.path for item in proposal.assets} | {manifest}
     backups = {path: path.read_bytes() if path.is_file() else None for path in affected}
+    existing_directories = {
+        directory.resolve()
+        for directory in resolved_root.rglob("*")
+        if directory.is_dir()
+    }
     try:
         for path, content in prepared:
             _atomic_write(path, content)
@@ -522,6 +622,9 @@ def apply_migration(
         for creation in proposal.creations:
             creation.path.parent.mkdir(parents=True, exist_ok=True)
             _atomic_write(creation.path, creation.content)
+        for asset in proposal.assets:
+            asset.path.parent.mkdir(parents=True, exist_ok=True)
+            _atomic_write_bytes(asset.path, asset.content)
         _atomic_write(manifest, manifest_content)
     except Exception:
         for path, content in backups.items():
@@ -530,6 +633,20 @@ def apply_migration(
             else:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(content)
+        created_directories = sorted(
+            (
+                directory
+                for directory in resolved_root.rglob("*")
+                if directory.is_dir() and directory.resolve() not in existing_directories
+            ),
+            key=lambda directory: len(directory.parts),
+            reverse=True,
+        )
+        for directory in created_directories:
+            try:
+                directory.rmdir()
+            except OSError:
+                pass
         raise
     changed = tuple(
         [path.relative_to(resolved_root).as_posix() for path, _ in prepared]
@@ -537,6 +654,7 @@ def apply_migration(
         + [removal.path.relative_to(resolved_root).as_posix() for removal in proposal.removals]
         + [rewrite.path.relative_to(resolved_root).as_posix() for rewrite in proposal.rewrites]
         + [creation.path.relative_to(resolved_root).as_posix() for creation in proposal.creations]
+        + [asset.path.relative_to(resolved_root).as_posix() for asset in proposal.assets]
         + ["knowledge-base.yaml"]
     )
     return MigrationReport("migrated", changed, proposal.target_version)

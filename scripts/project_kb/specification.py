@@ -47,6 +47,12 @@ def validate_specifications(
         if record.metadata.get("type") == "acceptance_contract"
         and isinstance(record.metadata.get("subject_id"), str)
     }
+    acceptance_ids = {
+        str(record.metadata.get("id"))
+        for record in materialized
+        if record.metadata.get("type") == "acceptance_contract"
+        and isinstance(record.metadata.get("id"), str)
+    }
     features_by_requirement: dict[str, set[str]] = {}
     if relation_index is not None:
         for edge in relation_index.edges:
@@ -105,6 +111,41 @@ def validate_specifications(
             ):
                 issues.append(
                     Issue("KB_COVERAGE_IMPLEMENTATION", record.path, "ready feature lacks module or contract coverage")
+                )
+        if kind == "task":
+            identifier = str(metadata.get("id", ""))
+            feature = metadata.get("feature")
+            executes_change = bool(
+                relation_index
+                and any(
+                    edge.field == "rel_executes"
+                    for edge in relation_index.outgoing(identifier)
+                )
+            )
+            if not (isinstance(feature, str) and feature in ids) and not executes_change:
+                issues.append(
+                    Issue(
+                        "KB_COVERAGE_TASK_ORIGIN",
+                        record.path,
+                        "external task must trace to a feature or specification change",
+                    )
+                )
+            if "## 验证" not in record.body and "## Verification" not in record.body:
+                issues.append(
+                    Issue(
+                        "KB_COVERAGE_TASK_VERIFICATION",
+                        record.path,
+                        "external task must describe its verification method",
+                    )
+                )
+            declared_acceptance = set(_as_list(metadata.get("acceptance")))
+            if acceptance_ids and not declared_acceptance.intersection(acceptance_ids):
+                issues.append(
+                    Issue(
+                        "KB_COVERAGE_TASK_ACCEPTANCE",
+                        record.path,
+                        "external task is not linked to an acceptance contract",
+                    )
                 )
         if kind == "acceptance_contract":
             subject = metadata.get("subject_id")

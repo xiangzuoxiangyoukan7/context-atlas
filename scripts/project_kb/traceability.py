@@ -278,6 +278,27 @@ def _registered(value: str) -> bool:
     return bool(value.strip() and value.strip() not in {"—", "-"})
 
 
+def _evidence_path(root: Path, value: str) -> Path | None:
+    """把矩阵证据单元格解析为当前证据目录中的实际文件。"""
+
+    link = re.search(r"\[[^\]]+\]\((?P<path>[^)]+)\)", value)
+    if link:
+        candidate = (root / "03-变更与证据" / link.group("path")).resolve()
+        try:
+            candidate.relative_to(root.resolve())
+        except ValueError:
+            return None
+        return candidate if candidate.is_file() else None
+    evidence_root = root / "03-变更与证据" / "验收证据"
+    normalized = re.sub(r"[^0-9A-Za-z\u4e00-\u9fff]+", "", value)
+    matches = [
+        path
+        for path in evidence_root.glob("*.md")
+        if re.sub(r"[^0-9A-Za-z\u4e00-\u9fff]+", "", path.stem) == normalized
+    ]
+    return matches[0] if len(matches) == 1 else None
+
+
 def _validate_matrix(root: Path, records: Iterable[DocumentRecord]) -> list[Issue]:
     """核对验收声明、矩阵行和完成状态证据。"""
 
@@ -322,6 +343,16 @@ def _validate_matrix(root: Path, records: Iterable[DocumentRecord]) -> list[Issu
             issues.append(
                 Issue("KB_ACCEPTANCE_EVIDENCE", matrix, f"passed acceptance lacks evidence: {identifier}")
             )
+        elif result == "passed":
+            evidence_path = _evidence_path(root, evidence)
+            if evidence_path is None:
+                issues.append(
+                    Issue(
+                        "KB_COVERAGE_EVIDENCE_PATH",
+                        matrix,
+                        f"passed acceptance evidence does not resolve to a current evidence file: {identifier}",
+                    )
+                )
     for path, acceptance in completed:
         for identifier in acceptance:
             row = row_map.get(identifier)

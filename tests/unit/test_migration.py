@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.project_kb.discovery import discover_records
 from tests.helpers import TempDirectoryTestCase
@@ -239,6 +240,64 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertEqual(7, report.format_version)
         self.assertTrue((self.root / "03-变更与证据/变更/README.md").is_file())
         self.assertTrue((self.root / "03-变更与证据/验收契约/README.md").is_file())
+        self.assertTrue((self.root / ".project-kb/scripts/check_knowledge_base.py").is_file())
+        self.assertTrue((self.root / ".project-kb/schemas/catalog.json").is_file())
+        self.assertTrue((self.root / ".project-kb/rules/catalog.json").is_file())
+        self.assertTrue((self.root / ".project-kb/operations/validate.json").is_file())
+        self.assertTrue((self.root / ".project-kb/templates/core/doc-project/README.md").is_file())
+
+    def test_format_seven_asset_digest_drift_keeps_all_files_unchanged(self) -> None:
+        """运行资产在确认前漂移时必须拒绝迁移且不产生其他写入。"""
+
+        from scripts.project_kb.migration import apply_migration
+
+        manifest = self._manifest()
+        manifest.write_text(
+            "project_id: example\nproject_version: 3.4.0\nformat_version: 6\nrevision: 1\n",
+            encoding="utf-8",
+        )
+        proposal = self._proposal()
+        asset = proposal.assets[0]
+        asset.path.parent.mkdir(parents=True, exist_ok=True)
+        asset.path.write_text("drift\n", encoding="utf-8")
+        before = manifest.read_bytes()
+
+        with self.assertRaises(ValueError):
+            apply_migration(self.root, proposal, proposal.proposal_revision)
+
+        self.assertEqual(before, manifest.read_bytes())
+        self.assertFalse((self.root / "03-变更与证据/变更/README.md").exists())
+
+    def test_format_seven_asset_write_failure_rolls_back_all_outputs(self) -> None:
+        """运行资产写入中途失败时应恢复清单并清理全部新增文件。"""
+
+        from scripts.project_kb import migration
+
+        manifest = self._manifest()
+        manifest.write_text(
+            "project_id: example\nproject_version: 3.4.0\nformat_version: 6\nrevision: 1\n",
+            encoding="utf-8",
+        )
+        proposal = self._proposal()
+        original_writer = migration._atomic_write_bytes
+        calls = 0
+
+        def fail_after_first(path: Path, content: bytes) -> None:
+            """先成功写入一个资产，再模拟后续磁盘错误。"""
+
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                raise OSError("simulated asset write failure")
+            original_writer(path, content)
+
+        with patch.object(migration, "_atomic_write_bytes", side_effect=fail_after_first):
+            with self.assertRaises(OSError):
+                migration.apply_migration(self.root, proposal, proposal.proposal_revision)
+
+        self.assertIn("format_version: 6", manifest.read_text(encoding="utf-8"))
+        self.assertFalse((self.root / ".project-kb").exists())
+        self.assertFalse((self.root / "03-变更与证据/变更/README.md").exists())
 
     def test_format_two_preserves_custom_development_content_as_unresolved(self) -> None:
         """旧开发文档有实质内容时不得静默删除。"""
