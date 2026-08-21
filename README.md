@@ -11,7 +11,10 @@
 - [知识库检查器](./scripts/check_knowledge_base.py)
 - [初始化 Skill](./skills/context-atlas-init/SKILL.md)
 - [渐进导航 Skill](./skills/context-atlas-navigate/SKILL.md)
-- [知识更新 Skill](./skills/context-atlas-update/SKILL.md)
+- [规格审查 Skill](./skills/context-atlas-review/SKILL.md)
+- [知识新增 Skill](./skills/context-atlas-add/SKILL.md)
+- [知识修订 Skill](./skills/context-atlas-revise/SKILL.md)
+- [知识退役 Skill](./skills/context-atlas-retire/SKILL.md)
 - [知识库升级 Skill](./skills/context-atlas-upgrade/SKILL.md)
 - [Marketplace 安装与使用](./docs/marketplace-installation.md)
 
@@ -24,8 +27,8 @@ Codex Marketplace 位于 `.agents/plugins/marketplace.json`，Claude Code Market
 
 插件只支持安装到目标项目：Claude Code 必须使用 `--scope project`；Codex 当前没有原生 scope 参数，
 必须把 `CODEX_HOME` 指向目标项目的 `.codex/`，并在同一环境下安装和启动 Codex。不要省略项目隔离参数。
-安装后，Codex 使用 `$context-atlas-init`、`$context-atlas-navigate`、`$context-atlas-update`、`$context-atlas-upgrade`，Claude Code 使用
-`/context-atlas-init`、`/context-atlas-navigate`、`/context-atlas-update`、`/context-atlas-upgrade`。两个平台共用同一组 Skills，不发布 `commands/`；
+安装后，Codex 使用 `$context-atlas-init`、`$context-atlas-navigate`、`$context-atlas-review`、`$context-atlas-add`、`$context-atlas-revise`、`$context-atlas-retire`、`$context-atlas-upgrade`，Claude Code 使用
+`/context-atlas-init`、`/context-atlas-navigate`、`/context-atlas-review`、`/context-atlas-add`、`/context-atlas-revise`、`/context-atlas-retire`、`/context-atlas-upgrade`。两个平台共用同一组 Skills，不发布 `commands/`；
 没有明确调用对应 Skill 的自然语言不得触发知识库写入。
 
 完整的 Codex、Claude Code 操作步骤和当前验收状态见[Marketplace 安装与使用](./docs/marketplace-installation.md)。

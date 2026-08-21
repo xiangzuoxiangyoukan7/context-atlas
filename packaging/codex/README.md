@@ -24,12 +24,25 @@ $context-atlas-init
 
 ```text
 $context-atlas-navigate
+$context-atlas-review
 ```
 
-更新已有知识库中的业务知识：
+向已有知识库新增业务知识：
 
 ```text
-$context-atlas-update
+$context-atlas-add
+```
+
+修订、同步或替代已有业务知识：
+
+```text
+$context-atlas-revise
+```
+
+通过替代、归档或受控删除退役业务知识：
+
+```text
+$context-atlas-retire
 ```
 
 升级已有知识库格式和结构：

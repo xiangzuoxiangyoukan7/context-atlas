@@ -106,7 +106,7 @@ claude plugin update --scope project context-atlas@context-atlas-dev
 
 ## 在目标项目中使用
 
-在目标项目中，Skill 只负责生成 Proposal。初始化或更新必须调用命令；只有用户明确确认后才写入正式知识。
+在目标项目中，Skill 只负责生成 Proposal。初始化或维护必须调用命令；只有用户明确确认后才写入正式知识。
 自动检查通过只代表
 结构和引用满足规则，不能替代用户确认内容。
 
@@ -115,7 +115,10 @@ claude plugin update --scope project context-atlas@context-atlas-dev
 ```text
 $context-atlas-init
 $context-atlas-navigate
-$context-atlas-update
+$context-atlas-review
+$context-atlas-add
+$context-atlas-revise
+$context-atlas-retire
 $context-atlas-upgrade
 ```
 
@@ -124,11 +127,14 @@ Claude Code 使用原生插件命令：
 ```text
 /context-atlas-init
 /context-atlas-navigate
-/context-atlas-update
+/context-atlas-review
+/context-atlas-add
+/context-atlas-revise
+/context-atlas-retire
 /context-atlas-upgrade
 ```
 
-`init`、`update` 和 `upgrade` 是相互独立的正式写入入口：`update` 维护业务知识，`upgrade` 只升级知识库格式和结构。未来业务知识更新会继续拆分为更细的 Skills，不扩张 `update` 的职责。`navigate` 只读支持逐层目录浏览、一跳正反向邻接查询，以及有深度和节点数量边界的关系图查询，不生成 Proposal，并由 Agent 决定是否读取候选文件正文。完整图只有在明确需要全局分析时才查询，不作为会话默认上下文。没有固定写入操作符的自然语言不能触发正式写入。写入命令会先生成
+`init`、`add`、`revise`、`retire` 和 `upgrade` 是相互独立的正式写入入口：`add` 新增知识，`revise` 修订、同步或替代知识，`retire` 通过替代、归档或受控删除退役知识，`upgrade` 只升级知识库格式和结构。通用 `update` Skill 已删除，不作为兼容入口。`navigate` 只读支持逐层目录浏览、一跳正反向邻接查询，以及有深度和节点数量边界的关系图查询，不生成 Proposal，并由 Agent 决定是否读取候选文件正文。完整图只有在明确需要全局分析时才查询，不作为会话默认上下文。没有固定写入操作符的自然语言不能触发正式写入。写入命令会先生成
 Proposal，只有用户明确确认后才执行；底层 Python 参数由插件负责，不作为用户接口。
 
 ## 当前验收状态
