@@ -13,6 +13,34 @@ from tests.helpers import TempDirectoryTestCase, materialize_core_template
 class CoreTemplateTests(TempDirectoryTestCase):
     """验证 CoreTemplateTests 相关行为。"""
 
+    def test_root_readme_has_self_contained_scenario_entry(self) -> None:
+        """目标知识库入口必须自包含地说明常用场景和单来源摄取边界。"""
+
+        root = Path("templates/core/doc-project")
+        readme = (root / "README.md").read_text(encoding="utf-8")
+        governance = (root / "05-知识治理/README.md").read_text(encoding="utf-8")
+        guide = (root / "05-知识治理/使用场景.md").read_text(encoding="utf-8")
+
+        for phrase in (
+            "context-atlas-init",
+            "context-atlas-navigate",
+            "context-atlas-review",
+            "context-atlas-add",
+            "context-atlas-revise",
+            "context-atlas-retire",
+            "context-atlas-upgrade",
+            "第一版一次只处理一个来源",
+            "新增、修订、退役、冲突或不沉淀",
+            "自然语言“摄取”请求只触发只读分析",
+            "查询答案默认只存在于当前对话，不自动归档为正式知识",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, guide)
+        self.assertIn("## 常用场景", readme)
+        self.assertIn("./05-知识治理/使用场景.md", readme)
+        self.assertIn("./使用场景.md", governance)
+        self.assertNotIn("docs/context-atlas-usage-scenarios.md", readme)
+
     def test_current_change_is_optional_knowledge_not_an_execution_gate(self) -> None:
         """验证 current_change_is_optional_knowledge_not_an_execution_gate 场景。"""
 

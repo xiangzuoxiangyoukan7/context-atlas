@@ -184,6 +184,19 @@ class SkillPackageTests(unittest.TestCase):
         self.assertTrue((assets / "03-变更与证据/影响记录/TEMPLATE.md").is_file())
         self.assertFalse((assets / "03-变更与证据/任务包").exists())
 
+    def test_scenario_guide_is_packaged_with_the_core_template(self) -> None:
+        """安装形态必须携带目标知识库可持久读取的场景指南。"""
+
+        guide = (
+            self.assets_root
+            / "templates/core/doc-project/05-知识治理/使用场景.md"
+        )
+
+        self.assertTrue(guide.is_file())
+        content = guide.read_text(encoding="utf-8")
+        self.assertIn("第一版一次只处理一个来源", content)
+        self.assertIn("Proposal 确认边界", content)
+
     def test_database_reference_and_simplified_templates_are_packaged(self) -> None:
         """Skill 必须解释数据库细节并包含数据源与数据表模板。"""
 

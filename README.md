@@ -16,6 +16,7 @@
 - [知识修订 Skill](./skills/context-atlas-revise/SKILL.md)
 - [知识退役 Skill](./skills/context-atlas-retire/SKILL.md)
 - [知识库升级 Skill](./skills/context-atlas-upgrade/SKILL.md)
+- [场景化使用指南](./templates/core/doc-project/05-知识治理/使用场景.md)
 - [Marketplace 安装与使用](./docs/marketplace-installation.md)
 
 ## Marketplace 安装

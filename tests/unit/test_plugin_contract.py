@@ -239,6 +239,38 @@ class PluginContractTests(unittest.TestCase):
         self.assertIn("Claude Code", guide)
         self.assertIn("Marketplace", guide)
 
+    def test_scenario_guide_has_one_stable_template_source(self) -> None:
+        """场景指南必须以模板为唯一规范源，并覆盖第一版用户流程。"""
+
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        guide_path = (
+            ROOT
+            / "templates/core/doc-project/05-知识治理/使用场景.md"
+        )
+
+        self.assertTrue(guide_path.is_file(), "缺少场景化使用指南")
+        self.assertFalse((ROOT / "docs/context-atlas-usage-scenarios.md").exists())
+        self.assertIn(
+            "./templates/core/doc-project/05-知识治理/使用场景.md",
+            readme,
+        )
+
+        guide = guide_path.read_text(encoding="utf-8")
+        for phrase in (
+            "需求来了怎么做",
+            "只补充数据库信息",
+            "摄取一份外部资料",
+            "第一版一次只处理一个来源",
+            "新增、修订、退役、冲突或不沉淀",
+            "自然语言“摄取”请求只触发只读分析",
+            "$context-atlas-add",
+            "$context-atlas-revise",
+            "$context-atlas-retire",
+            "Proposal 确认边界",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, guide)
+
     def test_two_marketplaces_reference_the_same_plugin(self) -> None:
         """两个 Marketplace 应暴露同一个插件和稳定来源路径。"""
 
