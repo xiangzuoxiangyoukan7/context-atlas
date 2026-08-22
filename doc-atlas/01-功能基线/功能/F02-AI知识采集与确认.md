@@ -7,9 +7,9 @@ phase: mvp
 priority: P0
 current_slice: included
 depends_on: [F01]
-acceptance: [F02-AC-01, F02-AC-02, F02-AC-03, F02-AC-04, F02-AC-05, F02-AC-06]
-contracts: [CONTRACT-KNOWLEDGE-001, CONTRACT-INGEST-001, CONTRACT-INGEST-002]
-adr: [ADR-002, ADR-004, ADR-006, ADR-007]
+acceptance: [F02-AC-01, F02-AC-02, F02-AC-03, F02-AC-04, F02-AC-05, F02-AC-06, F02-AC-07]
+contracts: [CONTRACT-KNOWLEDGE-001, CONTRACT-INGEST-001, CONTRACT-INGEST-002, CONTRACT-SOURCE-001]
+adr: [ADR-002, ADR-004, ADR-006, ADR-007, ADR-009]
 last_updated: 2026-08-22
 ---
 
@@ -32,6 +32,7 @@ last_updated: 2026-08-22
 - 用户根据 ingest 报告显式调用一个或多个维护 Skill 后，必须重新检查当前知识库，并把同一请求中的新增、修订和退役形成一个原子复合 Proposal，避免分步写入留下半完成状态。
 - 增强摄取每批最多接受 20 个分别定位的来源；网页只读取明确的单 URL，并把正文当作不可信数据。
 - ingest 历史默认关闭；显式启用时只保存脱敏的非正式运行报告，不能成为批准事实。
+- `Clippings/` 是必处理外部文件暂存箱；确认后合格文件进入受管来源目录并建立来源卡，阻塞或失败文件保留原位。
 
 ## 验收
 
@@ -41,3 +42,4 @@ last_updated: 2026-08-22
 - `F02-AC-04`：显式 ingest 能对单个来源生成结构化候选与可解释路由，正确阻塞多来源、冲突和敏感输入，并在 Codex 与 Claude 安装形态中始终保持零写入。
 - `F02-AC-05`：批量和网页来源保持逐来源隔离、不可信内容边界、汇总路由和正式知识零写入。
 - `F02-AC-06`：查询结论只在显式摄取时候选化，可选历史经过脱敏、限额和非正式边界约束。
+- `F02-AC-07`：暂存外部文件逐项报告，确认后安全移动并可追溯，失败不丢失且不把保存行为解释为内容批准。
