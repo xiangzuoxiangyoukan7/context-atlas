@@ -119,6 +119,8 @@ def sync(destination: Path) -> list[str]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """解析发布目标并同步经过白名单约束的 Claude 插件文件。"""
+
     parser = argparse.ArgumentParser(description="同步 Context Atlas Claude 发布仓库")
     parser.add_argument("--destination", type=Path, required=True)
     args = parser.parse_args(list(argv) if argv is not None else None)

@@ -103,6 +103,7 @@ class ScriptedClaudeRunner:
     def __init__(self, plugin_root: Path, persist_sessions: bool = False) -> None:
         """保存会话策略；插件路径仅用于保持真实构造接口一致。"""
 
+        self.plugin_root = plugin_root
         self.persist_sessions = persist_sessions
         self.turns = 0
 
@@ -119,8 +120,14 @@ class ScriptedClaudeRunner:
             target = workspace / "doc-example"
             scripts = target / ".project-kb" / "scripts"
             schemas = target / ".project-kb" / "schemas"
-            scripts.mkdir(parents=True)
-            schemas.mkdir(parents=True)
+            runtime_root = (
+                self.plugin_root / "assets"
+                if (self.plugin_root / "assets/scripts").is_dir()
+                and (self.plugin_root / "assets/schemas").is_dir()
+                else self.plugin_root
+            )
+            shutil.copytree(runtime_root / "scripts", scripts)
+            shutil.copytree(runtime_root / "schemas", schemas)
             (target / "knowledge-base.yaml").write_text(
                 "knowledge_base_name: doc-example\nworkspace_profile: "
                 + ("obsidian" if workspace.name == "initialize_obsidian_after_confirmation" else "standard")
@@ -132,6 +139,11 @@ class ScriptedClaudeRunner:
                 encoding="utf-8",
             )
             (schemas / "catalog.json").write_text("{}\n", encoding="utf-8")
+            (target / "item.md").write_text(
+                "---\nid: REQ-TEST-001\ntype: requirement\ntitle: 测试需求\n"
+                "status: proposed\nrelations: []\n---\n",
+                encoding="utf-8",
+            )
             if workspace.name == "initialize_obsidian_after_confirmation":
                 settings = target / ".obsidian"
                 settings.mkdir()
@@ -226,7 +238,7 @@ class ScriptedClaudeRunner:
             session_id="session-1" if self.persist_sessions else None,
             exit_code=0,
             result_text=(
-                'workspace_profile: obsidian sha256:' + "a" * 64
+                'workspace_profile: obsidian 目标 事实 来源 状态 未知项 冲突 关系 影响 验证 sha256:' + "a" * 64
                 if workspace.name == "initialize_obsidian_after_confirmation" and not resume_session_id
                 else '{"path":".context-atlas/ingest-history/test.json","formal_knowledge_written":false}'
                 if workspace.name == "ingest_history_explicit"
@@ -234,7 +246,7 @@ class ScriptedClaudeRunner:
                 if workspace.name == "health_is_read_only"
                 else ingest_results.get(
                     workspace.name,
-                    "包含 user@example.com token=secret 的原始模型正文 sha256:" + "a" * 64,
+                    "目标 事实 来源 状态 未知项 冲突 关系 影响 验证 sha256:" + "a" * 64,
                 )
             ),
             structured_output=None,
@@ -650,7 +662,7 @@ class ClaudeRunnerTests(unittest.TestCase):
 
         self.assertTrue(
             orchestration.EXPLICIT_INITIALIZE_PROMPT.startswith(
-                "/context-atlas-init"
+                "/context-atlas:context-atlas-init"
             )
         )
 

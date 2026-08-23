@@ -30,6 +30,14 @@ def _adapt_prompt(prompt: str) -> str:
     """将 Claude 显式技能命令转换为 Codex 的技能调用语法。"""
 
     mappings = {
+        "/context-atlas:context-atlas-init": "$context-atlas-init",
+        "/context-atlas:context-atlas-navigate": "$context-atlas-navigate",
+        "/context-atlas:context-atlas-review": "$context-atlas-review",
+        "/context-atlas:context-atlas-ingest": "$context-atlas-ingest",
+        "/context-atlas:context-atlas-add": "$context-atlas-add",
+        "/context-atlas:context-atlas-revise": "$context-atlas-revise",
+        "/context-atlas:context-atlas-retire": "$context-atlas-retire",
+        "/context-atlas:context-atlas-upgrade": "$context-atlas-upgrade",
         "/context-atlas-init": "$context-atlas-init",
         "/context-atlas-navigate": "$context-atlas-navigate",
         "/context-atlas-review": "$context-atlas-review",

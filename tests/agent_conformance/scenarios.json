@@ -13,7 +13,7 @@
       "description": "续接同一会话并确认当前提案修订号后初始化",
       "invocation": "explicit",
       "turns": 2,
-      "invariants": ["valid_initialized_target"]
+      "invariants": ["reviewable_complete_proposal", "valid_initialized_target", "self_contained_navigation_smoke"]
     },
     {
       "id": "initialize_obsidian_after_confirmation",
@@ -41,7 +41,7 @@
       "description": "规格审查不得修改正式知识",
       "invocation": "explicit",
       "turns": 1,
-      "invariants": ["no_formal_write_before_confirmation"]
+      "invariants": ["no_formal_write_before_confirmation", "reviewable_complete_proposal"]
     },
     {
       "id": "review_reports_blockers",
