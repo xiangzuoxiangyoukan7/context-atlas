@@ -9,6 +9,8 @@ Context Atlas 是 Agent Skill/插件，不是 Python 包，不需要 `pip instal
 ```powershell
 py scripts/build_plugin.py claude --output build/claude/context-atlas
 py scripts/build_plugin.py codex --output build/codex/context-atlas.zip --archive
+py scripts/build_plugin.py qoder --output build/qoder/context-atlas
+py scripts/build_plugin.py trae --output build/trae/context-atlas
 ```
 
 开发仓库不作为 Skill 运行目录。模板、Schema、脚本、规则、操作定义和兼容策略均只在各自根目录维护；
@@ -79,6 +81,24 @@ Codex 当前没有原生 `--scope project` 参数。使用目标项目内的 `.c
 
 不要省略两个命令中的 `--scope project`；Claude Code 默认 scope 是 `user`。
 
+## Qoder（项目级 Skill）
+
+Qoder 支持从 GitHub 或 skills.sh 安装 Skill，也支持项目级 `.qoder/skills/`。正式发布包应包含 `.qoder-plugin/plugin.json`、`skills/`、`assets/` 和 `references/`，不能只复制 `SKILL.md`。
+
+在 Qoder 打开的目标项目终端中执行：
+
+```powershell
+npx skills add https://github.com/xiangzuoxiangyoukan7/context-atlas -a qoder
+```
+
+安装后重启 Qoder，在输入框中输入 `/`，确认八个 Context Atlas Skill 已加载。也可以直接使用本仓库构建的 `build/qoder/context-atlas` 作为本地插件目录。
+
+## Trae（项目级 Skill）
+
+Trae 从项目级 `.agents/skills/` 加载 Skill。Trae 构建包把共享 Skill、运行资产和引用资料分别放在 `.agents/skills/`、`.agents/assets/` 和 `.agents/references/`，以保持安装后的相对路径有效。
+
+将 `build/trae/context-atlas/.agents/` 目录复制到目标项目根目录的 `.agents/` 下，重启 Trae，然后在 Skill 管理面板确认八个 Context Atlas Skill 已加载。当前 Trae 官方入口是项目级 Skill 目录，不额外虚构 Marketplace 清单。
+
 ## 更新已安装插件
 
 Codex 本地 Marketplace 更新时，在目标项目的隔离环境中重新登记并安装：
@@ -107,6 +127,7 @@ claude plugin install --scope project context-atlas@context-atlas
 本地开发时使用 Context Atlas 仓库的实际克隆路径；正式发布时 Codex 使用
 `context-atlas-codex-plugin`，Claude Code 使用 `context-atlas-claude-plugin`。无论来源是本地路径
 还是远程仓库，安装范围仍必须保持为目标项目级。
+Qoder 和 Trae 使用同一源码仓库构建，不创建新的源码仓库；只有平台明确要求独立发布镜像时，才由同步脚本生成镜像。
 正式发布时请使用发布仓库对应的 URL，不要把开发仓库路径当作生产 Marketplace 来源。
 
 ## 在目标项目中使用
@@ -151,4 +172,4 @@ Proposal，只有用户明确确认后才执行；底层 Python 参数由插件�
 
 Marketplace 清单和共享 Skill 契约已通过自动检查。Codex 执行链路已验证；Claude Code 当前真实确认后
 初始化验收仍为 **partial**，因此不能表述为双平台完全通过。详见[验收矩阵](../doc-atlas/03-变更与证据/验收矩阵.md)
-及其中的跨 Agent 验收证据。
+及其中的跨 Agent 验收证据。Qoder 与 Trae 已完成构建包、资产路径和静态契约检查，真实 Agent 场景尚未完成，当前保持候选适配状态。

@@ -21,6 +21,20 @@ CLAUDE_FIELDS = frozenset(
         "skills",
     }
 )
+QODER_FIELDS = frozenset(
+    {
+        "name",
+        "version",
+        "displayName",
+        "description",
+        "author",
+        "homepage",
+        "repository",
+        "license",
+        "keywords",
+        "skills",
+    }
+)
 COMMON_FIELDS = ("name", "version", "description")
 CODEX_MARKETPLACE = Path(".agents") / "plugins" / "marketplace.json"
 CLAUDE_MARKETPLACE = Path(".claude-plugin") / "marketplace.json"
@@ -45,6 +59,12 @@ def load_plugin_manifests(root: Path) -> tuple[dict[str, object], dict[str, obje
     claude = _load_object(root / ".claude-plugin" / "plugin.json")
     codex = _load_object(root / ".codex-plugin" / "plugin.json")
     return claude, codex
+
+
+def load_qoder_manifest(root: Path) -> dict[str, object]:
+    """读取可选的 Qoder 插件清单；源码仓库缺少时由调用方决定是否报错。"""
+
+    return _load_object(root.resolve() / ".qoder-plugin" / "plugin.json")
 
 
 def load_marketplace_manifests(root: Path) -> tuple[dict[str, object], dict[str, object]]:
@@ -178,6 +198,29 @@ def validate_plugin_contract(root: Path) -> list[str]:
     errors.extend(_validate_marketplace("Codex", codex_marketplace, codex, "codex"))
     errors.extend(_validate_marketplace("Claude", claude_marketplace, claude, "claude"))
     errors.extend(_validate_release_boundary(root))
+
+    qoder_path = root / ".qoder-plugin" / "plugin.json"
+    if qoder_path.is_file():
+        try:
+            qoder = load_qoder_manifest(root)
+        except (json.JSONDecodeError, UnicodeDecodeError, ValueError) as error:
+            errors.append(str(error))
+            qoder = None
+        if qoder is not None:
+            unexpected_qoder = sorted(set(qoder) - QODER_FIELDS)
+            if unexpected_qoder:
+                errors.append(f"Qoder 清单含不支持字段：{unexpected_qoder}")
+            for field in COMMON_FIELDS:
+                if qoder.get(field) != claude.get(field):
+                    errors.append(f"Qoder 的 {field} 必须与其他平台一致")
+            if qoder.get("name") != "context-atlas":
+                errors.append("Qoder 插件名称必须是 context-atlas")
+            if qoder.get("displayName") != "Context Atlas":
+                errors.append("Qoder displayName 必须是 Context Atlas")
+            if not _safe_skill_path(qoder.get("skills")):
+                errors.append("Qoder 的 skills 必须指向 ./skills/")
+            if _author_name(qoder) != _author_name(claude):
+                errors.append("Qoder 的 author.name 必须与其他平台一致")
 
     if claude.get("name") != "context-atlas":
         errors.append("Claude 插件名称必须是 context-atlas")

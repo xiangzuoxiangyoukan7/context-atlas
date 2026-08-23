@@ -10,6 +10,7 @@ import unittest
 from pathlib import Path
 
 from scripts.project_kb.plugin_contract import (
+    load_qoder_manifest,
     load_marketplace_manifests,
     load_plugin_manifests,
     validate_plugin_contract,
@@ -157,6 +158,17 @@ class PluginContractTests(unittest.TestCase):
         self.assertIn("interface", codex)
         self.assertEqual(codex["name"], codex["interface"]["displayName"])
         self.assertTrue(codex["interface"]["defaultPrompt"])
+
+    def test_qoder_manifest_shares_identity_without_copying_skills(self) -> None:
+        """Qoder 清单共享插件身份，Skill 仍只保留源码根目录一份。"""
+
+        qoder = load_qoder_manifest(ROOT)
+        claude, _ = load_plugin_manifests(ROOT)
+        for field in ("name", "version", "description"):
+            self.assertEqual(claude[field], qoder[field], field)
+        self.assertEqual("Context Atlas", qoder["displayName"])
+        self.assertEqual("./skills/", qoder["skills"])
+        self.assertFalse((ROOT / ".qoder-plugin" / "skills").exists())
 
     def test_plugin_exposes_eight_capability_skills(self) -> None:
         """插件公开初始化、导航、审查、摄取、三类维护和升级八个能力 Skill。"""

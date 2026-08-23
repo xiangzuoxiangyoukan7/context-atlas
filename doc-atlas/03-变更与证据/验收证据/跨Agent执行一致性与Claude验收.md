@@ -74,6 +74,12 @@ py scripts/run_agent_conformance.py --compare build/agent-conformance/claude-sdd
 
 脱敏报告为 `build/acceptance/claude-requires-confirmation.json` 和 `build/acceptance/claude-after-confirmation.json`，均为受 Git 忽略的本地验收产物。下一次复验需要先使插件发布副本位于 Claude 允许读取的目录，再在 API 余额可用时重跑确认后场景。
 
+## 2026-08-23 Qoder 与 Trae 薄适配
+
+依据已确认的多 Agent 适配 Proposal `sha256:3b38dfa1ae77c3067f0d45a4c78a4a844c55af571001467ae7a2c5b4fc9113c6`，源码仓库新增 Qoder `.qoder-plugin/plugin.json` 和 Trae `.agents/skills/` 构建边界。Qoder 包携带根级 `skills/`、`assets/`、`references/`；Trae 包将三者置于 `.agents/` 下，保证安装后的相对路径自包含。
+
+本轮结果：259 项自动化测试通过、1 项按设计跳过；Codex、Claude、Qoder、Trae 构建通过；知识库检查通过。Qoder 与 Trae 尚未运行真实 Agent 黑盒场景，故不宣称正式平台支持，后续验收项保持候选/`partial`。
+
 ## 验收项映射
 
 | 验收编号 | 证据 | 结果 |
@@ -95,4 +101,6 @@ py scripts/run_agent_conformance.py --compare build/agent-conformance/claude-sdd
 - `repository_file`：提交 `183c0ad`、`d95e54f`、`32401f7`、`9e7b41e` 及对应协议、执行器、跨 Agent 场景和文档。
 - `command_output`：2026-08-23 全量测试、双平台构建、插件与 Skill 校验，以及 Claude Code 2.1.241 两项真实初始化报告。
 - `user_statement`：用户确认验收证据 Proposal `sha256:1c30b631239c59d131a9d6f0179c3328be668c55fa312444814f66517c7776d1`。
+- `repository_file`：Qoder/Trae 适配提交及其构建、契约测试和安装文档；实施 Proposal 为 `sha256:3b38dfa1ae77c3067f0d45a4c78a4a844c55af571001467ae7a2c5b4fc9113c6`。
+- `user_statement`：用户确认 Qoder/Trae 多 Agent 适配实施 Proposal。
 - 确认日期：2026-08-23。

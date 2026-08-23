@@ -33,7 +33,7 @@ Codex Marketplace 位于 `.agents/plugins/marketplace.json`，Claude Code Market
 `/context-atlas:context-atlas-init`、`/context-atlas:context-atlas-navigate`；命令面板可能把已唯一解析的命令显示或补全为 `/context-atlas-init`。以面板实际补全结果为准，不要把显示别名当成另一个 Skill。两个平台共用同一组 Skills，不发布 `commands/`；
 没有明确调用对应 Skill 的自然语言不得触发知识库写入。
 
-完整的 Codex、Claude Code 操作步骤和当前验收状态见[Marketplace 安装与使用](./packaging/marketplace-installation.md)。
+Qoder 与 Trae 适配包也从同一源码仓库构建：Qoder 使用 `.qoder-plugin/plugin.json`，Trae 使用项目级 `.agents/skills/` 及其同级运行资产；完整的四平台构建、安装步骤和当前验收状态见[Marketplace 安装与使用](./packaging/marketplace-installation.md)。
 
 ### 项目级卸载
 
@@ -62,6 +62,8 @@ Plugin 发布包由根目录唯一源码构建，不直接运行或发布开发�
 ```powershell
 py scripts/build_plugin.py claude --output build/claude/context-atlas
 py scripts/build_plugin.py codex --output build/codex/context-atlas.zip --archive
+py scripts/build_plugin.py qoder --output build/qoder/context-atlas
+py scripts/build_plugin.py trae --output build/trae/context-atlas
 ```
 
 将 Codex 发布内容同步到独立发布仓库：

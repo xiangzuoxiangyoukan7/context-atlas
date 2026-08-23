@@ -32,21 +32,35 @@ def _copy_tree(source: Path, target: Path) -> None:
 def _copy_common(target: Path, platform: str) -> None:
     """复制指定平台共享的最小运行时文件。"""
 
-    manifest_dir = ".codex-plugin" if platform == "codex" else ".claude-plugin"
-    (target / manifest_dir).mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / manifest_dir / "plugin.json", target / manifest_dir / "plugin.json")
+    if platform == "trae":
+        runtime_root = target / ".agents"
+        runtime_root.mkdir(parents=True, exist_ok=True)
+        _copy_tree(ROOT / "skills", runtime_root / "skills")
+        materialize_plugin_assets(ROOT, runtime_root / "assets")
+        _copy_tree(ROOT / "references", runtime_root / "references")
+    else:
+        manifest_dir = {
+            "codex": ".codex-plugin",
+            "claude": ".claude-plugin",
+            "qoder": ".qoder-plugin",
+        }[platform]
+        (target / manifest_dir).mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / manifest_dir / "plugin.json", target / manifest_dir / "plugin.json")
+        _copy_tree(ROOT / "skills", target / "skills")
+        materialize_plugin_assets(ROOT, target / "assets")
+        _copy_tree(ROOT / "references", target / "references")
     if platform == "claude":
         shutil.copy2(
-            ROOT / manifest_dir / "marketplace.json",
-            target / manifest_dir / "marketplace.json",
+            ROOT / ".claude-plugin" / "marketplace.json",
+            target / ".claude-plugin" / "marketplace.json",
         )
-    _copy_tree(ROOT / "skills", target / "skills")
-    materialize_plugin_assets(ROOT, target / "assets")
-    _copy_tree(ROOT / "references", target / "references")
     for name in ("README.md", "LICENSE"):
         source = ROOT / name
         if source.is_file():
             shutil.copy2(source, target / name)
+    platform_readme = ROOT / "packaging" / platform / "README.md"
+    if platform_readme.is_file():
+        shutil.copy2(platform_readme, target / "PLATFORM-README.md")
 
 
 def build(output: Path, platform: str, archive: bool = False) -> Path:
@@ -56,8 +70,8 @@ def build(output: Path, platform: str, archive: bool = False) -> Path:
     需要归档时按稳定顺序生成 ZIP 和摘要，最后返回实际产物路径。
     """
 
-    if platform not in {"codex", "claude"}:
-        raise ValueError("platform must be codex or claude")
+    if platform not in {"codex", "claude", "qoder", "trae"}:
+        raise ValueError("platform must be codex, claude, qoder or trae")
     contract_errors = validate_plugin_contract(ROOT)
     if contract_errors:
         raise ValueError("插件契约检查失败：\n- " + "\n- ".join(contract_errors))
@@ -93,7 +107,7 @@ def main() -> int:
     """解析构建参数、生成产物并输出机器可读结果。"""
 
     parser = argparse.ArgumentParser(description="Build Context Atlas plugin payload")
-    parser.add_argument("platform", choices=("codex", "claude"))
+    parser.add_argument("platform", choices=("codex", "claude", "qoder", "trae"))
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--archive", action="store_true")
     args = parser.parse_args()
