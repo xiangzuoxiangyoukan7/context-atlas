@@ -29,8 +29,8 @@ Codex Marketplace 位于 `.agents/plugins/marketplace.json`，Claude Code Market
 
 插件只支持安装到目标项目：Claude Code 必须使用 `--scope project`；Codex 当前没有原生 scope 参数，
 必须把 `CODEX_HOME` 指向目标项目的 `.codex/`，并在同一环境下安装和启动 Codex。不要省略项目隔离参数。
-安装后，Codex 使用 `$context-atlas-init`、`$context-atlas-navigate`、`$context-atlas-review`、`$context-atlas-ingest`、`$context-atlas-add`、`$context-atlas-revise`、`$context-atlas-retire`、`$context-atlas-upgrade`，Claude Code 使用
-`/context-atlas-init`、`/context-atlas-navigate`、`/context-atlas-review`、`/context-atlas-ingest`、`/context-atlas-add`、`/context-atlas-revise`、`/context-atlas-retire`、`/context-atlas-upgrade`。两个平台共用同一组 Skills，不发布 `commands/`；
+安装后，Codex 使用 `$context-atlas-init`、`$context-atlas-navigate`、`$context-atlas-review`、`$context-atlas-ingest`、`$context-atlas-add`、`$context-atlas-revise`、`$context-atlas-retire`、`$context-atlas-upgrade`。Claude Code 的原生命令使用插件命名空间，例如
+`/context-atlas:context-atlas-init`、`/context-atlas:context-atlas-navigate`；命令面板可能把已唯一解析的命令显示或补全为 `/context-atlas-init`。以面板实际补全结果为准，不要把显示别名当成另一个 Skill。两个平台共用同一组 Skills，不发布 `commands/`；
 没有明确调用对应 Skill 的自然语言不得触发知识库写入。
 
 完整的 Codex、Claude Code 操作步骤和当前验收状态见[Marketplace 安装与使用](./packaging/marketplace-installation.md)。

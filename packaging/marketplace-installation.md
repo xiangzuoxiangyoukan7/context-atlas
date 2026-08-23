@@ -127,17 +127,20 @@ $context-atlas-retire
 $context-atlas-upgrade
 ```
 
-Claude Code 使用原生插件命令：
+Claude Code 使用带插件命名空间的原生命令：
 
 ```text
-/context-atlas-init
-/context-atlas-navigate
-/context-atlas-review
-/context-atlas-add
-/context-atlas-revise
-/context-atlas-retire
-/context-atlas-upgrade
+/context-atlas:context-atlas-init
+/context-atlas:context-atlas-navigate
+/context-atlas:context-atlas-review
+/context-atlas:context-atlas-ingest
+/context-atlas:context-atlas-add
+/context-atlas:context-atlas-revise
+/context-atlas:context-atlas-retire
+/context-atlas:context-atlas-upgrade
 ```
+
+Claude Code 的命令面板在名称可唯一解析时，可能显示或接受不带 Marketplace 前缀的短形式，例如 `/context-atlas-init`；会话记录仍可能展开成 `/context-atlas:context-atlas-init`。这两种显示指向同一个 Skill，以当前安装后的命令面板补全为准。
 
 `init`、`add`、`revise`、`retire` 和 `upgrade` 是相互独立的正式写入入口：`add` 新增知识，`revise` 修订、同步或替代知识，`retire` 通过替代、归档或受控删除退役知识，`upgrade` 只升级知识库格式和结构。通用 `update` Skill 已删除，不作为兼容入口。`navigate` 只读支持逐层目录浏览、一跳正反向邻接查询，以及有深度和节点数量边界的关系图查询，不生成 Proposal，并由 Agent 决定是否读取候选文件正文。完整图只有在明确需要全局分析时才查询，不作为会话默认上下文。没有固定写入操作符的自然语言不能触发正式写入。写入命令会先生成
 Proposal，只有用户明确确认后才执行；底层 Python 参数由插件负责，不作为用户接口。

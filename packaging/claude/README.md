@@ -14,15 +14,17 @@ claude plugin install --scope project context-atlas@context-atlas
 安装后新建 Claude Code 会话，然后使用：
 
 ```text
-/context-atlas-init
-/context-atlas-navigate
-/context-atlas-review
-/context-atlas-ingest
-/context-atlas-add
-/context-atlas-revise
-/context-atlas-retire
-/context-atlas-upgrade
+/context-atlas:context-atlas-init
+/context-atlas:context-atlas-navigate
+/context-atlas:context-atlas-review
+/context-atlas:context-atlas-ingest
+/context-atlas:context-atlas-add
+/context-atlas:context-atlas-revise
+/context-atlas:context-atlas-retire
+/context-atlas:context-atlas-upgrade
 ```
+
+命令面板可能把可唯一解析的命令显示为 `/context-atlas-init` 等短形式；会话记录中的 `/context-atlas:context-atlas-init` 是同一 Skill 的原生命名空间形式。
 
 正式写入前必须得到对应 Proposal 的明确确认；没有明确调用 Skill 的自然语言不能触发正式写入。
 
