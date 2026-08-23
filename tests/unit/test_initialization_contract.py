@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+import os
+import subprocess
+import sys
 
 from scripts.project_kb.agent_operation import execute_initialization_proposal
 from scripts.project_kb.initialization_contract import canonical_revision, validate_initialization_proposal
@@ -74,6 +77,15 @@ class InitializationContractTests(InstalledPluginTestCase):
         self.assertEqual("python_executor", report.execution.mode)
         self.assertEqual("deterministic_executor", report.validation.authority)
         self.assertEqual("passed", report.validation.deterministic_validation)
+        self.assertEqual(
+            {
+                "full_schema_and_reference_validation",
+                "self_contained_children",
+                "self_contained_neighbors",
+                "self_contained_bounded_graph",
+            },
+            {check["name"] for check in report.validation.checks},
+        )
         self.assertEqual(3, report.execution.runtime_detection.attempts[0].python_major)
         self.assertEqual(("UNKNOWN-001",), report.unknowns)
         target = self.root / "doc-example"
@@ -87,6 +99,66 @@ class InitializationContractTests(InstalledPluginTestCase):
         self.assertIn("GitHub API", (target / "02-架构与契约/外部依赖/README.md").read_text(encoding="utf-8"))
         self.assertIn("py -m unittest", (target / "02-架构与契约/系统架构.md").read_text(encoding="utf-8"))
         self.assertIn("使用 Markdown", (target / "04-决策记录/README.md").read_text(encoding="utf-8"))
+
+    def test_initialized_bundle_runs_navigation_without_plugin_assets(self) -> None:
+        """生成知识库内置脚本必须能独立执行渐进导航。"""
+
+        proposal = self._proposal()
+        execute_initialization_proposal(
+            proposal, str(proposal["proposal_revision"]), self.assets_root
+        )
+        target = self.root / "doc-example"
+        command = [
+            sys.executable,
+            str(target / ".project-kb/scripts/agent_kb_operation.py"),
+        ]
+        cases = (
+            ["children", str(target), "--path", "."],
+            ["neighbors", str(target), "--id", "API-001"],
+            ["graph", str(target), "--start", "API-001", "--depth", "1", "--max-nodes", "20"],
+        )
+
+        for arguments in cases:
+            completed = subprocess.run(
+                command + arguments,
+                cwd=self.root,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(0, completed.returncode, completed.stderr.decode("utf-8"))
+            payload = json.loads(completed.stdout.decode("utf-8"))
+            self.assertTrue(payload["ok"])
+
+    def test_cli_uses_utf8_for_chinese_stdin_and_stdout(self) -> None:
+        """Windows 非 UTF-8 默认环境也应稳定传递中文 Proposal 和 JSON。"""
+
+        proposal = self._proposal()
+        environment = os.environ.copy()
+        environment["PYTHONIOENCODING"] = "cp1252"
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/agent_kb_operation.py"),
+                "initialize",
+                "--proposal",
+                "-",
+                "--confirmed-revision",
+                str(proposal["proposal_revision"]),
+            ],
+            cwd=self.root,
+            input=json.dumps(proposal, ensure_ascii=False).encode("utf-8"),
+            capture_output=True,
+            env=environment,
+            check=False,
+        )
+
+        self.assertEqual(0, completed.returncode, completed.stderr.decode("utf-8"))
+        payload = json.loads(completed.stdout.decode("utf-8"))
+        self.assertEqual("initialized", payload["operation"])
+        self.assertIn(
+            "提供可验证的知识库",
+            (self.root / "doc-example/00-项目总览/项目概述.md").read_text(encoding="utf-8"),
+        )
 
     def test_revision_mismatch_has_zero_formal_writes(self) -> None:
         """确认修订不一致时不得创建正式目录。"""
