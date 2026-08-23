@@ -289,9 +289,31 @@ class SkillPackageTests(unittest.TestCase):
 
         self.assertIn("proposal_revision", proposal)
         self.assertIn("confirmed_revision", proposal)
+        self.assertIn("只展示分类数量、摘要、哈希", proposal)
+        self.assertIn("暂不处理", proposal)
+        self.assertIn("confirmation_status: observed", proposal)
         self.assertIn("Confirmation state", report)
         self.assertIn("Validation result", report)
         self.assertIn("not_validated", report)
+        self.assertIn("Post-initialization smoke", report)
+
+    def test_initialization_skill_guards_real_world_review_failures(self) -> None:
+        """初始化 Skill 必须约束完整展示、延后项、敏感配置与使用冒烟。"""
+
+        skill = (self.skill_roots[0] / "SKILL.md").read_text(encoding="utf-8")
+        for phrase in (
+            "count-only summary",
+            "temporary JSON path",
+            "postpones them",
+            "never invent `confirmed_at`",
+            "credential-bearing configuration",
+            "bounded `graph`",
+        ):
+            self.assertIn(phrase, skill)
+
+        ingest = (self.skill_roots[3] / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("supplies no source", ingest)
+        self.assertIn("source_count: 0", ingest)
 
     def test_capture_protocol_has_one_runtime_authority_and_thin_skills(self) -> None:
         """知识采集完整执行语义必须集中在 references，Skill 只做薄编排。"""
