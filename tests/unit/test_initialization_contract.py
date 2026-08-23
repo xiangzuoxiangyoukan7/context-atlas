@@ -251,6 +251,37 @@ class InitializationContractTests(InstalledPluginTestCase):
         with self.assertRaisesRegex(ValueError, "cannot confirm"):
             validate_initialization_proposal(proposal)
 
+    def test_agent_entry_is_created_for_selected_host(self) -> None:
+        """确认的初始化 Proposal 应创建当前宿主对应的入口说明。"""
+
+        proposal = self._proposal()
+        proposal["agent_entry"] = {"host": "codex", "filename": "AGENTS.md"}
+        proposal["proposal_revision"] = canonical_revision(proposal)
+        report = execute_initialization_proposal(
+            proposal, str(proposal["proposal_revision"]), self.assets_root
+        )
+        self.assertEqual("initialized", report.operation)
+        entry = (self.root / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertIn("<!-- context-atlas:begin -->", entry)
+        self.assertIn("doc-example", entry)
+        self.assertFalse((self.root / "CLAUDE.md").exists())
+
+    def test_agent_entry_preserves_existing_content(self) -> None:
+        """已有入口文件的项目内容必须保留。"""
+
+        entry = self.root / "CLAUDE.md"
+        entry.write_text("# 项目原有规则\n\n不要删除我。\n", encoding="utf-8")
+        proposal = self._proposal()
+        proposal["agent_entry"] = {"host": "claude", "filename": "CLAUDE.md"}
+        proposal["proposal_revision"] = canonical_revision(proposal)
+        report = execute_initialization_proposal(
+            proposal, str(proposal["proposal_revision"]), self.assets_root
+        )
+        self.assertEqual("initialized", report.operation)
+        content = entry.read_text(encoding="utf-8")
+        self.assertIn("不要删除我", content)
+        self.assertEqual(1, content.count("<!-- context-atlas:begin -->"))
+
 
 if __name__ == "__main__":
     import unittest

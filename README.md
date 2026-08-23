@@ -156,7 +156,7 @@ claude plugin install --scope project context-atlas@context-atlas
 
 AI 负责调研、提问和组织候选知识；项目责任人负责确认内容；知识库负责存储、版本、关联和结构校验。自动检查不能替代人工确认内容是否正确。
 
-本项目不生成或维护目标项目的 `AGENTS.md`、`CLAUDE.md` 等工具专属文件，也不调用或托管大模型。
+本项目不调用或托管大模型。初始化时会根据当前运行的 Agent 选择入口文件：Codex、Qoder、Trae 使用 `AGENTS.md`，Claude Code 使用 `CLAUDE.md`；文件不存在时创建，文件存在时只追加或更新 Context Atlas 受管区块，绝不覆盖项目原有内容。入口文件的创建或修改必须出现在已确认的初始化 Proposal 中。
 
 ## 当前状态
 
