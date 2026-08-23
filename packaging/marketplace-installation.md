@@ -92,17 +92,21 @@ codex plugin marketplace add D:\loong-workspace-python\context-atlas
 codex plugin add context-atlas@context-atlas-dev
 ```
 
-Claude Code 使用原生项目级更新：
+Claude Code 正式发布仓库为 `context-atlas-claude-plugin`，使用原生项目级更新：
 
 ```powershell
 cd D:\你的目标项目
-claude plugin update --scope project context-atlas@context-atlas-dev
+claude plugin marketplace remove --scope project context-atlas
+claude plugin marketplace add --scope project `
+  https://github.com/xiangzuoxiangyoukan7/context-atlas-claude-plugin.git
+claude plugin install --scope project context-atlas@context-atlas
 ```
 
 更新后必须新建 Agent 会话，旧会话不会重新载入 Skill。
 
-本地开发时使用 Context Atlas 仓库的实际克隆路径；正式发布时使用发布仓库对应的 URL。无论来源是本地
-路径还是远程仓库，安装范围仍必须保持为目标项目级。
+本地开发时使用 Context Atlas 仓库的实际克隆路径；正式发布时 Codex 使用
+`context-atlas-codex-plugin`，Claude Code 使用 `context-atlas-claude-plugin`。无论来源是本地路径
+还是远程仓库，安装范围仍必须保持为目标项目级。
 
 ## 在目标项目中使用
 

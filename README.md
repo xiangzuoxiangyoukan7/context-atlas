@@ -81,6 +81,24 @@ git -C D:\loong-workspace-python\context-atlas-codex-plugin commit -m "release: 
 git -C D:\loong-workspace-python\context-atlas-codex-plugin push origin main
 ```
 
+将 Claude Code 发布内容同步到独立发布仓库：
+
+```powershell
+py scripts/sync_to_claude_plugin.py `
+  --destination D:\loong-workspace-python\context-atlas-claude-plugin
+git -C D:\loong-workspace-python\context-atlas-claude-plugin add --all
+git -C D:\loong-workspace-python\context-atlas-claude-plugin commit -m "release: context-atlas 0.10.0"
+git -C D:\loong-workspace-python\context-atlas-claude-plugin push origin main
+```
+
+Claude Code 正式安装使用独立发布仓库：
+
+```powershell
+claude plugin marketplace add --scope project `
+  https://github.com/xiangzuoxiangyoukan7/context-atlas-claude-plugin.git
+claude plugin install --scope project context-atlas@context-atlas
+```
+
 发布新版本时，再为同一提交创建并推送 `v<版本号>` 标签。发布仓库内容由同步脚本生成，不得直接维护。
 
 ## 原则
