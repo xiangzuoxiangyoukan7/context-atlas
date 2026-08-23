@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -46,6 +47,16 @@ def sync(destination: Path) -> list[str]:
         shutil.copy2(ROOT / "LICENSE", destination / "LICENSE")
     marketplace = json.loads((destination / ".qoder-plugin/marketplace.json").read_text(encoding="utf-8"))
     (destination / "marketplace.json").write_text(json.dumps(marketplace, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    manifest = json.loads((destination / ".qoder-plugin/plugin.json").read_text(encoding="utf-8"))
+    files = {
+        path.relative_to(destination).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(destination.rglob("*"))
+        if path.is_file() and ".git" not in path.relative_to(destination).parts and path.name != "release-manifest.json"
+    }
+    (destination / "release-manifest.json").write_text(
+        json.dumps({"plugin": "context-atlas", "platform": "qoder", "version": manifest["version"], "files": files}, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8", newline="\n",
+    )
     unexpected = sorted(path.name for path in destination.iterdir() if path.name not in ALLOWED)
     if unexpected:
         raise ValueError(f"Qoder 发布仓库包含非白名单根路径：{unexpected}")
