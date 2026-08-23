@@ -83,23 +83,13 @@ Codex 当前没有原生 `--scope project` 参数。使用目标项目内的 `.c
 
 ## Qoder（项目级 Skill）
 
-Qoder 支持从 GitHub 或 skills.sh 安装 Skill，也支持项目级 `.qoder/skills/`。正式 Context Atlas 包应包含 `.qoder-plugin/plugin.json`、`skills/`、`assets/` 和 `references/`，不能只复制 `SKILL.md`。为了与 Codex、Claude Code 一样保持项目隔离，正式安装只写入目标项目的 `.qoder/`，不写入用户级 `~/.qoder/skills/`。
+Qoder 支持原生插件 Marketplace 和项目级安装。正式 Context Atlas 包应包含 `.qoder-plugin/plugin.json`、`skills/`、`assets/` 和 `references/`，不能只复制 `SKILL.md`。为了与 Codex、Claude Code 一样保持项目隔离，正式安装必须在 Qoder Marketplace 选择 Project，不写入用户级 `~/.qoder/skills/`。
 
 必须在目标项目范围安装，不要安装到用户级 `~/.qoder/skills/`。在 Qoder 打开的目标项目终端中执行：
 
 ```powershell
-py scripts/build_plugin.py qoder --output build/qoder/context-atlas
-```
-
-进入目标项目，将构建包的运行目录复制到项目级 `.qoder/`：
-
-```powershell
-$source = "D:\loong-workspace-python\context-atlas\build\qoder\context-atlas"
-$target = Join-Path $PWD ".qoder"
-New-Item -ItemType Directory -Force $target | Out-Null
-Copy-Item (Join-Path $source "skills") (Join-Path $target "skills") -Recurse -Force
-Copy-Item (Join-Path $source "assets") (Join-Path $target "assets") -Recurse -Force
-Copy-Item (Join-Path $source "references") (Join-Path $target "references") -Recurse -Force
+qoder plugins marketplace add https://github.com/xiangzuoxiangyoukan7/context-atlas-qoder-plugin.git
+qoder plugins install context-atlas@context-atlas
 ```
 
 然后重启 Qoder，在输入框中输入 `/`，确认八个 Context Atlas Skill 已加载。不要把源码仓库中的 `skills/` 单独复制到用户目录。
@@ -108,7 +98,13 @@ Copy-Item (Join-Path $source "references") (Join-Path $target "references") -Rec
 
 Trae 从项目级 `.agents/skills/` 加载 Skill。Trae 构建包把共享 Skill、运行资产和引用资料分别放在 `.agents/skills/`、`.agents/assets/` 和 `.agents/references/`，以保持安装后的相对路径有效。
 
-将 `build/trae/context-atlas/.agents/` 目录复制到目标项目根目录的 `.agents/` 下，重启 Trae，然后在 Skill 管理面板确认八个 Context Atlas Skill 已加载。不要复制到用户级全局目录。当前 Trae 官方入口是项目级 Skill 目录，不额外虚构 Marketplace 清单。
+在目标项目根目录执行一条安装命令：
+
+```powershell
+irm https://raw.githubusercontent.com/xiangzuoxiangyoukan7/context-atlas/v0.11.0/packaging/trae/install.ps1 | iex
+```
+
+安装器下载完整 Trae 包，备份已有受管 `.agents/` 目录，再安装 `skills/`、`assets/` 和 `references/`。重启 Trae后，在 Skill 管理面板确认八个 Context Atlas Skill 已加载。当前 Trae 官方入口仍是项目级 Skill 目录；该脚本是 Context Atlas 的一键兼容安装入口。
 
 ## 更新已安装插件
 
@@ -131,6 +127,19 @@ claude plugin marketplace remove --scope project context-atlas
 claude plugin marketplace add --scope project `
   https://github.com/xiangzuoxiangyoukan7/context-atlas-claude-plugin.git
 claude plugin install --scope project context-atlas@context-atlas
+```
+
+Qoder 使用原生 Marketplace 项目级更新：
+
+```powershell
+qoder plugins marketplace update context-atlas
+qoder plugins update context-atlas@context-atlas
+```
+
+Trae 更新时在目标项目根目录重新执行同一条安装命令；安装器会先备份现有受管目录，再安装新版本：
+
+```powershell
+irm https://raw.githubusercontent.com/xiangzuoxiangyoukan7/context-atlas/v0.11.0/packaging/trae/install.ps1 | iex
 ```
 
 更新后必须新建 Agent 会话，旧会话不会重新载入 Skill。

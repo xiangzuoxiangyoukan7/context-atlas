@@ -132,6 +132,16 @@ git -C D:\loong-workspace-python\context-atlas-claude-plugin commit -m "release:
 git -C D:\loong-workspace-python\context-atlas-claude-plugin push origin main
 ```
 
+将 Qoder 发布内容同步到独立发布仓库：
+
+```powershell
+py scripts/sync_to_qoder_plugin.py `
+  --destination D:\loong-workspace-python\context-atlas-qoder-plugin
+git -C D:\loong-workspace-python\context-atlas-qoder-plugin add --all
+git -C D:\loong-workspace-python\context-atlas-qoder-plugin commit -m "release: context-atlas 0.11.0"
+git -C D:\loong-workspace-python\context-atlas-qoder-plugin push origin main
+```
+
 Claude Code 正式安装使用独立发布仓库：
 
 ```powershell

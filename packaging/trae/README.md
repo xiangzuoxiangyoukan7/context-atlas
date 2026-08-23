@@ -4,7 +4,13 @@
 
 ## 项目级安装
 
-必须安装到目标项目，不要写入用户级 Skill 目录。将构建包中的 `.agents/` 目录复制到目标项目根目录，或使用团队发布流程把该目录纳入目标项目。安装后重启 Trae，在 Skill 管理面板确认八个 Context Atlas Skill 已加载。
+必须安装到目标项目，不要写入用户级 Skill 目录。在目标项目根目录执行一条命令：
+
+```powershell
+irm https://raw.githubusercontent.com/xiangzuoxiangyoukan7/context-atlas/v0.11.0/packaging/trae/install.ps1 | iex
+```
+
+安装器会下载完整 Trae 包，备份目标项目已有的受管 `.agents/` 目录，再安装 `skills/`、`assets/` 和 `references/`。安装后重启 Trae，在 Skill 管理面板确认八个 Context Atlas Skill 已加载。
 
 ## 使用
 

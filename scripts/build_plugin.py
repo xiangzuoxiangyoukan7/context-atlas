@@ -46,6 +46,11 @@ def _copy_common(target: Path, platform: str) -> None:
         }[platform]
         (target / manifest_dir).mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / manifest_dir / "plugin.json", target / manifest_dir / "plugin.json")
+        if platform == "qoder":
+            shutil.copy2(
+                ROOT / ".qoder-plugin" / "marketplace.json",
+                target / "marketplace.json",
+            )
         _copy_tree(ROOT / "skills", target / "skills")
         materialize_plugin_assets(ROOT, target / "assets")
         _copy_tree(ROOT / "references", target / "references")
@@ -61,6 +66,8 @@ def _copy_common(target: Path, platform: str) -> None:
     platform_readme = ROOT / "packaging" / platform / "README.md"
     if platform_readme.is_file():
         shutil.copy2(platform_readme, target / "PLATFORM-README.md")
+    if platform == "trae":
+        shutil.copy2(ROOT / "packaging" / "trae" / "install.ps1", target / "install.ps1")
 
 
 def build(output: Path, platform: str, archive: bool = False) -> Path:

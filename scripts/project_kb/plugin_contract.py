@@ -221,6 +221,23 @@ def validate_plugin_contract(root: Path) -> list[str]:
                 errors.append("Qoder 的 skills 必须指向 ./skills/")
             if _author_name(qoder) != _author_name(claude):
                 errors.append("Qoder 的 author.name 必须与其他平台一致")
+            qoder_marketplace_path = root / ".qoder-plugin" / "marketplace.json"
+            if not qoder_marketplace_path.is_file():
+                errors.append("Qoder 清单存在时必须提供 .qoder-plugin/marketplace.json")
+            else:
+                try:
+                    qoder_marketplace = _load_object(qoder_marketplace_path)
+                    plugins = qoder_marketplace.get("plugins")
+                    if not isinstance(plugins, list) or not plugins:
+                        errors.append("Qoder Marketplace 的 plugins 必须是非空数组")
+                    else:
+                        entry = plugins[0]
+                        if not isinstance(entry, dict) or entry.get("name") != "context-atlas":
+                            errors.append("Qoder Marketplace 第一条插件必须是 context-atlas")
+                        elif entry.get("source") != "./":
+                            errors.append("Qoder Marketplace 插件 source 必须是 ./")
+                except (json.JSONDecodeError, UnicodeDecodeError, ValueError) as error:
+                    errors.append(str(error))
 
     if claude.get("name") != "context-atlas":
         errors.append("Claude 插件名称必须是 context-atlas")

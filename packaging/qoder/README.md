@@ -4,21 +4,17 @@
 
 ## 项目级安装
 
-必须在目标项目范围安装，不要安装到用户级 `~/.qoder/skills/`。先在源码仓库构建 Qoder 包：
+必须在目标项目范围安装，不要安装到用户级 `~/.qoder/skills/`。将 Qoder 发布仓库登记到 Marketplace，然后选择 Project 安装：
+
+```powershell
+qoder plugins marketplace add https://github.com/xiangzuoxiangyoukan7/context-atlas-qoder-plugin.git
+qoder plugins install context-atlas@context-atlas
+```
+
+本地验收或开发时才在源码仓库构建 Qoder 包：
 
 ```powershell
 py scripts/build_plugin.py qoder --output build/qoder/context-atlas
-```
-
-进入目标项目，将构建包的运行目录复制到项目级 `.qoder/`：
-
-```powershell
-$source = "D:\loong-workspace-python\context-atlas\build\qoder\context-atlas"
-$target = Join-Path $PWD ".qoder"
-New-Item -ItemType Directory -Force $target | Out-Null
-Copy-Item (Join-Path $source "skills") (Join-Path $target "skills") -Recurse -Force
-Copy-Item (Join-Path $source "assets") (Join-Path $target "assets") -Recurse -Force
-Copy-Item (Join-Path $source "references") (Join-Path $target "references") -Recurse -Force
 ```
 
 安装后重启 Qoder，在输入框中输入 `/` 检查八个 Context Atlas Skill 是否出现。

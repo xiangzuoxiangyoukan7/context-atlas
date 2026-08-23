@@ -33,3 +33,16 @@ class MultiAgentPackageTests(unittest.TestCase):
             self.assertTrue((root / ".agents/assets/manifest.json").is_file())
             self.assertTrue((root / ".agents/references/执行状态机.md").is_file())
             self.assertFalse((root / "skills").exists())
+            self.assertTrue((root / "install.ps1").is_file())
+
+    def test_qoder_package_contains_marketplace_metadata(self) -> None:
+        """Qoder 包提供原生 Marketplace 所需的发布清单。"""
+
+        from scripts.build_plugin import build
+        import json
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = build(Path(directory) / "qoder", "qoder")
+            marketplace = json.loads((root / "marketplace.json").read_text(encoding="utf-8"))
+            self.assertEqual("context-atlas", marketplace["plugins"][0]["name"])
+            self.assertEqual("./", marketplace["plugins"][0]["source"])

@@ -80,6 +80,8 @@ py scripts/run_agent_conformance.py --compare build/agent-conformance/claude-sdd
 
 本轮结果：259 项自动化测试通过、1 项按设计跳过；Codex、Claude、Qoder、Trae 构建通过；知识库检查通过。Qoder 与 Trae 尚未运行真实 Agent 黑盒场景，故不宣称正式平台支持，后续验收项保持候选/`partial`。
 
+后续安装体验 Proposal `sha256:0752db6ea60860807d426fa1da9cdbe77f9567818e1c7f5988ac7415ae50399f` 已确认：Qoder 改用原生 Marketplace 项目级安装，Trae 使用一条命令的项目级安装器；本轮仅验证安装包结构和静态契约，正式发布前仍需真实安装验收。
+
 ## 验收项映射
 
 | 验收编号 | 证据 | 结果 |
@@ -103,4 +105,6 @@ py scripts/run_agent_conformance.py --compare build/agent-conformance/claude-sdd
 - `user_statement`：用户确认验收证据 Proposal `sha256:1c30b631239c59d131a9d6f0179c3328be668c55fa312444814f66517c7776d1`。
 - `repository_file`：Qoder/Trae 适配提交及其构建、契约测试和安装文档；实施 Proposal 为 `sha256:3b38dfa1ae77c3067f0d45a4c78a4a844c55af571001467ae7a2c5b4fc9113c6`。
 - `user_statement`：用户确认 Qoder/Trae 多 Agent 适配实施 Proposal。
+- `repository_file`：Qoder Marketplace 清单、Qoder 发布同步器、Trae 一键安装器及其测试；安装体验 Proposal 为 `sha256:0752db6ea60860807d426fa1da9cdbe77f9567818e1c7f5988ac7415ae50399f`。
+- `user_statement`：用户确认采用 Qoder Marketplace 与 Trae 一键安装方案。
 - 确认日期：2026-08-23。
