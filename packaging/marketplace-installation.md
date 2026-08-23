@@ -107,6 +107,7 @@ claude plugin install --scope project context-atlas@context-atlas
 本地开发时使用 Context Atlas 仓库的实际克隆路径；正式发布时 Codex 使用
 `context-atlas-codex-plugin`，Claude Code 使用 `context-atlas-claude-plugin`。无论来源是本地路径
 还是远程仓库，安装范围仍必须保持为目标项目级。
+正式发布时请使用发布仓库对应的 URL，不要把开发仓库路径当作生产 Marketplace 来源。
 
 ## 在目标项目中使用
 
