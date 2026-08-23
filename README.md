@@ -1,6 +1,45 @@
 # 脉络地图（Context Atlas）
 
-本项目规划一套供 AI Agent 使用的项目知识库能力。用户通过 Codex、ChatGPT、Claude Code 等 Agent 初始化和维护知识库；本项目提供工具无关的协议、完整模板、Schema、多技术栈样例和确定性检查器。
+本项目提供一套供 Codex、Claude Code、Qoder、Trae 等 Agent 使用的项目知识库能力；核心协议、完整模板、Schema、多技术栈样例和确定性检查器与具体 Agent 解耦。
+
+## 这个插件是做什么的
+
+Context Atlas 是一个面向项目的知识治理插件。它把项目中的架构、约束、变更、验收证据、数据库信息和来源追溯整理成可持续维护的 `doc-<项目名>/` 知识库，让不同 Agent 在同一个项目中读取同一套事实。
+
+它解决的不是“替 Agent 写代码”，而是解决以下问题：
+
+- 项目知识散落在 README、源码、Issue、设计文档和会话中，难以持续读取。
+- 不同 Agent 对项目结构和约束的理解不一致。
+- AI 生成的推测被误当成正式事实。
+- 知识写入缺少确认、来源、版本和校验边界。
+- 项目更换 Codex、Claude Code、Qoder 或 Trae 后，知识库需要重新维护。
+
+## 它是怎么做的
+
+Context Atlas 采用“一主多适配”架构：核心 Skill、协议、模板、Schema 和 Python 执行器只有一份；Codex、Claude Code、Qoder 和 Trae 只提供平台清单、安装入口、路径布局和命令映射。
+
+一次正式写入遵循固定状态机：
+
+```text
+inspect → propose → await_confirmation → apply → validate → report
+```
+
+Agent 负责调研、组织候选内容和展示 Proposal；用户负责确认；确定性执行器负责写入、版本、关系、来源和结构校验。没有用户明确确认，不会写入正式知识库。
+
+## 典型使用场景
+
+- 新项目初始化：扫描项目入口、源码、配置、测试和已有文档，生成初始化 Proposal。
+- 接手旧项目：先通过 `navigate` 逐层阅读知识目录，再查询相关邻接关系和有限关系图。
+- 需求或架构变化：使用 `add` 新增知识，使用 `revise` 修订或替代已有知识。
+- 事实失效：使用 `retire` 通过替代、归档或受控删除退役知识。
+- 外部资料进入项目：使用 `ingest` 读取明确来源，只生成候选路由，不直接写入正式知识。
+- 规格或健康检查：使用 `review` 做只读审查，不自动批准或修复。
+- 知识库格式变化：使用 `upgrade` 做结构和格式升级，不用它新增业务事实。
+- 多 Agent 协作：在同一个目标项目中分别使用 Codex、Claude Code、Qoder 或 Trae，它们读取同一个 `doc-<项目名>/`。
+
+## 当前版本
+
+当前统一插件版本为 `0.11.0`。四个平台共享同一版本号和产品名 `context-atlas`；平台发布包由当前源码仓库构建，不维护平台专属源码分叉。
 
 ## 入口
 
@@ -89,7 +128,7 @@ git -C D:\loong-workspace-python\context-atlas-codex-plugin push origin main
 py scripts/sync_to_claude_plugin.py `
   --destination D:\loong-workspace-python\context-atlas-claude-plugin
 git -C D:\loong-workspace-python\context-atlas-claude-plugin add --all
-git -C D:\loong-workspace-python\context-atlas-claude-plugin commit -m "release: context-atlas 0.10.0"
+git -C D:\loong-workspace-python\context-atlas-claude-plugin commit -m "release: context-atlas 0.11.0"
 git -C D:\loong-workspace-python\context-atlas-claude-plugin push origin main
 ```
 

@@ -1,10 +1,10 @@
 # Context Atlas for Trae
 
-这是由 Context Atlas 唯一源码仓库构建的 Trae Skill 包。Trae 从项目级 `.agents/skills/` 加载 Skill；本包同时携带 `.agents/assets/` 和 `.agents/references/`，保证运行时相对路径自包含。
+这是由 Context Atlas 唯一源码仓库构建的 Trae `0.11.0` Skill 包。Trae 从项目级 `.agents/skills/` 加载 Skill；本包同时携带 `.agents/assets/` 和 `.agents/references/`，保证运行时相对路径自包含。
 
 ## 项目级安装
 
-将构建包中的 `.agents/` 目录复制到目标项目根目录，或使用团队发布流程把该目录纳入目标项目。安装后重启 Trae，在 Skill 管理面板确认八个 Context Atlas Skill 已加载。
+必须安装到目标项目，不要写入用户级 Skill 目录。将构建包中的 `.agents/` 目录复制到目标项目根目录，或使用团队发布流程把该目录纳入目标项目。安装后重启 Trae，在 Skill 管理面板确认八个 Context Atlas Skill 已加载。
 
 ## 使用
 
