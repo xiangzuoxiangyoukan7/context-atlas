@@ -246,12 +246,28 @@ class PluginContractTests(unittest.TestCase):
             "claude plugin marketplace add --scope project",
             "claude plugin install --scope project",
             "默认 scope 是 `user`",
+            "context-atlas-qoder-plugin.git",
+            "qoder plugins marketplace add",
+            "qoder plugins install context-atlas@context-atlas",
+            "安装范围选择为 **Project**",
+            "团队首次启用检查",
+            "只存在一个 `doc-<项目目录名>/`",
+            "codex plugin marketplace upgrade context-atlas",
+            "codex plugin remove context-atlas@context-atlas",
+            "codex plugin list",
+            "marketplace add` 只用于首次登记",
+            "qoder plugins marketplace update context-atlas",
+            "qoder plugins update context-atlas@context-atlas",
+            "源码清单版本、Marketplace 远端版本和本地安装版本",
+            "八个 Skill 的用途如下",
+            "当前用户支持范围是 Codex、Claude Code 和 Qoder",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, combined)
 
         self.assertIn("Codex", guide)
         self.assertIn("Claude Code", guide)
+        self.assertIn("Qoder", guide)
         self.assertIn("Marketplace", guide)
 
     def test_scenario_guide_has_one_stable_template_source(self) -> None:

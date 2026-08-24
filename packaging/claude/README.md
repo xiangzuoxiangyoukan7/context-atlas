@@ -28,6 +28,19 @@ claude plugin install --scope project context-atlas@context-atlas
 
 正式写入前必须得到对应 Proposal 的明确确认；没有明确调用 Skill 的自然语言不能触发正式写入。
 
+## 升级插件
+
+在原目标项目中执行：
+
+```powershell
+claude plugin marketplace remove --scope project context-atlas
+claude plugin marketplace add --scope project `
+  https://github.com/xiangzuoxiangyoukan7/context-atlas-claude-plugin.git
+claude plugin install --scope project context-atlas@context-atlas
+```
+
+不要省略 `--scope project`。升级后新建 Claude Code 会话，并在插件管理界面确认实际安装版本。
+
 ## 项目级卸载
 
 ```powershell

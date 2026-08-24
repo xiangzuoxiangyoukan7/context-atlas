@@ -1,6 +1,6 @@
 # Marketplace 安装与使用
 
-Context Atlas 是 Agent Skill/插件，不是 Python 包，不需要 `pip install`。正式插件版本 `0.11.0` 在 Codex、Claude Code、Qoder 清单和 Trae 发布包中必须保持一致。仓库根目录是唯一插件源码；
+Context Atlas 是 Agent Skill/插件，不是 Python 包，不需要 `pip install`。当前用户支持范围是 Codex、Claude Code 和 Qoder；三平台源码清单版本必须保持一致。仓库根目录是唯一插件源码；
 `.agents/plugins/marketplace.json` 是 Codex Marketplace 索引，`.claude-plugin/marketplace.json`
 是 Claude Code Marketplace 索引，两者都指向根目录中的同一份 `context-atlas` Skill。
 
@@ -10,7 +10,6 @@ Context Atlas 是 Agent Skill/插件，不是 Python 包，不需要 `pip instal
 py scripts/build_plugin.py claude --output build/claude/context-atlas
 py scripts/build_plugin.py codex --output build/codex/context-atlas.zip --archive
 py scripts/build_plugin.py qoder --output build/qoder/context-atlas
-py scripts/build_plugin.py trae --output build/trae/context-atlas
 ```
 
 开发仓库不作为 Skill 运行目录。模板、Schema、脚本、规则、操作定义和兼容策略均只在各自根目录维护；
@@ -94,32 +93,26 @@ qoder plugins install context-atlas@context-atlas
 
 然后重启 Qoder，在输入框中输入 `/`，确认八个 Context Atlas Skill 已加载。不要把源码仓库中的 `skills/` 单独复制到用户目录。
 
-## Trae（项目级 Skill）
-
-Trae 从项目级 `.agents/skills/` 加载 Skill。Trae 构建包把共享 Skill、运行资产和引用资料分别放在 `.agents/skills/`、`.agents/assets/` 和 `.agents/references/`，以保持安装后的相对路径有效。
-
-在目标项目根目录执行一条安装命令：
-
-```powershell
-irm https://raw.githubusercontent.com/xiangzuoxiangyoukan7/context-atlas/v0.11.0/packaging/trae/install.ps1 | iex
-```
-
-安装器下载完整 Trae 包，备份已有受管 `.agents/` 目录，再安装 `skills/`、`assets/` 和 `references/`。重启 Trae后，在 Skill 管理面板确认八个 Context Atlas Skill 已加载。当前 Trae 官方入口仍是项目级 Skill 目录；该脚本是 Context Atlas 的一键兼容安装入口。
-
 ## 更新已安装插件
 
-Codex 本地 Marketplace 更新时，在目标项目的隔离环境中重新登记并安装：
+### Codex
+
+`marketplace add` 只用于首次登记；当命令报告 `already added` 时不会刷新旧快照。更新时在目标项目的隔离环境中执行：
 
 ```powershell
 cd D:\你的目标项目
 $env:CODEX_HOME = (Join-Path $PWD ".codex")
-codex plugin remove context-atlas@context-atlas-dev
-codex plugin marketplace remove context-atlas-dev
-codex plugin marketplace add D:\loong-workspace-python\context-atlas
-codex plugin add context-atlas@context-atlas-dev
+codex plugin marketplace upgrade context-atlas
+codex plugin remove context-atlas@context-atlas
+codex plugin add context-atlas@context-atlas
+codex plugin list
 ```
 
-Claude Code 正式发布仓库为 `context-atlas-claude-plugin`，使用原生项目级更新：
+`marketplace upgrade` 只刷新插件源；删除并重新安装后，才会替换插件缓存。以 `codex plugin list` 显示的版本为最终结果。
+
+### Claude Code
+
+Claude Code 正式发布仓库为 `context-atlas-claude-plugin`，使用项目级更新：
 
 ```powershell
 cd D:\你的目标项目
@@ -129,25 +122,21 @@ claude plugin marketplace add --scope project `
 claude plugin install --scope project context-atlas@context-atlas
 ```
 
-Qoder 使用原生 Marketplace 项目级更新：
+### Qoder
+
+Qoder 使用原生 Marketplace 项目级更新，并确保 Marketplace 当前选择的是 Project 范围：
 
 ```powershell
 qoder plugins marketplace update context-atlas
 qoder plugins update context-atlas@context-atlas
 ```
 
-Trae 更新时在目标项目根目录重新执行同一条安装命令；安装器会先备份现有受管目录，再安装新版本：
-
-```powershell
-irm https://raw.githubusercontent.com/xiangzuoxiangyoukan7/context-atlas/v0.11.0/packaging/trae/install.ps1 | iex
-```
-
-更新后必须新建 Agent 会话，旧会话不会重新载入 Skill。
+三个平台更新后都必须新建 Agent 会话，使会话重新加载 Skill；还要在宿主插件管理界面或列表命令中检查实际安装版本。源码清单版本、Marketplace 远端版本和本地安装版本是三个不同状态，不能相互代替。
 
 本地开发时使用 Context Atlas 仓库的实际克隆路径；正式发布时 Codex 使用
 `context-atlas-codex-plugin`，Claude Code 使用 `context-atlas-claude-plugin`。无论来源是本地路径
 还是远程仓库，安装范围仍必须保持为目标项目级。
-Qoder 和 Trae 使用同一源码仓库构建，不创建新的源码仓库；只有平台明确要求独立发布镜像时，才由同步脚本生成镜像。
+Qoder 使用同一源码仓库构建，不创建新的源码分叉；只有平台明确要求独立发布镜像时，才由同步脚本生成镜像。Trae 适配保留为内部候选，不属于当前用户支持范围。
 正式发布时请使用发布仓库对应的 URL，不要把开发仓库路径当作生产 Marketplace 来源。
 
 ## 在目标项目中使用
@@ -162,6 +151,7 @@ Qoder 和 Trae 使用同一源码仓库构建，不创建新的源码仓库；�
 $context-atlas-init
 $context-atlas-navigate
 $context-atlas-review
+$context-atlas-ingest
 $context-atlas-add
 $context-atlas-revise
 $context-atlas-retire
@@ -183,6 +173,32 @@ Claude Code 使用带插件命名空间的原生命令：
 
 Claude Code 的命令面板在名称可唯一解析时，可能显示或接受不带 Marketplace 前缀的短形式，例如 `/context-atlas-init`；会话记录仍可能展开成 `/context-atlas:context-atlas-init`。这两种显示指向同一个 Skill，以当前安装后的命令面板补全为准。
 
+Qoder 使用不带插件命名空间的斜杠命令：
+
+```text
+/context-atlas-init
+/context-atlas-navigate
+/context-atlas-review
+/context-atlas-ingest
+/context-atlas-add
+/context-atlas-revise
+/context-atlas-retire
+/context-atlas-upgrade
+```
+
+八个 Skill 的用途如下：
+
+| 需要做什么 | Skill | 是否可能写入正式知识 |
+| --- | --- | --- |
+| 首次建立 `doc-<项目名>/` | `context-atlas-init` | 展示 Proposal 并确认后写入 |
+| 逐层读取目录、邻接关系和受限关系图 | `context-atlas-navigate` | 否，只读 |
+| 审查规格或知识健康状态 | `context-atlas-review` | 否，只读 |
+| 读取一个或一批明确来源并生成维护路由 | `context-atlas-ingest` | 否，只生成候选 |
+| 新增正式知识 | `context-atlas-add` | 展示 Proposal 并确认后写入 |
+| 修订、同步或替代已有知识 | `context-atlas-revise` | 展示 Proposal 并确认后写入 |
+| 替代、归档或受控删除失效知识 | `context-atlas-retire` | 展示 Proposal 并确认后写入 |
+| 只升级知识库格式和结构 | `context-atlas-upgrade` | 展示 Proposal 并确认后写入 |
+
 `init`、`add`、`revise`、`retire` 和 `upgrade` 是相互独立的正式写入入口：`add` 新增知识，`revise` 修订、同步或替代知识，`retire` 通过替代、归档或受控删除退役知识，`upgrade` 只升级知识库格式和结构。通用 `update` Skill 已删除，不作为兼容入口。`navigate` 只读支持逐层目录浏览、一跳正反向邻接查询，以及有深度和节点数量边界的关系图查询，不生成 Proposal，并由 Agent 决定是否读取候选文件正文。完整图只有在明确需要全局分析时才查询，不作为会话默认上下文。没有固定写入操作符的自然语言不能触发正式写入。写入命令会先生成
 Proposal，只有用户明确确认后才执行；底层 Python 参数由插件负责，不作为用户接口。
 
@@ -192,4 +208,4 @@ Proposal，只有用户明确确认后才执行；底层 Python 参数由插件�
 
 Marketplace 清单和共享 Skill 契约已通过自动检查。Codex 执行链路已验证；Claude Code 当前真实确认后
 初始化验收仍为 **partial**，因此不能表述为双平台完全通过。详见[验收矩阵](../doc-atlas/03-变更与证据/验收矩阵.md)
-及其中的跨 Agent 验收证据。Qoder 与 Trae 已完成构建包、资产路径和静态契约检查，真实 Agent 场景尚未完成，当前保持候选适配状态。
+及其中的跨 Agent 验收证据。Qoder 已完成构建包、资产路径和静态契约检查，真实 Agent 场景尚未完成；用户将继续完成 Claude Code、Codex、Qoder 的真实安装、升级和行为验证。
