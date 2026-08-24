@@ -73,6 +73,10 @@ class InitializationContractTests(InstalledPluginTestCase):
         )
 
         self.assertEqual("initialized", report.operation)
+        temporary_root = self.root / ".context-atlas-tmp"
+        self.assertTrue(temporary_root.is_dir())
+        self.assertEqual([], list(temporary_root.iterdir()))
+        self.assertEqual([], list(self.root.glob(".doc-*.initializing-*")))
         self.assertEqual("passed", report.validation.result)
         self.assertEqual("python_executor", report.execution.mode)
         self.assertEqual("deterministic_executor", report.validation.authority)
