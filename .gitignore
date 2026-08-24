@@ -7,5 +7,8 @@ __pycache__/
 build/
 .context-atlas-claude-*/
 .context-atlas-codex-*/
-.codex/plugins/
+# Codex project configuration is shareable; runtime state, credentials,
+# caches, installed plugins, sessions, databases, and logs stay local.
+.codex/*
+!.codex/config.toml
 

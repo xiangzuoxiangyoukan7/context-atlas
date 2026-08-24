@@ -6,3 +6,16 @@ sandbox_mode = "workspace-write"
 
   [mcp_servers.pycharm]
     url = "http://127.0.0.1:64462/stream"
+
+[marketplaces.context-atlas]
+source_type = "git"
+source = "https://github.com/xiangzuoxiangyoukan7/context-atlas-codex-plugin.git"
+
+[plugins."context-atlas@context-atlas"]
+enabled = true
+
+[projects.'d:\loong-workspace-python\context-atlas']
+trust_level = "trusted"
+
+[windows]
+sandbox = "elevated"

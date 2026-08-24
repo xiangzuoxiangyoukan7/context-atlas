@@ -4,21 +4,31 @@
     "type": "split",
     "children": [
       {
-        "id": "b51318f733c72209",
+        "id": "4e4c7db523830e6f",
         "type": "tabs",
         "children": [
           {
-            "id": "13d4c8a732596b33",
+            "id": "532bea24fb30cf8f",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "05-知识治理/文档元数据规范.md",
+                "file": "03-变更与证据/变更/Delta/TEMPLATE.md",
                 "mode": "source",
-                "source": false
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
               },
               "icon": "lucide-file",
-              "title": "文档元数据规范"
+              "title": "TEMPLATE"
             }
           }
         ]
@@ -99,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "05-知识治理/文档元数据规范.md",
+                "file": "03-变更与证据/变更/Delta/TEMPLATE.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +128,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "05-知识治理/文档元数据规范.md",
+                "file": "03-变更与证据/变更/Delta/TEMPLATE.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +171,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "05-知识治理/文档元数据规范.md",
+                "file": "03-变更与证据/变更/Delta/TEMPLATE.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -188,13 +198,17 @@
       "bases:新建数据库": false
     }
   },
-  "active": "13d4c8a732596b33",
+  "active": "9e0c5cfff008b20b",
   "lastOpenFiles": [
+    "未命名 1.base",
+    "未命名.md",
+    "README.md",
+    "未命名.base",
+    "05-知识治理/文档元数据规范.md",
     "90-历史归档/README.md",
     "90-历史归档/实施任务包/TASK-KB-013-需求契约与数据库结构重构.md",
     "90-历史归档/实施任务包/TASK-F01-001-Agent知识库Skill.md",
     "Clippings/搜索.md",
-    "README.md",
     "03-变更与证据/验收证据/外部来源文件受管保存.md",
     "03-变更与证据/验收契约/F02-AC-07-外部来源文件受管保存.md",
     "02-架构与契约/独立契约/CONTRACT-SOURCE-001-受管来源文件契约.md",
@@ -213,9 +227,6 @@
     "04-决策记录/ADR-007-增强摄取与知识健康治理.md",
     "00-项目总览/README.md",
     "00-项目总览/项目概述.md",
-    "00-项目总览/术语表.md",
-    "01-功能基线/能力地图.md",
-    "03-变更与证据/变更/TEMPLATE.md",
-    "03-变更与证据/变更/README.md"
+    "00-项目总览/术语表.md"
   ]
 }
