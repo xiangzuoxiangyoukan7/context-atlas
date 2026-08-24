@@ -119,6 +119,26 @@ class SkillPackageTests(unittest.TestCase):
         ):
             self.assertIn(command, content)
 
+    def test_init_skill_requires_interactive_workspace_profile_selection(self) -> None:
+        """交互式初始化不得在用户未选择时静默使用 standard。"""
+
+        skill = (
+            self.plugin_root / "skills/context-atlas-init/SKILL.md"
+        ).read_text(encoding="utf-8")
+        protocol = (self.references_root / "初始化协议.md").read_text(encoding="utf-8")
+        for phrase in (
+            "proactively offer exactly these two user-facing choices",
+            "Do not silently choose `standard`",
+            "Always include the selected `project.workspace_profile`",
+        ):
+            self.assertIn(phrase, skill)
+        for phrase in (
+            "proactively present `standard`",
+            "Do not silently default the interactive workflow",
+            "Always record the selected value in `project.workspace_profile`",
+        ):
+            self.assertIn(phrase, protocol)
+
     def test_skill_resolves_python_three_portably(self) -> None:
         """Skill 必须优先使用平台原生 Python 3 启动方式并报告探测结果。"""
 
