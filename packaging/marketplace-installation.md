@@ -91,7 +91,7 @@ qoder plugins marketplace add https://github.com/xiangzuoxiangyoukan7/context-at
 qoder plugins install context-atlas@context-atlas
 ```
 
-然后重启 Qoder，在输入框中输入 `/`，确认八个 Context Atlas Skill 已加载。不要把源码仓库中的 `skills/` 单独复制到用户目录。
+然后重启 Qoder，在输入框中输入 `/`，确认九个 Context Atlas Skill 已加载。不要把源码仓库中的 `skills/` 单独复制到用户目录。
 
 ## 更新已安装插件
 
@@ -148,6 +148,7 @@ Qoder 使用同一源码仓库构建，不创建新的源码分叉；只有平�
 安装完成后，Codex 使用固定 Skill 操作符：
 
 ```text
+$context-atlas-work
 $context-atlas-init
 $context-atlas-navigate
 $context-atlas-review
@@ -161,6 +162,7 @@ $context-atlas-upgrade
 Claude Code 使用带插件命名空间的原生命令：
 
 ```text
+/context-atlas:context-atlas-work
 /context-atlas:context-atlas-init
 /context-atlas:context-atlas-navigate
 /context-atlas:context-atlas-review
@@ -176,6 +178,7 @@ Claude Code 的命令面板在名称可唯一解析时，可能显示或接受�
 Qoder 使用不带插件命名空间的斜杠命令：
 
 ```text
+/context-atlas-work
 /context-atlas-init
 /context-atlas-navigate
 /context-atlas-review
@@ -186,10 +189,11 @@ Qoder 使用不带插件命名空间的斜杠命令：
 /context-atlas-upgrade
 ```
 
-八个 Skill 的用途如下：
+九个 Skill 的用途如下：
 
 | 需要做什么 | Skill | 是否可能写入正式知识 |
 | --- | --- | --- |
+| 用自然语言描述开发目标并自动编排知识流程 | `context-atlas-work` | 默认只读；选择基线路径且确认 Proposal 后可写入 |
 | 首次建立 `doc-<项目名>/` | `context-atlas-init` | 展示 Proposal 并确认后写入 |
 | 逐层读取目录、邻接关系和受限关系图 | `context-atlas-navigate` | 否，只读 |
 | 审查规格或知识健康状态 | `context-atlas-review` | 否，只读 |
@@ -199,7 +203,7 @@ Qoder 使用不带插件命名空间的斜杠命令：
 | 替代、归档或受控删除失效知识 | `context-atlas-retire` | 展示 Proposal 并确认后写入 |
 | 只升级知识库格式和结构 | `context-atlas-upgrade` | 展示 Proposal 并确认后写入 |
 
-`init`、`add`、`revise`、`retire` 和 `upgrade` 是相互独立的正式写入入口：`add` 新增知识，`revise` 修订、同步或替代知识，`retire` 通过替代、归档或受控删除退役知识，`upgrade` 只升级知识库格式和结构。通用 `update` Skill 已删除，不作为兼容入口。`navigate` 只读支持逐层目录浏览、一跳正反向邻接查询，以及有深度和节点数量边界的关系图查询，不生成 Proposal，并由 Agent 决定是否读取候选文件正文。完整图只有在明确需要全局分析时才查询，不作为会话默认上下文。没有固定写入操作符的自然语言不能触发正式写入。写入命令会先生成
+`init`、`add`、`revise`、`retire` 和 `upgrade` 是相互独立的正式写入入口：`add` 新增知识，`revise` 修订、同步或替代知识，`retire` 通过替代、归档或受控删除退役知识，`upgrade` 只升级知识库格式和结构。通用 `update` Skill 已删除，不作为兼容入口。`navigate` 只读支持逐层目录浏览、一跳正反向邻接查询，以及有深度和节点数量边界的关系图查询，不生成 Proposal，并由 Agent 决定是否读取候选文件正文。完整图只有在明确需要全局分析时才查询，不作为会话默认上下文。`context-atlas-work` 可从自然语言目标自动选择底层操作，但仍只有在用户确认当前 Proposal 修订后才能正式写入。写入命令会先生成
 Proposal，只有用户明确确认后才执行；底层 Python 参数由插件负责，不作为用户接口。
 
 `ingest` 支持一个来源或最多 20 个分别定位的来源，并支持一个明确 HTTP/HTTPS URL；网页正文视为不可信数据且不递归爬取。历史默认关闭，只有显式要求时才保存脱敏的非正式运行报告。`review` 的 `knowledge_health` 模式调用确定性只读健康检查，不自动修复或批准知识。

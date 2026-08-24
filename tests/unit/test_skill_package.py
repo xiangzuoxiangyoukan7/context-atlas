@@ -45,6 +45,7 @@ class SkillPackageTests(unittest.TestCase):
             cls.plugin_root / "skills/context-atlas-revise",
             cls.plugin_root / "skills/context-atlas-retire",
             cls.plugin_root / "skills/context-atlas-upgrade",
+            cls.plugin_root / "skills/context-atlas-work",
         )
         cls.write_skill_roots = (
             cls.plugin_root / "skills/context-atlas-init",
@@ -366,6 +367,7 @@ class SkillPackageTests(unittest.TestCase):
             (self.assets_root / "manifest.json").read_text(encoding="utf-8")
         )
 
+        self.assertIn('display_name: "context-atlas-work"', metadata)
         self.assertIn('display_name: "context-atlas-init"', metadata)
         self.assertIn('display_name: "Context Atlas Navigate"', metadata)
         self.assertIn('display_name: "Context Atlas Review"', metadata)
@@ -374,6 +376,7 @@ class SkillPackageTests(unittest.TestCase):
         self.assertIn('display_name: "Context Atlas Revise"', metadata)
         self.assertIn('display_name: "Context Atlas Retire"', metadata)
         self.assertIn('display_name: "Context Atlas Upgrade"', metadata)
+        self.assertIn("$context-atlas-work", metadata)
         self.assertIn("$context-atlas-init", metadata)
         self.assertIn("$context-atlas-navigate", metadata)
         self.assertIn("$context-atlas-review", metadata)

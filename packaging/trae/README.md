@@ -10,13 +10,14 @@
 irm https://raw.githubusercontent.com/xiangzuoxiangyoukan7/context-atlas/v0.11.0/packaging/trae/install.ps1 | iex
 ```
 
-安装器会下载完整 Trae 包，备份目标项目已有的受管 `.agents/` 目录，再安装 `skills/`、`assets/` 和 `references/`。安装后重启 Trae，在 Skill 管理面板确认八个 Context Atlas Skill 已加载。
+安装器会下载完整 Trae 包，备份目标项目已有的受管 `.agents/` 目录，再安装 `skills/`、`assets/` 和 `references/`。安装后重启 Trae，在 Skill 管理面板确认九个 Context Atlas Skill 已加载。
 
 ## 使用
 
 可直接用自然语言请求，或在支持斜杠命令的 Trae 版本中使用对应 Skill 名称：
 
 ```text
+请使用 context-atlas-work 自动编排当前开发目标的知识流程
 请使用 context-atlas-init 初始化当前项目知识库
 请使用 context-atlas-navigate 导航当前知识库
 请使用 context-atlas-review 审查当前知识库

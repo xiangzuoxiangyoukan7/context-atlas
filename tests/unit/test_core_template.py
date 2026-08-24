@@ -22,6 +22,7 @@ class CoreTemplateTests(TempDirectoryTestCase):
         guide = (root / "05-知识治理/使用场景.md").read_text(encoding="utf-8")
 
         for phrase in (
+            "context-atlas-work",
             "context-atlas-init",
             "context-atlas-navigate",
             "context-atlas-review",

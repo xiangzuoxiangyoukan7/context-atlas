@@ -14,6 +14,7 @@ claude plugin install --scope project context-atlas@context-atlas
 安装后新建 Claude Code 会话，然后使用：
 
 ```text
+/context-atlas:context-atlas-work
 /context-atlas:context-atlas-init
 /context-atlas:context-atlas-navigate
 /context-atlas:context-atlas-review
@@ -26,7 +27,7 @@ claude plugin install --scope project context-atlas@context-atlas
 
 命令面板可能把可唯一解析的命令显示为 `/context-atlas-init` 等短形式；会话记录中的 `/context-atlas:context-atlas-init` 是同一 Skill 的原生命名空间形式。
 
-正式写入前必须得到对应 Proposal 的明确确认；没有明确调用 Skill 的自然语言不能触发正式写入。
+普通开发目标可由 `context-atlas-work` 自动编排；正式写入前仍必须得到对应 Proposal 当前修订的明确确认。
 
 ## 升级插件
 

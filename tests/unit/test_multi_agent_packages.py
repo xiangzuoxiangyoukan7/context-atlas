@@ -18,6 +18,7 @@ class MultiAgentPackageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = build(Path(directory) / "qoder", "qoder")
             self.assertTrue((root / ".qoder-plugin/plugin.json").is_file())
+            self.assertTrue((root / "skills/context-atlas-work/SKILL.md").is_file())
             self.assertTrue((root / "skills/context-atlas-init/SKILL.md").is_file())
             self.assertTrue((root / "assets/manifest.json").is_file())
             self.assertTrue((root / "references/执行状态机.md").is_file())
@@ -29,6 +30,7 @@ class MultiAgentPackageTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             root = build(Path(directory) / "trae", "trae")
+            self.assertTrue((root / ".agents/skills/context-atlas-work/SKILL.md").is_file())
             self.assertTrue((root / ".agents/skills/context-atlas-init/SKILL.md").is_file())
             self.assertTrue((root / ".agents/assets/manifest.json").is_file())
             self.assertTrue((root / ".agents/references/执行状态机.md").is_file())

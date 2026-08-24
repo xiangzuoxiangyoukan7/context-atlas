@@ -16,7 +16,7 @@ Context Atlas 是一个面向项目的知识治理插件。它把项目中的架
 
 适合使用 Context Atlas 的项目通常需要多人或多个 Agent 长期协作，希望需求、设计、接口、数据库、决策和验收证据能够持续更新并追溯来源。它不替代需求管理、开发计划、编码工具和人工验收。
 
-当前源码清单版本为 `0.11.2`。源码清单版本不等于各 Marketplace 已发布版本，安装或升级后必须以宿主实际显示的版本为准。
+当前源码清单版本为 `0.11.3`。源码清单版本不等于各 Marketplace 已发布版本，安装或升级后必须以宿主实际显示的版本为准。
 
 ## 2. 总体设计
 
@@ -386,7 +386,7 @@ Context Atlas 不阻止用户开始开发，但建议先用 `navigate` 查询影
 
 ### 当前版本
 
-当前源码清单版本为 `0.11.2`，Codex、Claude Code 和 Qoder 共享产品名 `context-atlas`。源码清单版本不等于各 Marketplace 已发布版本；安装或升级后必须以宿主实际显示的版本为准。平台发布包由当前源码仓库构建，不维护平台专属源码分叉。
+当前源码清单版本为 `0.11.3`，Codex、Claude Code 和 Qoder 共享产品名 `context-atlas`。源码清单版本不等于各 Marketplace 已发布版本；安装或升级后必须以宿主实际显示的版本为准。平台发布包由当前源码仓库构建，不维护平台专属源码分叉。
 
 ### 文档与源码入口
 
@@ -395,6 +395,7 @@ Context Atlas 不阻止用户开始开发，但建议先用 `navigate` 查询影
 - [核心 Schema](./schemas/README.md)
 - [Schema 逐文件字段说明](./schemas/字段说明.md)
 - [知识库检查器](./scripts/check_knowledge_base.py)
+- [开发工作编排 Skill](./skills/context-atlas-work/SKILL.md)
 - [初始化 Skill](./skills/context-atlas-init/SKILL.md)
 - [渐进导航 Skill](./skills/context-atlas-navigate/SKILL.md)
 - [规格审查 Skill](./skills/context-atlas-review/SKILL.md)
@@ -415,9 +416,9 @@ Codex Marketplace 位于 `.agents/plugins/marketplace.json`，Claude Code Market
 
 插件只支持安装到目标项目：Claude Code 必须使用 `--scope project`；Codex 当前没有原生 scope 参数，
 必须把 `CODEX_HOME` 指向目标项目的 `.codex/`，并在同一环境下安装和启动 Codex。不要省略项目隔离参数。
-安装后，Codex 使用 `$context-atlas-init`、`$context-atlas-navigate`、`$context-atlas-review`、`$context-atlas-ingest`、`$context-atlas-add`、`$context-atlas-revise`、`$context-atlas-retire`、`$context-atlas-upgrade`。Claude Code 的原生命令使用插件命名空间，例如
+安装后，普通开发目标优先由 `$context-atlas-work` 自动编排；Codex 也可精确使用 `$context-atlas-init`、`$context-atlas-navigate`、`$context-atlas-review`、`$context-atlas-ingest`、`$context-atlas-add`、`$context-atlas-revise`、`$context-atlas-retire`、`$context-atlas-upgrade`。Claude Code 的原生命令使用插件命名空间，例如
 `/context-atlas:context-atlas-init`、`/context-atlas:context-atlas-navigate`；命令面板可能把已唯一解析的命令显示或补全为 `/context-atlas-init`。以面板实际补全结果为准，不要把显示别名当成另一个 Skill。两个平台共用同一组 Skills，不发布 `commands/`；
-没有明确调用对应 Skill 的自然语言不得触发知识库写入。
+`context-atlas-work` 可从自然语言目标自动选择读取和维护路由，但正式知识写入仍必须等待用户确认当前 Proposal 修订。
 
 Qoder 适配包也从同一源码仓库构建，使用 `.qoder-plugin/plugin.json`。完整的三平台安装、使用、升级步骤和当前验收状态见[Marketplace 安装与使用](./packaging/marketplace-installation.md)。Trae 适配仍保留为内部候选，不属于当前用户支持范围。
 
@@ -446,7 +447,7 @@ claude plugin marketplace add --scope project `
 claude plugin install --scope project context-atlas@context-atlas
 ```
 
-安装后新建 Claude Code 会话，在命令面板确认 `/context-atlas:context-atlas-init` 等八个命令可用。不得省略 `--scope project`，否则可能安装到用户范围。
+安装后新建 Claude Code 会话，在命令面板确认 `/context-atlas:context-atlas-work` 等九个命令可用。不得省略 `--scope project`，否则可能安装到用户范围。
 
 升级已有 Claude Code 插件：
 
@@ -473,7 +474,7 @@ codex plugin add context-atlas@context-atlas
 codex
 ```
 
-新建 Codex 会话后确认 `$context-atlas-init` 等八个 Skill 可用。以后从新终端进入该业务仓库时，也必须先设置相同的 `CODEX_HOME` 再启动 Codex。
+新建 Codex 会话后确认 `$context-atlas-work` 等九个 Skill 可用。以后从新终端进入该业务仓库时，也必须先设置相同的 `CODEX_HOME` 再启动 Codex。
 
 升级已有 Codex 插件不能再次使用 `marketplace add`；必须先刷新 Marketplace，再替换旧安装：
 
@@ -498,7 +499,7 @@ qoder plugins marketplace add `
 qoder plugins install context-atlas@context-atlas
 ```
 
-重启 Qoder，在输入框中输入 `/`，确认 `/context-atlas-init` 等八个 Skill 已加载。不要安装到用户级 `~/.qoder/skills/`，也不要只复制源码仓库中的 `skills/`。
+重启 Qoder，在输入框中输入 `/`，确认 `/context-atlas-work` 等九个 Skill 已加载。不要安装到用户级 `~/.qoder/skills/`，也不要只复制源码仓库中的 `skills/`。
 
 升级已有 Qoder 插件时，仍须确认当前 Marketplace 范围为 **Project**：
 
@@ -507,14 +508,14 @@ qoder plugins marketplace update context-atlas
 qoder plugins update context-atlas@context-atlas
 ```
 
-升级后重启 Qoder，在插件管理界面确认实际版本，并再次检查八个 Skill。
+升级后重启 Qoder，在插件管理界面确认实际版本，并再次检查九个 Skill。
 
 #### 团队首次启用检查
 
 每位开发者安装后都应在同一个业务仓库中完成以下检查：
 
 1. 三个平台显示的 Context Atlas 版本与团队准备验证的目标版本一致；不能用源码清单版本代替实际安装版本。
-2. 初始化、导航、审查、摄取、新增、修订、退役和升级八个 Skill 全部可见。
+2. 开发工作编排、初始化、导航、审查、摄取、新增、修订、退役和升级九个 Skill 全部可见。
 3. 仓库中只存在一个 `doc-<项目目录名>/`，并将其纳入 Git；不得按 Agent 分成三套知识库。
 4. Codex、Qoder 使用 `AGENTS.md`，Claude Code 使用 `CLAUDE.md`；两个入口都指向同一个知识库和协作规则。
 5. 任一 Agent 正式写入前都必须展示 Proposal，并由用户明确确认；Git 分支、PR 和合并冲突仍按团队原有流程处理。
@@ -574,7 +575,7 @@ git -C D:\loong-workspace-python\context-atlas-codex-plugin push origin main
 py scripts/sync_to_claude_plugin.py `
   --destination D:\loong-workspace-python\context-atlas-claude-plugin
 git -C D:\loong-workspace-python\context-atlas-claude-plugin add --all
-git -C D:\loong-workspace-python\context-atlas-claude-plugin commit -m "release: context-atlas 0.11.2"
+git -C D:\loong-workspace-python\context-atlas-claude-plugin commit -m "release: context-atlas 0.11.3"
 git -C D:\loong-workspace-python\context-atlas-claude-plugin push origin main
 ```
 
@@ -584,7 +585,7 @@ git -C D:\loong-workspace-python\context-atlas-claude-plugin push origin main
 py scripts/sync_to_qoder_plugin.py `
   --destination D:\loong-workspace-python\context-atlas-qoder-plugin
 git -C D:\loong-workspace-python\context-atlas-qoder-plugin add --all
-git -C D:\loong-workspace-python\context-atlas-qoder-plugin commit -m "release: context-atlas 0.11.2"
+git -C D:\loong-workspace-python\context-atlas-qoder-plugin commit -m "release: context-atlas 0.11.3"
 git -C D:\loong-workspace-python\context-atlas-qoder-plugin push origin main
 ```
 
