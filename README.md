@@ -80,6 +80,16 @@ Qoder 适配包也从同一源码仓库构建，使用 `.qoder-plugin/plugin.jso
 
 以下命令都应在需要使用 Context Atlas 的业务仓库根目录执行，而不是在本源码仓库中执行。
 
+安装时可以按所在网络选择一个发布源：
+
+| 平台 | GitHub 公网源 | SuperMap 内网源 |
+| --- | --- | --- |
+| Claude Code | `https://github.com/xiangzuoxiangyoukan7/context-atlas-claude-plugin.git` | `http://sc.supermap.com/customDP/sh/public/framework/ai/plugins/context-atlas-claude-plugin.git` |
+| Codex | `https://github.com/xiangzuoxiangyoukan7/context-atlas-codex-plugin.git` | `http://sc.supermap.com/customDP/sh/public/framework/ai/plugins/context-atlas-codex-plugin.git` |
+| Qoder | `https://github.com/xiangzuoxiangyoukan7/context-atlas-qoder-plugin.git` | `http://sc.supermap.com/customDP/sh/public/framework/ai/plugins/context-atlas-qoder-plugin.git` |
+
+下面示例默认使用 GitHub 公网源；在 SuperMap 内网使用时，只需把对应的 GitHub URL 替换为表中的 SuperMap URL，后续插件名和升级命令不变。同一项目、同一平台只选择一个源，不要同时添加两个同名的 `context-atlas` Marketplace。SuperMap 地址使用 HTTP，只应在可信内网中使用。
+
 #### 开发者 1：Claude Code
 
 ```powershell
