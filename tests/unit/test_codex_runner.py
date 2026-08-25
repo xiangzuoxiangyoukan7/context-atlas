@@ -7,7 +7,7 @@ import json
 import subprocess
 import tempfile
 import unittest
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -71,7 +71,7 @@ class ProposalRecordingProcess(RecordingProcess):
 def _now() -> datetime:
     """返回稳定 UTC 时间。"""
 
-    return datetime(2026, 8, 13, 14, 0, tzinfo=UTC)
+    return datetime(2026, 8, 13, 14, 0, tzinfo=timezone.utc)
 
 
 class CodexRunnerTests(unittest.TestCase):

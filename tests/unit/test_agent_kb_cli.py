@@ -30,7 +30,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         """格式诊断应明确当前版本是否可写及是否需要转换。"""
 
         (self.root / "knowledge-base.yaml").write_text(
-            "project_version: 1.0.0\nformat_version: 7\n", encoding="utf-8"
+            "project_version: 1.0.0\nformat_version: 8\n", encoding="utf-8"
         )
 
         exit_code, payload = self._run(
@@ -121,6 +121,8 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         self.assertEqual(0, exit_code)
         self.assertEqual("updated", payload["operation"])
         self.assertEqual("# 已确认更新\n", (target / "README.md").read_text(encoding="utf-8"))
+        self.assertIn("knowledge_revision: 2", (target / "knowledge-base.yaml").read_text(encoding="utf-8"))
+        self.assertIn("knowledge-base.yaml", payload["changed_files"])
 
     def test_update_rolls_back_when_validator_raises(self) -> None:
         """校验器异常时也必须恢复既有文件并移除本次新增文件。"""
@@ -156,6 +158,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
 
         self.assertEqual(original, readme.read_bytes())
         self.assertFalse((target / "新增.md").exists())
+        self.assertIn("knowledge_revision: 1", (target / "knowledge-base.yaml").read_text(encoding="utf-8"))
 
     def test_capture_creates_proposed_knowledge_only(self) -> None:
         """捕获命令应写入待确认队列并返回提案路径。"""
@@ -283,7 +286,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         """旧格式诊断命令仅作为兼容别名继续工作。"""
 
         (self.root / "knowledge-base.yaml").write_text(
-            "project_version: 1.0.0\nformat_version: 7\n", encoding="utf-8"
+            "project_version: 1.0.0\nformat_version: 8\n", encoding="utf-8"
         )
 
         exit_code, payload = self._run(

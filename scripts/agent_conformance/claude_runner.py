@@ -6,7 +6,7 @@ import json
 import shutil
 import subprocess
 import tempfile
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Protocol
 
@@ -34,7 +34,7 @@ class Clock(Protocol):
 def _utc_now() -> datetime:
     """返回当前 UTC 时间作为可序列化的运行时间。"""
 
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 
 def resolve_claude_executable() -> str:

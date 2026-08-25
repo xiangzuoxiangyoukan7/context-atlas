@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from email.message import Message
 import json
 from pathlib import Path
@@ -98,7 +98,7 @@ class IngestEnhancementTests(unittest.TestCase):
 
         snapshot = fetch_web_snapshot(
             "https://8.8.8.8/source",
-            observed_at=datetime(2026, 8, 22, tzinfo=UTC),
+            observed_at=datetime(2026, 8, 22, tzinfo=timezone.utc),
             opener=opener,
         )
 
@@ -122,7 +122,7 @@ class IngestEnhancementTests(unittest.TestCase):
             formal = root / "doc-example" / "README.md"
             formal.parent.mkdir()
             formal.write_text("unchanged\n", encoding="utf-8")
-            now = datetime(2026, 8, 22, tzinfo=UTC)
+            now = datetime(2026, 8, 22, tzinfo=timezone.utc)
             old = save_ingest_history(
                 root,
                 {"status": "blocked", "raw_content": "omit", "reason": "token=top-secret"},

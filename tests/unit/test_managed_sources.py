@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 import hashlib
 import os
 from pathlib import Path
@@ -47,7 +47,7 @@ class ManagedSourceTests(InstalledPluginTestCase):
 
         result = apply_source_import(
             self.target, proposal.proposal_revision, proposal.proposal_revision,
-            imported_at=datetime(2026, 8, 22, tzinfo=UTC),
+            imported_at=datetime(2026, 8, 22, tzinfo=timezone.utc),
         )
 
         self.assertEqual("saved", result.results[0]["status"])
@@ -72,7 +72,7 @@ class ManagedSourceTests(InstalledPluginTestCase):
 
         result = apply_source_import(
             self.target, proposal.proposal_revision, proposal.proposal_revision,
-            imported_at=datetime(2026, 8, 22, tzinfo=UTC),
+            imported_at=datetime(2026, 8, 22, tzinfo=timezone.utc),
         )
 
         self.assertFalse(allowed.exists())
@@ -118,7 +118,7 @@ class ManagedSourceTests(InstalledPluginTestCase):
         initial = build_source_import_proposal(self.target)
         apply_source_import(
             self.target, initial.proposal_revision, initial.proposal_revision,
-            imported_at=datetime(2026, 8, 22, tzinfo=UTC),
+            imported_at=datetime(2026, 8, 22, tzinfo=timezone.utc),
         )
         duplicate = self.inbox / "duplicate.txt"
         duplicate.write_text("same body\n", encoding="utf-8")
@@ -126,7 +126,7 @@ class ManagedSourceTests(InstalledPluginTestCase):
         self.assertEqual("duplicate", proposal.items[0].status)
         result = apply_source_import(
             self.target, proposal.proposal_revision, proposal.proposal_revision,
-            imported_at=datetime(2026, 8, 22, tzinfo=UTC),
+            imported_at=datetime(2026, 8, 22, tzinfo=timezone.utc),
         )
         self.assertEqual("duplicate", result.results[0]["status"])
         self.assertFalse(duplicate.exists())

@@ -27,7 +27,7 @@ class CompatibilityTests(InstalledPluginTestCase):
 
         from scripts.project_kb.compatibility import CompatibilityPolicy
 
-        self._manifest("format_version: 7\n")
+        self._manifest("format_version: 8\n")
         policy = CompatibilityPolicy.load(ROOT / "compatibility.json")
 
         result = policy.diagnose(self.root)
@@ -76,10 +76,9 @@ class CompatibilityTests(InstalledPluginTestCase):
         path.write_text(
             json.dumps(
                 {
-                    "version": 1,
-                    "plugin_version": "0.1.0",
-                    "reads_format_versions": [2],
-                    "creates_format_version": 2,
+                    "manifest_version": 1,
+                    "supported_format_versions": [2],
+                    "created_format_version": 2,
                     "conversions": [{"from": 1, "to": 2, "id": "legacy"}],
                 }
             ),
@@ -104,7 +103,21 @@ class CompatibilityTests(InstalledPluginTestCase):
         self.assertTrue((target / ".project-kb/compatibility.json").is_file())
         manifest = (target / "knowledge-base.yaml").read_text(encoding="utf-8")
         self.assertIn("project_version: 0.1.0", manifest)
-        self.assertIn("format_version: 7", manifest)
+        self.assertIn("format_version: 8", manifest)
+        self.assertIn("knowledge_revision: 1", manifest)
+        self.assertNotIn("protocol_version:", manifest)
+        self.assertNotIn("schema_version:", manifest)
+
+    def test_format_seven_has_unified_version_model_conversion(self) -> None:
+        """格式七可读取，并提供到统一版本模型的确定性转换。"""
+
+        from scripts.project_kb.compatibility import CompatibilityPolicy
+
+        self._manifest("format_version: 7\n")
+        result = CompatibilityPolicy.load(ROOT / "compatibility.json").diagnose(self.root)
+
+        self.assertEqual("conversion_available", result.status)
+        self.assertEqual(8, result.created_format_version)
 
     def test_format_five_is_readable_with_conversion(self) -> None:
         """旧格式仍可读取，并提供到当前格式的受控转换。"""

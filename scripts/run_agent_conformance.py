@@ -746,7 +746,7 @@ def _run_ingest_scenario(
         manifest = workspace / "doc-ingest" / "knowledge-base.yaml"
         manifest.write_text(
             manifest.read_text(encoding="utf-8").replace(
-                "format_version: 7", "format_version: 999"
+                "format_version: 8", "format_version: 999"
             ),
             encoding="utf-8",
         )

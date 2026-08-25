@@ -7,7 +7,7 @@ import os
 import re
 import shutil
 import subprocess
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .claude_runner import Clock, ProcessRunner
@@ -17,7 +17,7 @@ from .model import AgentTurn
 def _utc_now() -> datetime:
     """返回当前 UTC 时间作为运行证据时间。"""
 
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 
 def resolve_codex_executable() -> str:

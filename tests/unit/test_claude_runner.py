@@ -11,7 +11,7 @@ import sys
 import tempfile
 import unittest
 from unittest import mock
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -310,7 +310,7 @@ class NonzeroClaudeRunner:
 def _fixed_now() -> datetime:
     """返回稳定时间，便于验证运行开始和结束字段。"""
 
-    return datetime(2026, 8, 13, 12, 0, tzinfo=UTC)
+    return datetime(2026, 8, 13, 12, 0, tzinfo=timezone.utc)
 
 
 class ClaudeRunnerTests(unittest.TestCase):
