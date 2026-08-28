@@ -16,7 +16,7 @@ Context Atlas 是一个面向项目的知识治理插件。它把项目中的架
 
 适合使用 Context Atlas 的项目通常需要多人或多个 Agent 长期协作，希望需求、设计、接口、数据库、决策和验收证据能够持续更新并追溯来源。它不替代需求管理、开发计划、编码工具和人工验收。
 
-当前源码清单版本为 `0.12.0`。源码清单版本不等于各 Marketplace 已发布版本，安装或升级后必须以宿主实际显示的版本为准。
+当前源码清单版本为 `0.12.1`。源码清单版本不等于各 Marketplace 已发布版本，安装或升级后必须以宿主实际显示的版本为准。
 
 ## 2. 总体设计
 
@@ -386,7 +386,7 @@ Context Atlas 不阻 止用户开始开发，但建议先用 `navigate` 查询�
 
 ### 当前版本
 
-当前源码清单版本为 `0.12.0`，Codex、Claude Code 和 Qoder 共享产品名 `context-atlas`。源码清单版本不等于各 Marketplace 已发布版本；安装或升级后必须以宿主实际显示的版本为准。平台发布包由当前源码仓库构建，不维护平台专属源码分叉。
+当前源码清单版本为 `0.12.1`，Codex、Claude Code 和 Qoder 共享产品名 `context-atlas`。源码清单版本不等于各 Marketplace 已发布版本；安装或升级后必须以宿主实际显示的版本为准。平台发布包由当前源码仓库构建，不维护平台专属源码分叉。
 
 ### 文档与源码入口
 
@@ -571,7 +571,7 @@ git -C D:\loong-workspace-python\context-atlas-codex-plugin push origin main
 py scripts/sync_to_claude_plugin.py `
   --destination D:\loong-workspace-python\context-atlas-claude-plugin
 git -C D:\loong-workspace-python\context-atlas-claude-plugin add --all
-git -C D:\loong-workspace-python\context-atlas-claude-plugin commit -m "release: context-atlas 0.12.0"
+git -C D:\loong-workspace-python\context-atlas-claude-plugin commit -m "release: context-atlas 0.12.1"
 git -C D:\loong-workspace-python\context-atlas-claude-plugin push origin main
 ```
 
@@ -581,7 +581,7 @@ git -C D:\loong-workspace-python\context-atlas-claude-plugin push origin main
 py scripts/sync_to_qoder_plugin.py `
   --destination D:\loong-workspace-python\context-atlas-qoder-plugin
 git -C D:\loong-workspace-python\context-atlas-qoder-plugin add --all
-git -C D:\loong-workspace-python\context-atlas-qoder-plugin commit -m "release: context-atlas 0.12.0"
+git -C D:\loong-workspace-python\context-atlas-qoder-plugin commit -m "release: context-atlas 0.12.1"
 git -C D:\loong-workspace-python\context-atlas-qoder-plugin push origin main
 ```
 
