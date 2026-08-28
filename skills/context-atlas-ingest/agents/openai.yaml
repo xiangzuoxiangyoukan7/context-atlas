@@ -1,5 +1,5 @@
 interface:
-  display_name: "Context Atlas Ingest"
+  display_name: "context-atlas-ingest"
   short_description: "只读摄取单个来源并生成知识维护路由"
   default_prompt: "使用 $context-atlas-ingest 只读分析一个可定位来源并输出候选映射。"
 policy:

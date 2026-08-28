@@ -151,7 +151,7 @@ README 只解释使用方式，不复制所有机器规则。`knowledge-base.yam
 
 ## 4. 开发环境
 
-Context Atlas 是 Agent Skill/插件，不是 Python 包，不使用 `pip install`。支持 Codex、Claude Code 和 Qoder，必须安装到目标业务仓库的项目范围，并在安装或升级后新建 Agent 会话。
+Context Atlas 是 Agent Skill/插件，不是 Python 包，不使用 `pip install`。支持 Codex、Claude Code 和 Qoder，并在安装或升级后新建 Agent 会话。Claude Code 和 Qoder 使用项目级安装；Codex 使用用户级共享安装，并由目标项目的 `.codex/config.toml` 控制启用。
 
 开发和验证本插件需要：
 
@@ -159,7 +159,7 @@ Context Atlas 是 Agent Skill/插件，不是 Python 包，不使用 `pip instal
 - Python 3，可通过 `py` 启动；
 - Git；
 - 至少一个待验证的宿主 Agent；
-- 对应业务仓库中的项目级插件目录。
+- 对应宿主的插件安装目录；Codex 使用用户级 `CODEX_HOME`，Claude Code 和 Qoder 使用项目级插件目录。
 
 常用源码验证命令：
 
@@ -201,7 +201,7 @@ Agent 调研后可以随时形成候选知识，但候选不等于正式事实�
 
 适用于一个业务仓库尚未存在 `doc-<项目名>/` 的情况：
 
-1. 在业务仓库的项目范围安装 Context Atlas，并新建 Agent 会话。
+1. 按宿主要求安装 Context Atlas：Codex 用户级安装后在项目中启用，Claude Code 和 Qoder 使用项目级安装；然后新建 Agent 会话。
 2. 显式调用 `context-atlas-init`。
 3. Agent 调查 README、现有文档、依赖和构建清单、源码模块、接口、数据库模型与迁移、测试、CI、发布配置和已有 ADR。
 4. Agent 展示初始化 Proposal，明确准备创建的知识、来源、未知项、冲突、入口文件和验证方法。
@@ -414,8 +414,8 @@ Codex Marketplace 位于 `.agents/plugins/marketplace.json`，Claude Code Market
 `.claude-plugin/marketplace.json`。安装 `context-atlas` 后请新建会话，让 Agent 载入最新 Skill。正式写入必须通过
 `init` 或 `update` 命令完成；Skill 只能生成 Proposal 并调用命令，不能直接写入知识库。
 
-插件只支持安装到目标项目：Claude Code 必须使用 `--scope project`；Codex 当前没有原生 scope 参数，
-必须把 `CODEX_HOME` 指向目标项目的 `.codex/`，并在同一环境下安装和启动 Codex。不要省略项目隔离参数。
+Claude Code 必须使用 `--scope project`，Qoder 必须选择 Project。Codex 当前没有原生 plugin scope 参数，
+因此插件实体安装到用户级 `CODEX_HOME`，再由受信任项目中的 `.codex/config.toml` 启用；不要把 `CODEX_HOME` 指向项目目录，否则沙箱、会话和缓存也会在每个项目中重复生成。
 安装后，普通开发目标优先由 `$context-atlas-work` 自动编排；Codex 也可精确使用 `$context-atlas-init`、`$context-atlas-navigate`、`$context-atlas-review`、`$context-atlas-ingest`、`$context-atlas-add`、`$context-atlas-revise`、`$context-atlas-retire`、`$context-atlas-upgrade`。Claude Code 的原生命令使用插件命名空间，例如
 `/context-atlas:context-atlas-init`、`/context-atlas:context-atlas-navigate`；命令面板可能把已唯一解析的命令显示或补全为 `/context-atlas-init`。以面板实际补全结果为准，不要把显示别名当成另一个 Skill。两个平台共用同一组 Skills，不发布 `commands/`；
 `context-atlas-work` 可从自然语言目标自动选择读取和维护路由，但正式知识写入仍必须等待用户确认当前 Proposal 修订。
@@ -424,7 +424,7 @@ Qoder 适配包也从同一源码仓库构建，使用 `.qoder-plugin/plugin.jso
 
 #### 在团队业务仓库中安装
 
-三位开发者可以分别使用 Claude Code、Codex 和 Qoder，但必须把 Context Atlas 安装到**同一个业务仓库的项目范围**。插件程序按平台分别安装；正式知识统一保存在业务仓库的 `doc-<项目目录名>/` 中并通过 Git 协作，不为每种 Agent 创建独立知识库。
+三位开发者可以分别使用 Claude Code、Codex 和 Qoder。Claude Code 和 Qoder 安装到同一个业务仓库的项目范围；Codex 用户级安装一次，并在该业务仓库中项目级启用。正式知识统一保存在业务仓库的 `doc-<项目目录名>/` 中并通过 Git 协作，不为每种 Agent 创建独立知识库。
 
 以下命令都应在需要使用 Context Atlas 的业务仓库根目录执行，而不是在本源码仓库中执行。
 
@@ -463,31 +463,28 @@ claude plugin install --scope project context-atlas@context-atlas
 
 #### 开发者 2：Codex
 
-Codex 当前没有原生项目 scope 参数，必须先把 `CODEX_HOME` 指向业务仓库内的 `.codex/`，安装和以后启动 Codex 时都使用相同设置：
+Codex 当前没有原生项目 scope 参数。保持默认的用户级 `CODEX_HOME`，只需安装一次 Marketplace 和插件：
 
 ```powershell
-cd D:\你的业务仓库
-$env:CODEX_HOME = (Join-Path $PWD ".codex")
 codex plugin marketplace add `
   https://github.com/xiangzuoxiangyoukan7/context-atlas-codex-plugin.git
 codex plugin add context-atlas@context-atlas
+cd D:\你的业务仓库
 codex
 ```
 
-新建 Codex 会话后确认 `$context-atlas-work` 等九个 Skill 可用。以后从新终端进入该业务仓库时，也必须先设置相同的 `CODEX_HOME` 再启动 Codex。
+`plugin add` 会把插件安装到用户级环境。若只希望在指定项目使用，请在用户级 `~/.codex/config.toml` 中将 `[plugins."context-atlas@context-atlas"]` 的 `enabled` 设为 `false`，并在目标项目的 `.codex/config.toml` 中将同一项设为 `true`。项目必须受信任，Codex 才会加载项目级配置。新建会话后确认 `$context-atlas-work` 等九个 Skill 可用。
 
 升级已有 Codex 插件不能再次使用 `marketplace add`；必须先刷新 Marketplace，再替换旧安装：
 
 ```powershell
-cd D:\你的业务仓库
-$env:CODEX_HOME = (Join-Path $PWD ".codex")
 codex plugin marketplace upgrade context-atlas
 codex plugin remove context-atlas@context-atlas
 codex plugin add context-atlas@context-atlas
 codex plugin list
 ```
 
-`marketplace upgrade` 只刷新插件源，`remove` 加 `add` 才会替换已安装插件。最后以 `codex plugin list` 显示的版本为准，并新建 Codex 会话。
+`marketplace upgrade` 只刷新插件源，`remove` 加 `add` 才会替换用户级插件缓存。重新安装后再次确认用户级配置默认禁用、目标项目配置启用。最后以 `codex plugin list` 显示的版本为准，并新建 Codex 会话。
 
 #### 开发者 3：Qoder
 
@@ -522,12 +519,11 @@ qoder plugins update context-atlas@context-atlas
 
 当前 Codex 真实执行链路已经验证；Claude Code 的确认后初始化验收仍为 `partial`，Qoder 已通过构建和静态契约检查但尚未完成真实 Agent 黑盒验收。三平台由用户继续验证；每个平台都应完成一次真实的“安装或升级 → 版本确认 → 初始化 Proposal → 确认 → 校验”和“读取既有知识库”试运行，不能只以命令退出成功作为可用性结论。
 
-#### 项目级卸载
+#### 卸载
 
-Codex 必须在当初安装插件的目标项目中执行，并保持相同的项目级 `CODEX_HOME`：
+Codex 插件实体位于用户级环境；卸载会影响该用户的所有项目：
 
 ```powershell
-$env:CODEX_HOME = (Join-Path $PWD ".codex")
 codex plugin remove context-atlas@context-atlas
 codex plugin marketplace remove context-atlas
 ```
@@ -539,7 +535,7 @@ claude plugin uninstall --scope project context-atlas@context-atlas-dev
 claude plugin marketplace remove --scope project context-atlas-dev
 ```
 
-不要直接删除目标项目的整个 `.codex/` 或 `.claude/` 目录，其中可能还有该项目的其他配置和插件。
+只需停止某个 Codex 项目使用时，删除该项目 `.codex/config.toml` 中的 Context Atlas 启用项或将其设为 `false`，不要卸载用户级插件。不要直接删除整个 `.codex/` 或 `.claude/` 目录，其中可能还有其他配置。
 
 Plugin 发布包由根目录唯一源码构建，不直接运行或发布开发仓库。`templates/`、`schemas/`、
 `scripts/`、`rules/`、`operations/` 和 `compatibility.json` 只维护一份；开发态 `assets/` 只保存

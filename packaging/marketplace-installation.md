@@ -34,37 +34,34 @@ git -C D:\loong-workspace-python\context-atlas-codex-plugin push origin main
 
 ## 安装范围
 
-Context Atlas 只支持项目级安装，不应写入用户级插件配置。先进入需要使用知识库能力的目标项目，后续命令
-都在目标项目根目录执行。
+Claude Code 和 Qoder 使用项目级安装。Codex 当前没有原生 `--scope project` 参数，因此使用用户级共享安装、项目级启用：插件实体、Marketplace 和缓存只在用户级 `CODEX_HOME` 保存一份，目标项目通过受信任项目中的 `.codex/config.toml` 启用插件。项目知识始终保存在各自的 `doc-<项目名>/` 中。
 
-## Codex（项目级）
+## Codex（用户级安装、项目级启用）
 
-Codex 当前没有原生 `--scope project` 参数。使用目标项目内的 `.codex/` 作为独立 `CODEX_HOME`，
-可以把 Marketplace、插件缓存和配置限制在该项目。以下示例中的 Marketplace 路径是 Context Atlas
-源码仓库路径，不是目标项目路径。
+保持默认用户级 `CODEX_HOME`，不要将其指向目标项目的 `.codex/`；否则 Codex 的沙箱组件、会话、数据库和缓存也会在每个项目中重复生成。以下示例中的 Marketplace 路径是 Context Atlas 源码仓库路径，不是目标项目路径。
 
 1. 在终端执行：
 
    ```powershell
-   cd D:\你的目标项目
-   $env:CODEX_HOME = (Join-Path $PWD ".codex")
    codex plugin marketplace add D:\loong-workspace-python\context-atlas
    codex plugin add context-atlas@context-atlas-dev
-   codex
    ```
 
-2. 以后从新终端进入该项目时，必须先重新设置相同的 `CODEX_HOME`，再启动 Codex：
+2. `plugin add` 会在用户级配置中启用插件。若只允许指定项目使用，在用户级 `~/.codex/config.toml` 中设置：
 
-   ```powershell
-   cd D:\你的目标项目
-   $env:CODEX_HOME = (Join-Path $PWD ".codex")
-   codex
+   ```toml
+   [plugins."context-atlas@context-atlas-dev"]
+   enabled = false
    ```
 
-3. 首次使用这个项目隔离环境时，如果 Codex 要求认证，请在设置 `CODEX_HOME` 后按提示完成登录。
+3. 在目标项目的 `.codex/config.toml` 中启用插件：
 
-不要在未设置项目 `CODEX_HOME` 的终端执行 `codex plugin marketplace add` 或 `codex plugin add`；否则会安装到
-用户级 Codex 环境。
+   ```toml
+   [plugins."context-atlas@context-atlas-dev"]
+   enabled = true
+   ```
+
+4. 将目标项目标记为受信任，进入项目并新建 Codex 会话。项目不受信任时，Codex 不加载项目级 `.codex/` 配置。
 
 ## Claude Code（项目级）
 
@@ -97,18 +94,16 @@ qoder plugins install context-atlas@context-atlas
 
 ### Codex
 
-`marketplace add` 只用于首次登记；当命令报告 `already added` 时不会刷新旧快照。更新时在目标项目的隔离环境中执行：
+`marketplace add` 只用于首次登记；当命令报告 `already added` 时不会刷新旧快照。更新用户级共享安装时执行：
 
 ```powershell
-cd D:\你的目标项目
-$env:CODEX_HOME = (Join-Path $PWD ".codex")
 codex plugin marketplace upgrade context-atlas
 codex plugin remove context-atlas@context-atlas
 codex plugin add context-atlas@context-atlas
 codex plugin list
 ```
 
-`marketplace upgrade` 只刷新插件源；删除并重新安装后，才会替换插件缓存。以 `codex plugin list` 显示的版本为最终结果。
+`marketplace upgrade` 只刷新插件源；删除并重新安装后，才会替换插件缓存。重新安装可能再次在用户级配置中启用插件，应恢复“用户级默认禁用、目标项目启用”的配置。以 `codex plugin list` 显示的版本为最终结果。
 
 ### Claude Code
 

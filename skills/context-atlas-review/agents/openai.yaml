@@ -1,5 +1,5 @@
 interface:
-  display_name: "Context Atlas Review"
+  display_name: "context-atlas-review"
   short_description: "审查规格清晰度、覆盖关系和交付就绪度"
   default_prompt: "使用 $context-atlas-review 审查指定规格是否足以供开发者和 AI 实现。"
 policy:
