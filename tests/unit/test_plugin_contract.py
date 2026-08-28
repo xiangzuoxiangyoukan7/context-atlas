@@ -96,8 +96,8 @@ class PluginContractTests(unittest.TestCase):
         """写入分别符合 Codex 与 Claude 格式的 Marketplace。"""
 
         codex = {
-            "name": "context-atlas-dev",
-            "interface": {"displayName": "Context Atlas Dev"},
+            "name": "context-atlas",
+            "interface": {"displayName": "Context Atlas"},
             "plugins": [{
                 "name": "context-atlas",
                 "source": {"source": "url", "url": "./"},
@@ -106,8 +106,8 @@ class PluginContractTests(unittest.TestCase):
             }],
         }
         claude = {
-            "name": "context-atlas-dev",
-            "description": "Development marketplace for Context Atlas",
+            "name": "context-atlas",
+            "description": "Official marketplace for Context Atlas",
             "owner": {"name": "Context Atlas Maintainers"},
             "plugins": [{
                 "name": "context-atlas",
@@ -245,7 +245,7 @@ class PluginContractTests(unittest.TestCase):
             "发布仓库对应的 URL",
             "用户级共享安装、项目级启用",
             "不要将其指向目标项目的 `.codex/`",
-            '[plugins."context-atlas@context-atlas-dev"]',
+            '[plugins."context-atlas@context-atlas"]',
             "项目不受信任时",
             "claude plugin marketplace add --scope project",
             "claude plugin install --scope project",

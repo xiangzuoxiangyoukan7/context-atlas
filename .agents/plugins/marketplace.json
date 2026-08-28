@@ -1,7 +1,7 @@
 {
-  "name": "context-atlas-dev",
+  "name": "context-atlas",
   "interface": {
-    "displayName": "Context Atlas Dev"
+    "displayName": "Context Atlas"
   },
   "plugins": [
     {

@@ -44,20 +44,20 @@ Claude Code 和 Qoder 使用项目级安装。Codex 当前没有原生 `--scope 
 
    ```powershell
    codex plugin marketplace add D:\loong-workspace-python\context-atlas
-   codex plugin add context-atlas@context-atlas-dev
+   codex plugin add context-atlas@context-atlas
    ```
 
 2. `plugin add` 会在用户级配置中启用插件。若只允许指定项目使用，在用户级 `~/.codex/config.toml` 中设置：
 
    ```toml
-   [plugins."context-atlas@context-atlas-dev"]
+   [plugins."context-atlas@context-atlas"]
    enabled = false
    ```
 
 3. 在目标项目的 `.codex/config.toml` 中启用插件：
 
    ```toml
-   [plugins."context-atlas@context-atlas-dev"]
+   [plugins."context-atlas@context-atlas"]
    enabled = true
    ```
 
@@ -70,7 +70,7 @@ Claude Code 和 Qoder 使用项目级安装。Codex 当前没有原生 `--scope 
    ```powershell
    cd D:\你的目标项目
    claude plugin marketplace add --scope project D:\loong-workspace-python\context-atlas
-   claude plugin install --scope project context-atlas@context-atlas-dev
+   claude plugin install --scope project context-atlas@context-atlas
    ```
 
 2. 安装后新建 Claude Code 会话，使会话载入已安装的 Skill。

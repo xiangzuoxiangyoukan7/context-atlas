@@ -149,7 +149,7 @@ class CodexRunner:
             shutil.rmtree(marketplace)
         marketplace.mkdir(parents=True, exist_ok=True)
         packaged_plugin = marketplace
-        marketplace_name = "context-atlas-dev"
+        marketplace_name = "context-atlas"
         for relative_path in (Path(".codex-plugin"), Path("skills"), Path("assets"), Path("references")):
             source = self.plugin_root / relative_path
             destination = packaged_plugin / relative_path
@@ -162,7 +162,7 @@ class CodexRunner:
             json.dumps(
                 {
                     "name": marketplace_name,
-                    "interface": {"displayName": "Context Atlas Dev"},
+                    "interface": {"displayName": "Context Atlas"},
                     "plugins": [
                         {
                             "name": "context-atlas",

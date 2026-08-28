@@ -1,6 +1,6 @@
 {
-  "name": "context-atlas-dev",
-  "description": "Development marketplace for Context Atlas",
+  "name": "context-atlas",
+  "description": "Official marketplace for Context Atlas",
   "owner": {
     "name": "Context Atlas Maintainers"
   },
