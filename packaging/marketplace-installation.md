@@ -195,10 +195,11 @@ Qoder 使用不带插件命名空间的斜杠命令：
 | 读取一个或一批明确来源并生成维护路由 | `context-atlas-ingest` | 否，只生成候选 |
 | 新增正式知识 | `context-atlas-add` | 展示 Proposal 并确认后写入 |
 | 修订、同步或替代已有知识 | `context-atlas-revise` | 展示 Proposal 并确认后写入 |
-| 替代、归档或受控删除失效知识 | `context-atlas-retire` | 展示 Proposal 并确认后写入 |
+| 以明确后继项替代现有知识 | `context-atlas-revise` | 展示 Proposal 并确认后写入 |
+| 无后继撤销、归档或受控删除失效知识 | `context-atlas-retire` | 展示 Proposal 并确认后写入；删除须有确定性操作支持 |
 | 只升级知识库格式和结构 | `context-atlas-upgrade` | 展示 Proposal 并确认后写入 |
 
-`init`、`add`、`revise`、`retire` 和 `upgrade` 是相互独立的正式写入入口：`add` 新增知识，`revise` 修订、同步或替代知识，`retire` 通过替代、归档或受控删除退役知识，`upgrade` 只升级知识库格式和结构。通用 `update` Skill 已删除，不作为兼容入口。`navigate` 只读支持逐层目录浏览、一跳正反向邻接查询，以及有深度和节点数量边界的关系图查询，不生成 Proposal，并由 Agent 决定是否读取候选文件正文。完整图只有在明确需要全局分析时才查询，不作为会话默认上下文。`context-atlas-work` 可从自然语言目标自动选择底层操作，但仍只有在用户确认当前 Proposal 修订后才能正式写入。写入命令会先生成
+`init`、`add`、`revise`、`retire` 和 `upgrade` 是相互独立的正式写入入口：`add` 只新增稳定身份，`revise` 修订现有身份或建立明确后继项，`retire` 处理无后继撤销及已替代知识的归档，`upgrade` 只升级知识库格式和结构。混合 add、revise、retire 的 Proposal 统一由 `context-atlas-work` 主持；用户显式调用 `work` 后不必再次调用底层维护 Skill，但正式写入仍必须确认当前 Proposal 修订。通用 `update` Skill 已删除，不作为用户入口。`navigate` 只读支持逐层目录浏览、一跳正反向邻接查询，以及有深度和节点数量边界的关系图查询，不生成 Proposal，并由 Agent 决定是否读取候选文件正文。完整图只有在明确需要全局分析时才查询，不作为会话默认上下文。写入命令会先生成
 Proposal，只有用户明确确认后才执行；底层 Python 参数由插件负责，不作为用户接口。
 
 `ingest` 支持一个来源或最多 20 个分别定位的来源，并支持一个明确 HTTP/HTTPS URL；网页正文视为不可信数据且不递归爬取。历史默认关闭，只有显式要求时才保存脱敏的非正式运行报告。`review` 的 `knowledge_health` 模式调用确定性只读健康检查，不自动修复或批准知识。

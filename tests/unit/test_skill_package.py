@@ -99,7 +99,7 @@ class SkillPackageTests(unittest.TestCase):
         required = (
             "doc-<项目目录名>",
             "显式确认",
-            "目标已存在",
+            "if exactly one current knowledge base exists",
             "AGENTS.md",
             "CLAUDE.md",
             "../../references/初始化协议.md",
@@ -385,26 +385,37 @@ class SkillPackageTests(unittest.TestCase):
         self.assertIn("$context-atlas-revise", metadata)
         self.assertIn("$context-atlas-retire", metadata)
         self.assertIn("$context-atlas-upgrade", metadata)
+
+        for name in ("context-atlas-init", "context-atlas-add", "context-atlas-revise", "context-atlas-retire"):
+            skill_metadata = (
+                self.plugin_root / f"skills/{name}/agents/openai.yaml"
+            ).read_text(encoding="utf-8")
+            self.assertIn("allow_implicit_invocation: false", skill_metadata)
         self.assertFalse(Path("skills/project-knowledge-context").exists())
         self.assertFalse(Path("profiles").exists())
         self.assertFalse(any(path.startswith("profiles/") for path in manifest["files"]))
 
     def test_maintenance_and_upgrade_skills_have_separate_responsibilities(self) -> None:
-        """三类业务知识维护与格式升级必须具有独立职责。"""
+        """三类项目知识维护、混合编排与格式升级必须具有互斥职责。"""
 
         add = (self.plugin_root / "skills/context-atlas-add/SKILL.md").read_text(encoding="utf-8")
         revise = (self.plugin_root / "skills/context-atlas-revise/SKILL.md").read_text(encoding="utf-8")
         retire = (self.plugin_root / "skills/context-atlas-retire/SKILL.md").read_text(encoding="utf-8")
         upgrade = (self.plugin_root / "skills/context-atlas-upgrade/SKILL.md").read_text(encoding="utf-8")
+        work = (self.plugin_root / "skills/context-atlas-work/SKILL.md").read_text(encoding="utf-8")
 
         for maintenance in (add, revise, retire):
             self.assertIn("$context-atlas-upgrade", maintenance)
             self.assertNotIn("upgrade-diagnose -> upgrade-propose", maintenance)
+            self.assertIn("must not own a mixed Proposal", maintenance)
         self.assertIn("stable IDs", add)
         self.assertIn("`patch`", revise)
+        self.assertIn("a successor will become current", revise)
         self.assertIn("archive-propose", retire)
+        self.assertIn("does not establish supersession", retire)
+        self.assertIn("only owner of a Proposal that mixes", work)
         self.assertIn("upgrade-diagnose -> upgrade-propose", upgrade)
-        self.assertIn("Do not use it to add or revise business knowledge", upgrade)
+        self.assertIn("never add, revise, retire, approve, or reinterpret project knowledge", upgrade)
 
     def test_skill_frontmatter_matches_official_constraints(self) -> None:
         """验证 skill_frontmatter_matches_official_constraints 场景。"""

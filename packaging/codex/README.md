@@ -36,19 +36,19 @@ $context-atlas-review
 $context-atlas-ingest
 ```
 
-向已有知识库新增业务知识：
+向已有知识库新增项目知识：
 
 ```text
 $context-atlas-add
 ```
 
-修订、同步或替代已有业务知识：
+修订现有项目知识或建立明确后继项：
 
 ```text
 $context-atlas-revise
 ```
 
-通过替代、归档或受控删除退役业务知识：
+撤销无后继项的当前权威，或归档已替代知识：
 
 ```text
 $context-atlas-retire

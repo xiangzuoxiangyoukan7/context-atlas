@@ -43,6 +43,17 @@ class WorkSkillTests(unittest.TestCase):
         self.assertIn("reject stale confirmation", skill)
         self.assertIn("knowledge validation separately", skill)
 
+    def test_work_skill_is_the_only_mixed_maintenance_owner(self) -> None:
+        """混合维护由 work 主持，且显式调用后无需重复调用底层 Skill。"""
+
+        skill = (ROOT / "skills/context-atlas-work/SKILL.md").read_text(encoding="utf-8")
+
+        self.assertIn("only owner of a Proposal that mixes", skill)
+        self.assertIn("does not need to invoke each maintenance Skill again", skill)
+        self.assertIn("explicit selection of the baseline path", skill)
+        self.assertIn("replacement by a successor to revise", skill)
+        self.assertIn("withdrawal without creating a successor to retire", skill)
+
 
 if __name__ == "__main__":
     unittest.main()

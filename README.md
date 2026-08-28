@@ -16,7 +16,7 @@ Context Atlas 是一个面向项目的知识治理插件。它把项目中的架
 
 适合使用 Context Atlas 的项目通常需要多人或多个 Agent 长期协作，希望需求、设计、接口、数据库、决策和验收证据能够持续更新并追溯来源。它不替代需求管理、开发计划、编码工具和人工验收。
 
-当前源码清单版本为 `0.12.1`。源码清单版本不等于各 Marketplace 已发布版本，安装或升级后必须以宿主实际显示的版本为准。
+当前源码清单版本为 `0.12.2`。源码清单版本不等于各 Marketplace 已发布版本，安装或升级后必须以宿主实际显示的版本为准。
 
 ## 2. 总体设计
 
@@ -56,7 +56,7 @@ doc-<项目名>/
 | 位置 | 保存什么 | 不保存什么 |
 | --- | --- | --- |
 | `README.md` | 知识库入口、权威导航和常用场景 | 全部知识正文的重复副本 |
-| `knowledge-base.yaml` | 协议、Schema、项目、格式、修订和权威入口 | 业务知识正文 |
+| `knowledge-base.yaml` | 协议、Schema、项目、格式、修订和权威入口 | 项目知识正文 |
 | `00-项目总览` | 项目定位、职责边界和统一术语 | 模块实现和临时任务 |
 | `01-功能基线` | 需求、功能、能力地图及验收引用 | 开发计划和代码修改记录 |
 | `02-架构与契约` | 系统架构、模块、接口、数据库、数据资产、原型、外部依赖和独立契约 | 临时排查过程 |
@@ -343,7 +343,8 @@ Agent 调研后可以随时形成候选知识，但候选不等于正式事实�
 | 分析会议纪要、Issue、文档或网页来源 | `ingest` | 只读，只生成候选路由 |
 | 增加此前不存在的知识 | `add` | 确认 Proposal 后新增 |
 | 修正、同步或替代已有知识 | `revise` | 确认 Proposal 后修订 |
-| 替代、归档或受控删除失效知识 | `retire` | 确认 Proposal 后退役 |
+| 以明确后继项替代现有知识 | `revise` | 确认 Proposal 后建立替代关系并迁移引用 |
+| 无后继撤销、归档或受控删除失效知识 | `retire` | 确认 Proposal 后退役；删除须有确定性操作支持 |
 | 只改变知识库格式或结构 | `upgrade` | 确认 Proposal 后升级 |
 
 完整的安装后操作符、数据库维护、来源摄取、渐进查询和 Proposal 要求见[场景化使用指南](./templates/core/doc-project/05-知识治理/使用场景.md)。
@@ -386,7 +387,7 @@ Context Atlas 不阻 止用户开始开发，但建议先用 `navigate` 查询�
 
 ### 当前版本
 
-当前源码清单版本为 `0.12.1`，Codex、Claude Code 和 Qoder 共享产品名 `context-atlas`。源码清单版本不等于各 Marketplace 已发布版本；安装或升级后必须以宿主实际显示的版本为准。平台发布包由当前源码仓库构建，不维护平台专属源码分叉。
+当前源码清单版本为 `0.12.2`，Codex、Claude Code 和 Qoder 共享产品名 `context-atlas`。源码清单版本不等于各 Marketplace 已发布版本；安装或升级后必须以宿主实际显示的版本为准。平台发布包由当前源码仓库构建，不维护平台专属源码分叉。
 
 ### 文档与源码入口
 
@@ -571,7 +572,7 @@ git -C D:\loong-workspace-python\context-atlas-codex-plugin push origin main
 py scripts/sync_to_claude_plugin.py `
   --destination D:\loong-workspace-python\context-atlas-claude-plugin
 git -C D:\loong-workspace-python\context-atlas-claude-plugin add --all
-git -C D:\loong-workspace-python\context-atlas-claude-plugin commit -m "release: context-atlas 0.12.1"
+git -C D:\loong-workspace-python\context-atlas-claude-plugin commit -m "release: context-atlas 0.12.2"
 git -C D:\loong-workspace-python\context-atlas-claude-plugin push origin main
 ```
 
@@ -581,7 +582,7 @@ git -C D:\loong-workspace-python\context-atlas-claude-plugin push origin main
 py scripts/sync_to_qoder_plugin.py `
   --destination D:\loong-workspace-python\context-atlas-qoder-plugin
 git -C D:\loong-workspace-python\context-atlas-qoder-plugin add --all
-git -C D:\loong-workspace-python\context-atlas-qoder-plugin commit -m "release: context-atlas 0.12.1"
+git -C D:\loong-workspace-python\context-atlas-qoder-plugin commit -m "release: context-atlas 0.12.2"
 git -C D:\loong-workspace-python\context-atlas-qoder-plugin push origin main
 ```
 
