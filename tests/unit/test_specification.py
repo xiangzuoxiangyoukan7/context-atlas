@@ -52,8 +52,8 @@ class SpecificationValidationTests(TempDirectoryTestCase):
         self.assertIn("KB_SPEC_ACCEPTANCE_SUBJECT", codes)
         self.assertEqual(3, codes.count("KB_SPEC_ACCEPTANCE_SECTION"))
 
-    def test_ready_feature_requires_normative_scenario_and_acceptance_contract(self) -> None:
-        """就绪功能必须具有规范行为、四级场景和独立验收契约。"""
+    def test_ready_feature_requires_normative_embedded_scenario(self) -> None:
+        """就绪功能必须声明并内嵌完整验收场景。"""
 
         feature = self.record(
             "feature.md",
@@ -64,6 +64,18 @@ class SpecificationValidationTests(TempDirectoryTestCase):
             {"KB_SPEC_COVERAGE", "KB_SPEC_NORMATIVE", "KB_SPEC_SCENARIO"},
             {item.code for item in validate_specifications([feature])},
         )
+
+    def test_interface_requires_business_name_and_single_endpoint(self) -> None:
+        """接口文件必须可读，且不能聚合多个 HTTP 端点。"""
+
+        interface = self.record(
+            "API-001.md",
+            "id: API-001\ntype: interface\ntitle: API-001\ninterface_kind: http",
+            "| 方法 | 路径 |\n| --- | --- |\n| GET | /one |\n| POST | /two |\n",
+        )
+        codes = {item.code for item in validate_specifications([interface])}
+        self.assertIn("KB_INTERFACE_NAME", codes)
+        self.assertIn("KB_INTERFACE_AGGREGATE", codes)
 
     def test_external_task_requires_traceability_and_verification(self) -> None:
         """外部任务必须可回溯到功能或变更并说明验证方式。"""

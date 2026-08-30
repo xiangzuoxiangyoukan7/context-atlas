@@ -15,7 +15,7 @@ Read `../../references/执行状态机.md`, `../../references/知识采集与确
 
 1. Preserve the user's concrete delivery goal. Do not turn the task into knowledge administration or require the user to name another Skill.
 2. Detect the project root and exactly one current `doc-*` knowledge base. If none exists, explain that initialization is available; do not initialize implicitly. If more than one candidate exists, stop and ask the user to identify the current authority. If the format is unsupported, route to upgrade and keep zero formal writes.
-3. Start read-only. Use the bundled executor to discover the smallest relevant knowledge area, then query direct neighbors or a bounded graph only when needed. Read the located requirements, features, modules, interfaces, databases, ADRs, changes, and acceptance contracts that materially constrain the task.
+3. Start read-only. Use the bundled executor to discover the smallest relevant knowledge area, then query direct neighbors or a bounded graph only when needed. Read the located requirements, features and their embedded acceptance scenarios, modules, concrete interfaces, databases, ADRs, changes, legacy acceptance contracts, and evidence that materially constrain the task.
 4. Classify the request as one or more of: new capability, change to existing behavior, defect investigation, refactor, retirement, or implementation-completion reconciliation. This classification selects knowledge operations; it never decides whether development may execute.
 5. Review readiness. Ask only questions whose answers materially change scope, public behavior, failure behavior, compatibility, security, data, operations, or acceptance. Present concrete choices when the repository cannot answer them.
 

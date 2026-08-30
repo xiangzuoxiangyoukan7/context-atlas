@@ -4,6 +4,7 @@ type: independent_contract
 title: 单来源摄取与维护路由契约
 status: approved
 scope: project
+independence_basis: multi_consumer
 version: v1
 sources:
   - user_statement:2026-08-21-ingest-design-confirmation

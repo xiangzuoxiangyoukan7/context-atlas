@@ -74,7 +74,7 @@ class MigrationTests(TempDirectoryTestCase):
         proposal = self._proposal()
 
         self.assertEqual(1, proposal.source_version)
-        self.assertEqual(8, proposal.target_version)
+        self.assertEqual(9, proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
         self.assertIn(
             '"reference": "fixture"',
@@ -121,7 +121,7 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertNotIn("SRC-001", content)
         self.assertFalse((self.root / "00-项目总览/SRC-001.md").exists())
         self.assertTrue((self.root / "05-知识治理/公共来源/SRC-001.md").exists())
-        self.assertIn("format_version: 8", manifest_content)
+        self.assertIn("format_version: 9", manifest_content)
         self.assertIn("knowledge_revision: 1", manifest_content)
         self.assertIn("created_by:", manifest_content)
         self.assertNotIn("revision:", manifest_content.replace("knowledge_revision:", ""))
@@ -174,7 +174,7 @@ class MigrationTests(TempDirectoryTestCase):
         )
 
         self.assertEqual(2, proposal.source_version)
-        self.assertEqual(8, proposal.target_version)
+        self.assertEqual(9, proposal.target_version)
         self.assertEqual(2, len(proposal.moves))
         self.assertEqual(2, len(proposal.removals))
         self.assertEqual([], list(proposal.unresolved))
@@ -185,7 +185,7 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertTrue((self.root / "05-知识治理/AI知识采集协议.md").is_file())
         self.assertFalse((legacy / "本地开发.md").exists())
         self.assertFalse((legacy / "测试规则.md").exists())
-        self.assertIn("format_version: 8", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 9", manifest.read_text(encoding="utf-8"))
         self.assertIn("05-知识治理/README.md", root_readme.read_text(encoding="utf-8"))
         self.assertNotIn("05-开发指南", root_readme.read_text(encoding="utf-8"))
         self.assertEqual(
@@ -212,11 +212,11 @@ class MigrationTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
         self.assertEqual([], list(proposal.unresolved))
-        self.assertEqual(8, proposal.target_version)
+        self.assertEqual(9, proposal.target_version)
         apply_migration(self.root, proposal, proposal.proposal_revision)
 
         self.assertIn("rel_satisfies: []", feature.read_text(encoding="utf-8"))
-        self.assertIn("format_version: 8", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 9", manifest.read_text(encoding="utf-8"))
 
     def test_format_six_creates_complete_specification_workspaces_atomically(self) -> None:
         """格式六升级应创建目录说明及其模板，并拒绝提案后的目标冲突。"""
@@ -229,7 +229,7 @@ class MigrationTests(TempDirectoryTestCase):
             encoding="utf-8",
         )
         proposal = self._proposal()
-        self.assertEqual(5, len(proposal.creations))
+        self.assertEqual(3, len(proposal.creations))
         conflict = proposal.creations[0].path
         conflict.parent.mkdir(parents=True, exist_ok=True)
         conflict.write_text("conflict\n", encoding="utf-8")
@@ -240,21 +240,15 @@ class MigrationTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
-        self.assertEqual(8, report.format_version)
+        self.assertEqual(9, report.format_version)
         self.assertTrue((self.root / "03-变更与证据/变更/README.md").is_file())
         self.assertTrue((self.root / "03-变更与证据/变更/TEMPLATE.md").is_file())
         self.assertTrue((self.root / "03-变更与证据/变更/Delta/TEMPLATE.md").is_file())
-        self.assertTrue((self.root / "03-变更与证据/验收契约/README.md").is_file())
-        self.assertTrue((self.root / "03-变更与证据/验收契约/TEMPLATE.md").is_file())
         change_readme = (self.root / "03-变更与证据/变更/README.md").read_text(
             encoding="utf-8"
         )
-        acceptance_readme = (
-            self.root / "03-变更与证据/验收契约/README.md"
-        ).read_text(encoding="utf-8")
         self.assertIn("./TEMPLATE.md", change_readme)
         self.assertIn("./Delta/TEMPLATE.md", change_readme)
-        self.assertIn("./TEMPLATE.md", acceptance_readme)
         self.assertTrue((self.root / ".project-kb/scripts/check_knowledge_base.py").is_file())
         self.assertTrue((self.root / ".project-kb/schemas/catalog.json").is_file())
         self.assertTrue((self.root / ".project-kb/rules/catalog.json").is_file())

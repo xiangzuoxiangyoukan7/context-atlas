@@ -27,7 +27,7 @@ class CompatibilityTests(InstalledPluginTestCase):
 
         from scripts.project_kb.compatibility import CompatibilityPolicy
 
-        self._manifest("format_version: 8\n")
+        self._manifest("format_version: 9\n")
         policy = CompatibilityPolicy.load(ROOT / "compatibility.json")
 
         result = policy.diagnose(self.root)
@@ -103,7 +103,7 @@ class CompatibilityTests(InstalledPluginTestCase):
         self.assertTrue((target / ".project-kb/compatibility.json").is_file())
         manifest = (target / "knowledge-base.yaml").read_text(encoding="utf-8")
         self.assertIn("project_version: 0.1.0", manifest)
-        self.assertIn("format_version: 8", manifest)
+        self.assertIn("format_version: 9", manifest)
         self.assertIn("knowledge_revision: 1", manifest)
         self.assertNotIn("protocol_version:", manifest)
         self.assertNotIn("schema_version:", manifest)
@@ -117,7 +117,7 @@ class CompatibilityTests(InstalledPluginTestCase):
         result = CompatibilityPolicy.load(ROOT / "compatibility.json").diagnose(self.root)
 
         self.assertEqual("conversion_available", result.status)
-        self.assertEqual(8, result.created_format_version)
+        self.assertEqual(9, result.created_format_version)
 
     def test_format_five_is_readable_with_conversion(self) -> None:
         """旧格式仍可读取，并提供到当前格式的受控转换。"""

@@ -158,7 +158,7 @@ def _revision(
     return "migration-" + hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()[:12]
 
 
-def _format_seven_creations(root: Path) -> tuple[MigrationCreation, ...]:
+def _current_format_creations(root: Path) -> tuple[MigrationCreation, ...]:
     """从随插件发布的核心模板补齐当前格式所需目录及其可达模板。"""
 
     template_root = Path(__file__).resolve().parents[2] / "templates" / "core" / "doc-project"
@@ -166,8 +166,6 @@ def _format_seven_creations(root: Path) -> tuple[MigrationCreation, ...]:
         Path("03-变更与证据/变更/README.md"),
         Path("03-变更与证据/变更/TEMPLATE.md"),
         Path("03-变更与证据/变更/Delta/TEMPLATE.md"),
-        Path("03-变更与证据/验收契约/README.md"),
-        Path("03-变更与证据/验收契约/TEMPLATE.md"),
     )
     creations: list[MigrationCreation] = []
     for relative in relatives:
@@ -190,7 +188,7 @@ def _asset_source_root() -> Path:
     raise FileNotFoundError("cannot locate plugin asset manifest")
 
 
-def _format_seven_assets(root: Path) -> tuple[MigrationAsset, ...]:
+def _current_format_assets(root: Path) -> tuple[MigrationAsset, ...]:
     """为当前格式提案枚举需要写入 `.project-kb` 的全部运行资产。"""
 
     source_root = _asset_source_root()
@@ -428,8 +426,8 @@ def build_migration_proposal(
     ordered_unresolved = tuple(
         sorted(unresolved, key=lambda item: (str(item.path), item.source_id))
     )
-    creations = _format_seven_creations(resolved_root)
-    assets = _format_seven_assets(resolved_root)
+    creations = _current_format_creations(resolved_root)
+    assets = _current_format_assets(resolved_root)
     return MigrationProposal(
         proposal_revision=_revision(
             result.format_version,

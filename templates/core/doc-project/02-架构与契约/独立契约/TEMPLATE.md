@@ -4,6 +4,7 @@ type: independent_contract
 title: 契约名称
 status: proposed
 scope: project
+independence_basis: multi_consumer
 content_revision: 1
 contract_version: v1
 sources: []

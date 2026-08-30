@@ -4,6 +4,7 @@ type: independent_contract
 title: 受管来源文件契约
 status: approved
 scope: project
+independence_basis: cross_boundary
 version: v1
 sources:
   - user_statement:2026-08-22-managed-source-inbox-confirmation

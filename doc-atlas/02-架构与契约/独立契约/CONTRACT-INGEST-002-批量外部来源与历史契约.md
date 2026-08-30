@@ -4,6 +4,7 @@ type: independent_contract
 title: 批量、外部来源与摄取历史契约
 status: approved
 scope: project
+independence_basis: multi_consumer
 version: v1
 sources:
   - user_statement:2026-08-22-ingest-enhancements-confirmation
