@@ -10,7 +10,7 @@ depends_on: [F01]
 acceptance: [F02-AC-01, F02-AC-02, F02-AC-03, F02-AC-04, F02-AC-05, F02-AC-06, F02-AC-07]
 contracts: [CONTRACT-KNOWLEDGE-001, CONTRACT-INGEST-001, CONTRACT-INGEST-002, CONTRACT-SOURCE-001]
 adr: [ADR-002, ADR-004, ADR-006, ADR-007, ADR-009]
-last_updated: 2026-08-22
+last_updated: 2026-08-31
 ---
 
 # F02：AI 知识采集与确认
@@ -24,6 +24,7 @@ last_updated: 2026-08-22
 - 区分用户陈述、仓库事实、命令证据、外部资料和 AI 推测。
 - 用户确认前，候选内容保持 `proposed`。
 - AI 推测不得直接成为批准事实，也不得作为 ingest 的主来源。
+- 用户已经提供使用场景且现有知识或仓库约束足以支持设计时，Agent 必须主动形成最小可用的推荐候选方案，标记其来源、`ai_inference` 和 `proposed` 边界；不得因缺少未批准细节而只列缺口。无法确定唯一方案时，应给出具体选项、影响和推荐选择，只把会实质改变行为、兼容性、安全、数据或验收的决策交给用户。
 - 多个来源冲突时必须保留冲突并请求用户裁决。
 - `context-atlas-ingest` 第一版一次只接受一个主来源，只输出会话内候选映射与 `route_plan`，保持 `writes_performed: false`。
 - ingest 将候选分类为 `add`、`revise`、`retire`、`conflict` 或 `ignore`；它不写待确认队列、不生成正式 Proposal、不自动调用维护 Skill。
@@ -37,7 +38,7 @@ last_updated: 2026-08-22
 ## 验收
 
 - `F02-AC-01`：Agent 可以从协议获得缺失知识、目标位置、Schema 和确认要求。
-- `F02-AC-02`：Proposal、用户确认和冲突处理均能保留来源，且 AI 不能自行批准或裁决。
+- `F02-AC-02`：Proposal、用户确认和冲突处理均能保留来源，且 AI 不能自行批准或裁决；用户提供具体使用场景但缺少设计细节时，Agent 能基于现有约束形成带来源和推理边界的推荐候选方案，数据库建表场景应主动补充字段与类型候选，而不是只报告缺失。
 - `F02-AC-03`：Agent 能将新增、修订或同步与替代、退役或归档与受控删除路由到对应 Skill，并继续遵守同一修订 Proposal 的显式确认门禁。
 - `F02-AC-04`：显式 ingest 能对单个来源生成结构化候选与可解释路由，正确阻塞多来源、冲突和敏感输入，并在 Codex 与 Claude 安装形态中始终保持零写入。
 - `F02-AC-05`：批量和网页来源保持逐来源隔离、不可信内容边界、汇总路由和正式知识零写入。

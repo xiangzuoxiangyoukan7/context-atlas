@@ -54,6 +54,21 @@ class WorkSkillTests(unittest.TestCase):
         self.assertIn("replacement by a successor to revise", skill)
         self.assertIn("withdrawal without creating a successor to retire", skill)
 
+    def test_work_skill_synthesizes_candidate_solution_from_usage(self) -> None:
+        """使用场景足够时必须先给推荐候选，不能只把缺失项退回用户。"""
+
+        skill = (ROOT / "skills/context-atlas-work/SKILL.md").read_text(encoding="utf-8")
+        review = (ROOT / "references/规格审查与SDD适配.md").read_text(encoding="utf-8")
+        database = (ROOT / "references/数据库知识.md").read_text(encoding="utf-8")
+
+        self.assertIn("synthesize the smallest usable recommended solution", skill)
+        self.assertIn("two or three concrete choices", skill)
+        self.assertIn("proposed columns, SQL data types", skill)
+        self.assertIn("最小可用的推荐方案", review)
+        self.assertIn("二至三个具体选项", review)
+        self.assertIn("主动形成字段、SQL 数据类型", database)
+        self.assertIn("不得只列出“类型缺失”", database)
+
 
 if __name__ == "__main__":
     unittest.main()
