@@ -1,5 +1,6 @@
 approval_policy = "never"
 sandbox_mode = "workspace-write"
+approvals_reviewer = "user"
 
 [sandbox_workspace_write]
   network_access = true
