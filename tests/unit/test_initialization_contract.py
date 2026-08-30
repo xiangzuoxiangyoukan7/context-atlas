@@ -73,9 +73,10 @@ class InitializationContractTests(InstalledPluginTestCase):
         )
 
         self.assertEqual("initialized", report.operation)
-        temporary_root = self.root / ".context-atlas-tmp"
+        temporary_root = self.root / ".context-atlas-temp"
         self.assertTrue(temporary_root.is_dir())
         self.assertEqual([], list(temporary_root.iterdir()))
+        self.assertFalse((self.root / ".context-atlas-tmp").exists())
         self.assertEqual([], list(self.root.glob(".doc-*.initializing-*")))
         self.assertEqual("passed", report.validation.result)
         self.assertEqual("python_executor", report.execution.mode)

@@ -59,6 +59,10 @@ class ManagedSourceTests(InstalledPluginTestCase):
         self.assertTrue(card.is_file())
         self.assertEqual(item.sha256, hashlib.sha256(managed.read_bytes()).hexdigest())
         self.assertIn("保存不表示批准", card.read_text(encoding="utf-8"))
+        temporary_root = self.root / ".context-atlas-temp"
+        self.assertTrue(temporary_root.is_dir())
+        self.assertEqual([], list(temporary_root.iterdir()))
+        self.assertEqual([], list((self.target / "05-知识治理/来源资料").glob(".importing-*")))
 
     def test_blocked_file_remains_and_other_file_is_saved(self) -> None:
         """部分批次不能删除阻塞文件，也不能抹去合格结果。"""

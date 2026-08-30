@@ -5,11 +5,12 @@ title: 受管来源文件契约
 status: approved
 scope: project
 independence_basis: cross_boundary
-version: v1
+version: v2
 sources:
   - user_statement:2026-08-22-managed-source-inbox-confirmation
   - existing_document:ADR-009
-last_updated: 2026-08-22
+  - user_statement:2026-08-30-fixed-temp-root-confirmation
+last_updated: 2026-08-30
 ---
 
 # CONTRACT-SOURCE-001：受管来源文件契约
@@ -24,6 +25,8 @@ last_updated: 2026-08-22
 ## 安全与原子性
 
 可执行文件、超限文件、含秘密或未脱敏个人数据的文本文件必须阻塞并保留。执行器拒绝路径逃逸、符号链接、目标覆盖和确认修订不一致。合格文件必须在目标摘要复核及知识库验证成功后才删除暂存原件；失败时回滚本次新目标。
+
+来源导入的处理目录必须位于项目根固定 `.context-atlas-temp/` 下的 `ingest-<随机值>/` 操作子目录中，不得在 `05-知识治理/来源资料/` 或其他正式内容目录旁创建 `.importing-*` 临时目录；操作结束后清理操作子目录。
 
 ## 知识边界
 

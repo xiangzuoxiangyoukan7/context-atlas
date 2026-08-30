@@ -168,7 +168,7 @@ class SkillPackageTests(unittest.TestCase):
         )
         for phrase in (
             "agent_host",
-            ".context-atlas-tmp/",
+            ".context-atlas-temp/",
             "initialize-<revision-prefix>/",
             "不得在项目根散落其他临时目录",
             "不得直接写正式目标",
