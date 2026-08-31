@@ -297,6 +297,9 @@ class SkillPackageTests(unittest.TestCase):
             "proposal_revision",
             "内嵌来源对象",
             "公共来源",
+            "当前已安装插件",
+            "runtime_assets_root",
+            "compatibility_path",
         ):
             self.assertIn(phrase, migration)
 

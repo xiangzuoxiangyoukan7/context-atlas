@@ -43,6 +43,42 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         self.assertEqual(0, exit_code)
         self.assertEqual("compatible", payload["status"])
         self.assertFalse(payload["write_blocked"])
+        self.assertEqual(str(ROOT.resolve()), payload["runtime_assets_root"])
+        self.assertEqual(
+            str((ROOT / "compatibility.json").resolve()),
+            payload["compatibility_path"],
+        )
+
+    def test_upgrade_diagnose_uses_current_policy_instead_of_target_embedded_policy(self) -> None:
+        """旧知识库自带清单不得覆盖当前插件提供的新转换。"""
+
+        (self.root / "knowledge-base.yaml").write_text(
+            "project_version: 1.0.0\nformat_version: 9\n", encoding="utf-8"
+        )
+        embedded = self.root / ".project-kb" / "compatibility.json"
+        embedded.parent.mkdir(parents=True, exist_ok=True)
+        embedded.write_text(
+            json.dumps({
+                "manifest_version": 1,
+                "supported_format_versions": list(range(1, 10)),
+                "created_format_version": 9,
+                "conversions": [],
+            }),
+            encoding="utf-8",
+        )
+
+        exit_code, payload = self._run(
+            "upgrade-diagnose",
+            str(self.root),
+            "--compatibility",
+            str(ROOT / "compatibility.json"),
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("conversion_available", payload["status"])
+        self.assertEqual(10, payload["created_format_version"])
+        self.assertTrue(payload["conversion_available"])
+        self.assertNotEqual(str(embedded.resolve()), payload["compatibility_path"])
 
     def test_init_is_an_explicit_alias_for_initialize(self) -> None:
         """init 命令应执行正式初始化并返回结构化报告。"""
