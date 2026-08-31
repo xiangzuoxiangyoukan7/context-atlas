@@ -46,7 +46,7 @@ FORBIDDEN_ROOTS = frozenset(
     }
 )
 ALLOWED_ROOTS = frozenset(
-    {".git", ".agents", ".codex-plugin", "skills", "assets", "references", "README.md", "LICENSE", "release-manifest.json"}
+    {".git", ".gitignore", ".agents", ".codex-plugin", "skills", "assets", "references", "README.md", "LICENSE", "release-manifest.json"}
 )
 
 
