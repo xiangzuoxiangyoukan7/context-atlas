@@ -74,7 +74,7 @@ class MigrationTests(TempDirectoryTestCase):
         proposal = self._proposal()
 
         self.assertEqual(1, proposal.source_version)
-        self.assertEqual(9, proposal.target_version)
+        self.assertEqual(10, proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
         self.assertIn(
             '"reference": "fixture"',
@@ -95,6 +95,27 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertEqual(1, len(proposal.unresolved))
         self.assertEqual([], list(proposal.changes))
         self.assertEqual(before, knowledge.read_bytes())
+
+    def test_legacy_contract_requires_knowledge_maintenance_before_format_ten(self) -> None:
+        """遗留契约不能由格式升级器猜测归入某个功能。"""
+
+        manifest = self._manifest()
+        manifest.write_text(
+            "project_id: example\nproject_version: 3.4.0\nformat_version: 9\nknowledge_revision: 1\n",
+            encoding="utf-8",
+        )
+        contract = self.root / "02-架构与契约/独立契约/CONTRACT-001.md"
+        contract.parent.mkdir(parents=True)
+        contract.write_text(
+            "---\nid: CONTRACT-001\ntype: independent_contract\ntitle: 遗留契约\n---\n# 遗留契约\n",
+            encoding="utf-8",
+        )
+
+        proposal = self._proposal()
+
+        self.assertEqual(10, proposal.target_version)
+        self.assertEqual(1, len(proposal.unresolved))
+        self.assertIn("知识维护 Proposal", proposal.unresolved[0].reason)
 
     def test_confirmation_gate_applies_links_and_only_format_version(self) -> None:
         """确认同修订后才写链接，并保持项目版本不变。"""
@@ -121,7 +142,7 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertNotIn("SRC-001", content)
         self.assertFalse((self.root / "00-项目总览/SRC-001.md").exists())
         self.assertTrue((self.root / "05-知识治理/公共来源/SRC-001.md").exists())
-        self.assertIn("format_version: 9", manifest_content)
+        self.assertIn("format_version: 10", manifest_content)
         self.assertIn("knowledge_revision: 1", manifest_content)
         self.assertIn("created_by:", manifest_content)
         self.assertNotIn("revision:", manifest_content.replace("knowledge_revision:", ""))
@@ -174,7 +195,7 @@ class MigrationTests(TempDirectoryTestCase):
         )
 
         self.assertEqual(2, proposal.source_version)
-        self.assertEqual(9, proposal.target_version)
+        self.assertEqual(10, proposal.target_version)
         self.assertEqual(2, len(proposal.moves))
         self.assertEqual(2, len(proposal.removals))
         self.assertEqual([], list(proposal.unresolved))
@@ -185,7 +206,7 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertTrue((self.root / "05-知识治理/AI知识采集协议.md").is_file())
         self.assertFalse((legacy / "本地开发.md").exists())
         self.assertFalse((legacy / "测试规则.md").exists())
-        self.assertIn("format_version: 9", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 10", manifest.read_text(encoding="utf-8"))
         self.assertIn("05-知识治理/README.md", root_readme.read_text(encoding="utf-8"))
         self.assertNotIn("05-开发指南", root_readme.read_text(encoding="utf-8"))
         self.assertEqual(
@@ -212,11 +233,11 @@ class MigrationTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
         self.assertEqual([], list(proposal.unresolved))
-        self.assertEqual(9, proposal.target_version)
+        self.assertEqual(10, proposal.target_version)
         apply_migration(self.root, proposal, proposal.proposal_revision)
 
         self.assertIn("rel_satisfies: []", feature.read_text(encoding="utf-8"))
-        self.assertIn("format_version: 9", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 10", manifest.read_text(encoding="utf-8"))
 
     def test_format_six_creates_complete_specification_workspaces_atomically(self) -> None:
         """格式六升级应创建目录说明及其模板，并拒绝提案后的目标冲突。"""
@@ -240,7 +261,7 @@ class MigrationTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
-        self.assertEqual(9, report.format_version)
+        self.assertEqual(10, report.format_version)
         self.assertTrue((self.root / "03-变更与证据/变更/README.md").is_file())
         self.assertTrue((self.root / "03-变更与证据/变更/TEMPLATE.md").is_file())
         self.assertTrue((self.root / "03-变更与证据/变更/Delta/TEMPLATE.md").is_file())

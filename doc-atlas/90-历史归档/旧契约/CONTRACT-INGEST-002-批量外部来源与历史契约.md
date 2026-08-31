@@ -1,8 +1,8 @@
 ---
 id: CONTRACT-INGEST-002
-type: independent_contract
+type: knowledge_item
 title: 批量、外部来源与摄取历史契约
-status: approved
+status: archived
 scope: project
 independence_basis: multi_consumer
 version: v1

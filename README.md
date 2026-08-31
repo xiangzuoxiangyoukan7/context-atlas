@@ -140,7 +140,7 @@ Codex 不要把 `CODEX_HOME` 指向项目 `.codex/`，否则沙箱、缓存、�
 
 仓库观察、用户陈述、外部来源和 AI 推测必须分别标记。AI 推测只能作为待确认假设；发现冲突时保留竞争值、来源和待裁决问题，不能自行选择看起来更合理的内容。
 
-正式知识使用 Markdown 和 YAML Front Matter。`knowledge-base.yaml` 是机器入口，`schemas/catalog.json` 与各类型 Schema 是格式权威，`.project-kb/scripts/check_knowledge_base.py` 负责确定性结构验证。当前初始化格式为 `format_version: 9`。
+正式知识使用 Markdown 和 YAML Front Matter。`knowledge-base.yaml` 是机器入口，`schemas/catalog.json` 与各类型 Schema 是格式权威，`.project-kb/scripts/check_knowledge_base.py` 负责确定性结构验证。当前初始化格式为 `format_version: 10`。
 
 知识关系使用登记过的正向 `rel_<type>` 字段和知识库内部链接，不维护人工反向列表。查询遵循 `children → neighbors → bounded graph`；返回 `truncated: true` 时不得把省略节点推断为不存在。
 

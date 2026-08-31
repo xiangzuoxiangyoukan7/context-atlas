@@ -5,12 +5,63 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 import re
+import json
 import shutil
-import uuid
 from .validator import ValidationConfig, validate
+from .temporary_workspace import operation_workspace
+from .agent_entry import apply_entry
 
 
 MARKER_PATTERN = re.compile(r"{{[A-Z][A-Z0-9_]*}}")
+
+OBSIDIAN_COLOR_GROUPS = (
+    ("[type:requirement]", 14701138),
+    ("[type:feature]", 4360181),
+    ("[type:module]", 39423),
+    ("[type:interface]", 16753920),
+    ("[type:database_table OR database_unit OR database_namespace OR data_source]", 3447003),
+    ("[type:data_asset]", 16766720),
+    ("[type:adr]", 16744448),
+    ("[type:specification_change OR specification_delta]", 10040012),
+)
+
+
+def _materialize_obsidian_profile(root: Path) -> None:
+    """创建不含个人状态、插件和工作区布局的最小 Obsidian 配置。"""
+
+    settings = root / ".obsidian"
+    settings.mkdir()
+    (settings / "app.json").write_text("{}\n", encoding="utf-8", newline="\n")
+    graph = {
+        "collapse-filter": False,
+        "search": '-path:"90-历史归档"',
+        "showTags": False,
+        "showAttachments": False,
+        "hideUnresolved": False,
+        "showOrphans": True,
+        "collapse-color-groups": False,
+        "colorGroups": [
+            {"query": query, "color": {"a": 1, "rgb": rgb}}
+            for query, rgb in OBSIDIAN_COLOR_GROUPS
+        ],
+        "collapse-display": True,
+        "showArrow": True,
+        "textFadeMultiplier": 0,
+        "nodeSizeMultiplier": 1,
+        "lineSizeMultiplier": 1,
+        "collapse-forces": True,
+        "centerStrength": 0.5,
+        "repelStrength": 10,
+        "linkStrength": 1,
+        "linkDistance": 250,
+        "scale": 1,
+        "close": False,
+    }
+    (settings / "graph.json").write_text(
+        json.dumps(graph, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
 
 
 def _cell(value: object) -> str:
@@ -54,6 +105,16 @@ def _knowledge_status(fact: dict[str, object]) -> str:
     return "approved" if fact.get("status") == "confirmed" else "proposed"
 
 
+def _interface_business_name(item: dict[str, object]) -> str:
+    """从已确认的具体接口观察生成可读且可移植的名称片段。"""
+
+    value = _cell(item["value"]).strip()
+    normalized = re.sub(r"[\\/:*?\"<>|{}]+", "-", value)
+    normalized = re.sub(r"\s+", "-", normalized).strip("-. ")
+    normalized = re.sub(r"-+", "-", normalized)
+    return normalized[:80] or "待确认用途"
+
+
 def _render_module(root: Path, item: dict[str, object]) -> None:
     """把模块观察写成可独立引用的模块契约。"""
 
@@ -75,20 +136,21 @@ def _render_interface(root: Path, item: dict[str, object]) -> None:
     """把接口观察写成统一接口契约并按编号确定通信类型。"""
 
     identifier = _cell(item["id"])
+    business_name = _interface_business_name(item)
     source = item["source"]
     assert isinstance(source, dict)
     prefix = identifier.split("-", 1)[0]
     kinds = {"API": "http", "RPC": "rpc", "EVENT": "event", "WEBHOOK": "webhook", "FILE": "file"}
     lines = [
-        "---", f"id: {identifier}", "type: interface", f"title: {identifier}",
+        "---", f"id: {identifier}", "type: interface", f"title: {business_name}",
         f"status: {_knowledge_status(item)}", f"interface_kind: {kinds.get(prefix, 'function')}",
-        "visibility: internal", "version: v1", "sources:", *_embedded_source_lines(item),
+        "visibility: internal", "content_revision: 1", "api_version: v1", "sources:", *_embedded_source_lines(item),
         "rel_reads: []", "rel_writes: []", "rel_depends_on: []", "rel_verified_by: []",
-        f"last_updated: {str(source['observed_at'])[:10]}", "---", f"# {identifier}", "",
+        f"last_updated: {str(source['observed_at'])[:10]}", "---", f"# {identifier}：{business_name}", "",
         "## 入口、输入与输出", "", _cell(item["value"]), "", "## 错误语义", "", "待确认。", "",
         "## 版本、兼容与敏感字段", "", "待确认。", "",
     ]
-    (root / "02-架构与契约" / "接口" / f"{identifier}.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
+    (root / "02-架构与契约" / "接口" / f"{identifier}-{business_name}.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
 def _render_confirmed_content(root: Path, proposal: dict[str, object]) -> None:
@@ -207,6 +269,8 @@ def initialize_from_assets(
     initialized_at: str | None = None,
     proposal: dict[str, object] | None = None,
     project_display_name: str | None = None,
+    workspace_profile: str = "standard",
+    agent_entry: dict[str, str] | None = None,
 ) -> Path:
     """从 Skill 资产创建自包含且已验证的新知识库。"""
 
@@ -214,6 +278,8 @@ def initialize_from_assets(
     if not project_root.is_dir():
         raise ValueError("project root must be an existing directory")
     name = _safe_project_name(project_name or project_root.name)
+    if workspace_profile not in {"standard", "obsidian"}:
+        raise ValueError("workspace profile must be standard or obsidian")
     target = project_root / f"doc-{name}"
     if target.exists():
         raise FileExistsError(f"knowledge-base target already exists: {target}")
@@ -224,37 +290,55 @@ def initialize_from_assets(
     if not template.is_dir() or not schema_root.is_dir():
         raise ValueError("Skill assets are incomplete")
 
-    # 先在同一文件系统完成复制和验证，最后原子改名，避免暴露半成品目标。
-    staging = project_root / f".{target.name}.initializing-{uuid.uuid4().hex[:8]}"
-    staging.mkdir()
-    try:
-        shutil.copytree(template, staging, dirs_exist_ok=True)
-        _replace_markers(
-            staging,
-            {
-                "{{PROJECT_ID}}": name,
-                "{{PROJECT_NAME}}": project_display_name or name,
-                "{{KNOWLEDGE_BASE_NAME}}": target.name,
-                "{{INITIALIZED_AT}}": initialized_at or date.today().isoformat(),
-            },
-        )
-        if proposal is not None:
-            _render_confirmed_content(staging, proposal)
-        shutil.copytree(assets_root / "scripts", staging / ".project-kb" / "scripts")
-        shutil.copytree(schema_root, staging / ".project-kb" / "schemas")
-        shutil.copy2(
-            assets_root / "compatibility.json",
-            staging / ".project-kb" / "compatibility.json",
-        )
-        issues = validate(staging, ValidationConfig(schema_root=staging / ".project-kb" / "schemas"))
-        if issues:
-            codes = ", ".join(issue.code for issue in issues)
-            raise ValueError(f"materialized knowledge base is invalid: {codes}")
-        if target.exists():
-            raise FileExistsError(f"knowledge-base target appeared during initialization: {target}")
-        staging.replace(target)
-        return target
-    except Exception:
-        if staging.exists():
-            shutil.rmtree(staging)
-        raise
+    # 所有暂存都收敛在项目根固定临时目录的操作子目录中。
+    # 暂存根与最终目标位于同一文件系统，验证后仍可原子改名。
+    with operation_workspace(project_root, "initialize") as operation_root:
+        staging = operation_root / target.name
+        staging.mkdir()
+        try:
+            shutil.copytree(template, staging, dirs_exist_ok=True)
+            _replace_markers(
+                staging,
+                {
+                    "{{PROJECT_ID}}": name,
+                    "{{PROJECT_NAME}}": project_display_name or name,
+                    "{{KNOWLEDGE_BASE_NAME}}": target.name,
+                    "{{WORKSPACE_PROFILE}}": workspace_profile,
+                    "{{INITIALIZED_AT}}": initialized_at or date.today().isoformat(),
+                },
+            )
+            if proposal is not None:
+                _render_confirmed_content(staging, proposal)
+            if workspace_profile == "obsidian":
+                _materialize_obsidian_profile(staging)
+            shutil.copytree(assets_root / "scripts", staging / ".project-kb" / "scripts")
+            shutil.copytree(schema_root, staging / ".project-kb" / "schemas")
+            shutil.copy2(
+                assets_root / "compatibility.json",
+                staging / ".project-kb" / "compatibility.json",
+            )
+            issues = validate(staging, ValidationConfig(schema_root=staging / ".project-kb" / "schemas"))
+            if issues:
+                codes = ", ".join(issue.code for issue in issues)
+                raise ValueError(f"materialized knowledge base is invalid: {codes}")
+            if target.exists():
+                raise FileExistsError(f"knowledge-base target appeared during initialization: {target}")
+            staging.replace(target)
+            if agent_entry is not None:
+                entry_path = project_root / agent_entry["filename"]
+                original_entry = entry_path.read_bytes() if entry_path.exists() else None
+                try:
+                    apply_entry(project_root, agent_entry["host"], agent_entry["filename"], target.name)
+                except Exception:
+                    if original_entry is None:
+                        if entry_path.exists():
+                            entry_path.unlink()
+                    else:
+                        entry_path.write_bytes(original_entry)
+                    shutil.rmtree(target)
+                    raise
+            return target
+        except Exception:
+            if staging.exists():
+                shutil.rmtree(staging)
+            raise

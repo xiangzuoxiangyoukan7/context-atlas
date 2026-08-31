@@ -18,7 +18,6 @@ CORE_RELATIONS = {
     "rel_participating_modules",
     "rel_provides",
     "rel_calls",
-    "rel_uses",
     "rel_exposes",
     "rel_reads",
     "rel_writes",

@@ -1,8 +1,8 @@
 ---
 id: F01-AC-03
-type: acceptance_contract
+type: knowledge_item
 title: 可选 Obsidian 初始化
-status: approved
+status: archived
 approval_status: approved
 lifecycle_status: active
 spec_readiness: ready

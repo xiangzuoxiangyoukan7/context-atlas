@@ -230,7 +230,7 @@ class InitializationContractTests(InstalledPluginTestCase):
         graph = json.loads((settings / "graph.json").read_text(encoding="utf-8"))
         queries = {item["query"] for item in graph["colorGroups"]}
         self.assertIn("[type:feature]", queries)
-        self.assertIn("[type:contract OR independent_contract]", queries)
+        self.assertNotIn("[type:contract OR independent_contract]", queries)
         self.assertEqual('-path:"90-历史归档"', graph["search"])
         self.assertIn(".obsidian/app.json", report.written_files)
         self.assertIn("workspace_profile: obsidian", (target / "knowledge-base.yaml").read_text(encoding="utf-8"))

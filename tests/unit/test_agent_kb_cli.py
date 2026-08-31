@@ -30,7 +30,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         """格式诊断应明确当前版本是否可写及是否需要转换。"""
 
         (self.root / "knowledge-base.yaml").write_text(
-            "project_version: 1.0.0\nformat_version: 9\n", encoding="utf-8"
+            "project_version: 1.0.0\nformat_version: 10\n", encoding="utf-8"
         )
 
         exit_code, payload = self._run(
@@ -286,7 +286,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         """旧格式诊断命令仅作为兼容别名继续工作。"""
 
         (self.root / "knowledge-base.yaml").write_text(
-            "project_version: 1.0.0\nformat_version: 9\n", encoding="utf-8"
+            "project_version: 1.0.0\nformat_version: 10\n", encoding="utf-8"
         )
 
         exit_code, payload = self._run(

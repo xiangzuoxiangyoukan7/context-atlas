@@ -17,7 +17,7 @@ last_updated: 2026-08-19
 ## 关联依据
 
 - 功能：F01、F02、F03、F05 的产品验收项。
-- 契约：[初始化产物契约](../../02-架构与契约/初始化产物契约.md)、[知识项与 Proposal 契约](../../02-架构与契约/知识项与Proposal契约.md)
+- 历史契约：[初始化产物契约](../旧契约/初始化产物契约.md)、[知识项与 Proposal 契约](../旧契约/知识项与Proposal契约.md)
 - Skill：[初始化 Skill](../../../skills/context-atlas-init/SKILL.md)、[更新 Skill](../../../skills/context-atlas-update/SKILL.md)
 
 ## 范围

@@ -40,18 +40,6 @@ class SpecificationValidationTests(TempDirectoryTestCase):
         self.assertIn("KB_DELTA_CHANGE", codes)
         self.assertIn("KB_DELTA_MIGRATION", codes)
 
-    def test_acceptance_contract_requires_subject_and_sections(self) -> None:
-        """验收契约必须指向对象并包含完整场景区段。"""
-
-        acceptance = self.record(
-            "acceptance.md",
-            "id: AC-DOMAIN-001\ntype: acceptance_contract\nsubject_id: F01",
-            "## WHEN\n",
-        )
-        codes = [item.code for item in validate_specifications([acceptance])]
-        self.assertIn("KB_SPEC_ACCEPTANCE_SUBJECT", codes)
-        self.assertEqual(3, codes.count("KB_SPEC_ACCEPTANCE_SECTION"))
-
     def test_ready_feature_requires_normative_embedded_scenario(self) -> None:
         """就绪功能必须声明并内嵌完整验收场景。"""
 
@@ -60,10 +48,11 @@ class SpecificationValidationTests(TempDirectoryTestCase):
             "id: F01\ntype: feature\nspec_readiness: ready\nblocking_questions: []",
             "# Feature\n",
         )
-        self.assertEqual(
-            {"KB_SPEC_COVERAGE", "KB_SPEC_NORMATIVE", "KB_SPEC_SCENARIO"},
-            {item.code for item in validate_specifications([feature])},
-        )
+        codes = [item.code for item in validate_specifications([feature])]
+        self.assertIn("KB_SPEC_COVERAGE", codes)
+        self.assertIn("KB_SPEC_NORMATIVE", codes)
+        self.assertIn("KB_SPEC_SCENARIO", codes)
+        self.assertEqual(5, codes.count("KB_SPEC_FEATURE_DESIGN"))
 
     def test_interface_requires_business_name_and_single_endpoint(self) -> None:
         """接口文件必须可读，且不能聚合多个 HTTP 端点。"""

@@ -51,7 +51,7 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
             "01-功能基线/F01.md",
             id="F01", type="feature", title="Feature", status=status,
             phase="mvp", priority="P0", current_slice="included",
-            depends_on=[], acceptance=acceptance or ["F01-AC-01"], contracts=[], adr=[],
+            depends_on=[], acceptance=acceptance or ["F01-AC-01"], adr=[],
             last_updated="2026-08-07",
         )
 

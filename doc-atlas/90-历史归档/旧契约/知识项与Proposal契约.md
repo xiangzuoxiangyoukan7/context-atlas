@@ -1,8 +1,9 @@
 ---
 id: CONTRACT-KNOWLEDGE-001
-type: contract
+type: knowledge_item
 title: 知识项与 Proposal 契约
-status: approved
+status: archived
+sources: [user_statement:2026-08-31-feature-integrated-design]
 last_updated: 2026-08-25
 ---
 

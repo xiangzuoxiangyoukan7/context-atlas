@@ -1,8 +1,8 @@
 ---
 id: CONTRACT-SOURCE-001
-type: independent_contract
+type: knowledge_item
 title: 受管来源文件契约
-status: approved
+status: archived
 scope: project
 independence_basis: cross_boundary
 version: v2

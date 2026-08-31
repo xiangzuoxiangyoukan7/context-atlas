@@ -85,7 +85,7 @@ def _approved_data_asset(root: Path, name: str) -> None:
 | database | 知识项存储 | 流入 | 保存并提供虚构知识项数据 | [DB-001](../数据库/DB-001.md) |"""
     if name == "multi-stack":
         mappings += """
-| api | 知识查询接口 | 流出 | 向查询组件提供虚构知识项 | [CONTRACT-001](../CONTRACT-001.md) |
+| api | 知识查询接口 | 流出 | 向查询组件提供虚构知识项 | [API-QUERY-001](../接口/API-QUERY-001.md) |
 | file | 知识项导入文件 | 流入 | 批量导入虚构知识项 | [FILE-001](../FILE-001.md) |"""
     _record(
         root / "02-架构与契约/数据资产/DATA-001-知识项.md",
@@ -108,7 +108,7 @@ def _approved_data_asset(root: Path, name: str) -> None:
         },
         f"""# DATA-001：知识项数据
 
-这是仅用于黄金样例的虚构业务数据资产，技术细节见[数据库契约](../数据库/DB-001.md)和[接口契约](../CONTRACT-001.md)。
+这是仅用于黄金样例的虚构业务数据资产，技术细节见[数据库对象](../数据库/DB-001.md)和[知识查询接口](../接口/API-QUERY-001.md)。
 
 ## 数据来源映射
 
@@ -202,7 +202,6 @@ def _populate_example(root: Path, name: str) -> None:
     )
 
     records = [
-        ("02-架构与契约/CONTRACT-001.md", "CONTRACT-001", "查询契约"),
         ("02-架构与契约/FILE-001.md", "FILE-001", "知识项导入文件契约"),
         ("02-架构与契约/数据库/DB-001.md", "DB-001", "知识项存储"),
         ("02-架构与契约/原型/PROTO-001.md", "PROTO-001", "查询流程原型"),
@@ -222,7 +221,7 @@ def _populate_example(root: Path, name: str) -> None:
         root / "02-架构与契约/系统架构.md",
         """# 系统架构
 
-查询组件读取 [DB-001](./数据库/DB-001.md)，遵循 [CONTRACT-001](./CONTRACT-001.md)，外部依赖见 [EXT-001](./外部依赖/EXT-001.md)。全部内容为已确认虚构样例。
+查询组件读取 [DB-001](./数据库/DB-001.md)，外部依赖见 [EXT-001](./外部依赖/EXT-001.md)。功能自身设计保留在功能文档。全部内容为已确认虚构样例。
 """,
     )
     _record(
@@ -237,7 +236,6 @@ def _populate_example(root: Path, name: str) -> None:
             "current_slice": "included",
             "depends_on": [],
             "acceptance": ["F01-AC-01"],
-            "contracts": ["CONTRACT-001"],
             "adr": ["ADR-001"],
             "database": ["DB-001"],
             "prototypes": ["PROTO-001"],
@@ -328,7 +326,7 @@ def _generate_invalid_fixtures(root: Path) -> None:
             metadata["status"] = "conflicted"
             metadata["sources"] = ["SRC-001", "SRC-002"]
         elif name == "broken-traceability":
-            metadata["contracts"] = ["CONTRACT-MISSING"]
+            metadata["adr"] = ["ADR-MISSING"]
         elif name == "sensitive-material":
             body += "\n\nSERVICE_TOKEN=real-sensitive-value"
         elif name == "archived-reference":

@@ -1,8 +1,8 @@
 ---
 id: CONTRACT-INGEST-001
-type: independent_contract
+type: knowledge_item
 title: 单来源摄取与维护路由契约
-status: approved
+status: archived
 scope: project
 independence_basis: multi_consumer
 version: v1
@@ -10,8 +10,6 @@ sources:
   - user_statement:2026-08-21-ingest-design-confirmation
   - existing_document:ADR-006
   - existing_document:knowledge-capture-and-confirmation
-rel_verified_by:
-  - "[[03-变更与证据/验收契约/F02-AC-04-单来源摄取与路由.md|F02-AC-04]]"
 last_updated: 2026-08-21
 ---
 

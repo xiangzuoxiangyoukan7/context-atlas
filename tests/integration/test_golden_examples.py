@@ -49,7 +49,7 @@ class GoldenExampleTests(unittest.TestCase):
                 "| database | 知识项存储 | 流入 | 保存并提供虚构知识项数据 | "
                 "[DB-001](../数据库/DB-001.md) |",
                 "| api | 知识查询接口 | 流出 | 向查询组件提供虚构知识项 | "
-                "[CONTRACT-001](../CONTRACT-001.md) |",
+                "[API-QUERY-001](../接口/API-QUERY-001.md) |",
                 "| file | 知识项导入文件 | 流入 | 批量导入虚构知识项 | "
                 "[FILE-001](../FILE-001.md) |",
             ),
@@ -58,7 +58,7 @@ class GoldenExampleTests(unittest.TestCase):
             "single-stack": ("../数据库/DB-001.md",),
             "multi-stack": (
                 "../数据库/DB-001.md",
-                "../CONTRACT-001.md",
+                "../接口/API-QUERY-001.md",
                 "../FILE-001.md",
             ),
         }
