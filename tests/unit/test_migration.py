@@ -354,3 +354,32 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertEqual(1, len(proposal.unresolved))
         self.assertIn("技术栈或技术契约", proposal.unresolved[0].reason)
         self.assertTrue(custom.is_file())
+
+    def test_format_eleven_template_is_removed_not_moved_and_revision_is_stable(self) -> None:
+        """格式十一不得为同一模板生成移动和删除计划，修订号必须稳定。"""
+
+        self._manifest().write_text(
+            "project_id: example\nproject_version: 3.4.0\n"
+            "format_version: 10\nknowledge_revision: 1\n",
+            encoding="utf-8",
+        )
+        legacy = self.root / "02-架构与契约/接口"
+        legacy.mkdir(parents=True)
+        template = legacy / "TEMPLATE.md"
+        template.write_text("# 旧模板\n", encoding="utf-8")
+        document = legacy / "API-001.md"
+        document.write_text("# 接口\n", encoding="utf-8")
+
+        first = self._proposal()
+        second = self._proposal()
+
+        self.assertEqual(first.proposal_revision, second.proposal_revision)
+        self.assertNotIn(template.resolve(), {item.source.resolve() for item in first.moves})
+        self.assertIn(template.resolve(), {item.path.resolve() for item in first.removals})
+        self.assertFalse(first.unresolved)
+
+        from scripts.project_kb.migration import apply_migration
+
+        apply_migration(self.root, first, first.proposal_revision)
+        self.assertFalse(template.exists())
+        self.assertTrue((self.root / "02-技术基线/接口/API-001.md").exists())

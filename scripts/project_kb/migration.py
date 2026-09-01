@@ -133,28 +133,32 @@ def _revision(
     """根据完整提案内容生成稳定且不可猜测的短修订号。"""
 
     parts = [f"{source_version}->{target_version}"]
-    parts.extend(
+    # 每个类别都按规范化字符串排序。调用方即使传入由 set 或文件系统
+    # 遍历产生的非确定性顺序，也必须得到同一个提案修订号。
+    parts.extend(sorted(
         f"change:{change.path}:{change.original_digest}:{','.join(change.links)}"
         for change in changes
-    )
-    parts.extend(
+    ))
+    parts.extend(sorted(
         f"move:{move.source}:{move.target}:{move.original_digest}" for move in moves
-    )
-    parts.extend(
+    ))
+    parts.extend(sorted(
         f"remove:{removal.path}:{removal.original_digest}" for removal in removals
-    )
-    parts.extend(f"rewrite:{rewrite.path}:{rewrite.original_digest}" for rewrite in rewrites)
-    parts.extend(
+    ))
+    parts.extend(sorted(
+        f"rewrite:{rewrite.path}:{rewrite.original_digest}" for rewrite in rewrites
+    ))
+    parts.extend(sorted(
         f"create:{creation.path}:{creation.content_digest}" for creation in creations
-    )
-    parts.extend(
+    ))
+    parts.extend(sorted(
         f"asset:{asset.path}:{asset.original_digest or 'missing'}:{asset.content_digest}"
         for asset in assets
-    )
-    parts.extend(
+    ))
+    parts.extend(sorted(
         f"unresolved:{item.path}:{item.source_id}:{item.reason}"
         for item in unresolved
-    )
+    ))
     return "migration-" + hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()[:12]
 
 
@@ -360,12 +364,15 @@ def _format11_layout(root: Path) -> tuple[tuple[MigrationMove, ...], tuple[Migra
     legacy_technical = root / "02-架构与契约"
     if legacy_technical.is_dir():
         for source in sorted(path for path in legacy_technical.rglob("*") if path.is_file()):
+            # TEMPLATE.md 是旧模板占位文件，由下面的删除计划处理，不能同时迁移。
+            if source.name == "TEMPLATE.md":
+                continue
             target = root / "02-技术基线" / source.relative_to(legacy_technical)
             if target.exists():
                 unresolved.append(MigrationUnresolved(source, source.stem, "新旧技术基线路径同时存在"))
             else:
                 moves.append(MigrationMove(source, target, _digest(source.read_bytes())))
-    for relative in FORMAT11_REMOVALS:
+    for relative in sorted(FORMAT11_REMOVALS):
         path = root / relative
         if path.is_file():
             removals.append(MigrationRemoval(path, _digest(path.read_bytes())))
@@ -376,6 +383,19 @@ def _format11_layout(root: Path) -> tuple[tuple[MigrationMove, ...], tuple[Migra
     for path in sorted(root.rglob("TEMPLATE.md")):
         if ".project-kb" not in path.parts:
             removals.append(MigrationRemoval(path, _digest(path.read_bytes())))
+    move_sources = {move.source.resolve() for move in moves}
+    removal_paths = {removal.path.resolve() for removal in removals}
+    conflicts = move_sources & removal_paths
+    if conflicts:
+        for path in sorted(conflicts):
+            unresolved.append(
+                MigrationUnresolved(
+                    path,
+                    path.name,
+                    "同一路径同时出现在移动和删除计划中",
+                )
+            )
+        moves = [move for move in moves if move.source.resolve() not in conflicts]
     return tuple(moves), tuple(removals), tuple(unresolved)
 
 
