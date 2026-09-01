@@ -521,6 +521,128 @@ def _format11_document(content: str, relative: str, initialized_at: str | None) 
     return "".join([lines[0], metadata, lines[closing], *lines[closing + 1:]])
 
 
+def _metadata_block(metadata: str, key: str) -> str:
+    """读取一个顶层 Front Matter 字段及其缩进内容。"""
+
+    match = re.search(
+        rf"(?ms)^{re.escape(key)}:\s*(.*?)(?=^[A-Za-z_][A-Za-z0-9_-]*:|\Z)",
+        metadata,
+    )
+    return match.group(1).strip() if match else ""
+
+
+def _simple_metadata_values(metadata: str, key: str) -> list[str]:
+    """读取旧需求中使用的行内列表或简单块列表。"""
+
+    raw = _metadata_block(metadata, key)
+    if not raw:
+        return []
+    if raw.startswith("[") and raw.endswith("]"):
+        return [item.strip().strip("\"'") for item in raw[1:-1].split(",") if item.strip()]
+    return [match.strip().strip("\"'") for match in re.findall(r"(?m)^\s*-\s+(.+)$", raw)]
+
+
+def _append_requirement_section(body: str, title: str, content: str) -> str:
+    """只在旧需求缺少目标章节时追加格式 12 的稳定章节。"""
+
+    if re.search(rf"(?m)^## {re.escape(title)}\s*$", body):
+        return body
+    return body.rstrip() + f"\n\n## {title}\n\n{content.strip()}\n"
+
+
+def _embedded_source_rows(metadata: str) -> list[str]:
+    """把格式 11 的内嵌来源对象转换为正文来源表格行。"""
+
+    raw = _metadata_block(metadata, "sources")
+    if not raw:
+        return []
+    rows: list[str] = []
+    for chunk in re.split(r"(?m)^\s*-\s+", raw):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        values = {
+            key: value.strip().strip("\"'")
+            for key, value in re.findall(r"(?m)^\s*([A-Za-z_][A-Za-z0-9_-]*):\s*(.+)$", chunk)
+        }
+        rows.append(
+            "| {type} | {reference} | {observed_at} | {confirmation_status} | {confirmed_at} |".format(
+                type=values.get("type", "unknown"),
+                reference=values.get("reference", "待确认").replace("|", "\\|"),
+                observed_at=values.get("observed_at", "待确认"),
+                confirmation_status=values.get("confirmation_status", "observed"),
+                confirmed_at=values.get("confirmed_at", "—"),
+            )
+        )
+    return rows
+
+
+def _format12_requirement(content: str) -> str:
+    """把格式 11 需求的重复元数据等价收敛到正文。"""
+
+    lines = content.splitlines(keepends=True)
+    if not lines or lines[0].rstrip("\r\n") != "---":
+        return content
+    closing = next((i for i, line in enumerate(lines[1:], 1) if line.rstrip("\r\n") == "---"), None)
+    if closing is None:
+        return content
+    metadata = "".join(lines[1:closing])
+    if not re.search(r"(?m)^type:\s*requirement\s*$", metadata):
+        return content
+    body = "".join(lines[closing + 1:])
+    mapped_sections = {
+        "business_rules": "业务规则",
+        "success_criteria": "成功标准",
+        "assumptions": "假设",
+        "blocking_questions": "待澄清问题",
+    }
+    for key, title in mapped_sections.items():
+        values = _simple_metadata_values(metadata, key)
+        if values and re.search(rf"(?m)^## {re.escape(title)}\s*$", body):
+            section = re.search(
+                rf"(?ms)^## {re.escape(title)}\s*\n(.*?)(?=^## |\Z)", body
+            )
+            if section and any(value not in section.group(1) for value in values):
+                raise ValueError(f"requirement metadata conflicts with body section: {title}")
+    rules = _simple_metadata_values(metadata, "business_rules")
+    criteria = _simple_metadata_values(metadata, "success_criteria")
+    assumptions = _simple_metadata_values(metadata, "assumptions")
+    questions = _simple_metadata_values(metadata, "blocking_questions")
+    if rules:
+        rows = "\n".join(f"| BR-MIGRATED-{index:03d} | {value} | 格式 11 元数据 |" for index, value in enumerate(rules, 1))
+        body = _append_requirement_section(body, "业务规则", f"| ID | 规则 | 来源 |\n| --- | --- | --- |\n{rows}")
+    if criteria:
+        rows = "\n".join(f"| SC-MIGRATED-{index:03d} | {value} | 待确认 | 格式 11 元数据 |" for index, value in enumerate(criteria, 1))
+        body = _append_requirement_section(body, "成功标准", f"| ID | 可观察结果 | 验证方式 | 来源 |\n| --- | --- | --- | --- |\n{rows}")
+    body = _append_requirement_section(body, "约束与依赖", "无已登记外部依赖。")
+    body = _append_requirement_section(body, "假设", "\n".join(f"- {value}" for value in assumptions) if assumptions else "当前没有已登记假设。")
+    question_rows = "\n".join(f"| BQ-MIGRATED-{index:03d} | {value} | 待确认 | open |" for index, value in enumerate(questions, 1))
+    body = _append_requirement_section(body, "待澄清问题", f"| ID | 问题 | 影响范围 | 状态 |\n| --- | --- | --- | --- |\n{question_rows}")
+    source_rows = _embedded_source_rows(metadata)
+    source_table = "| 类型 | 精确定位 | 观察时间 | 确认状态 | 确认时间 |\n| --- | --- | --- | --- | --- |"
+    source_table += "\n" + ("\n".join(source_rows) if source_rows else "| existing_document | 格式 11 原需求元数据 | 待确认 | observed | — |")
+    body = _append_requirement_section(body, "来源与确认", source_table)
+    readiness_match = re.search(r"(?m)^spec_readiness:\s*(\S+)\s*$", metadata)
+    readiness = readiness_match.group(1) if readiness_match else "draft"
+    removed = (
+        "approval_status", "lifecycle_status", "spec_readiness", "stakeholders",
+        "business_rules", "success_criteria", "assumptions", "blocking_questions", "sources",
+    )
+    for key in removed:
+        metadata = re.sub(
+            rf"(?ms)^{re.escape(key)}:.*?(?=^[A-Za-z_][A-Za-z0-9_-]*:|\Z)",
+            "",
+            metadata,
+        )
+    status_match = re.search(r"(?m)^status:.*$", metadata)
+    insertion = f"readiness: {readiness}"
+    if status_match:
+        metadata = metadata[:status_match.end()] + "\n" + insertion + metadata[status_match.end():]
+    else:
+        metadata += insertion + "\n"
+    return "".join([lines[0], metadata, lines[closing], body])
+
+
 def _initialized_at(root: Path) -> str | None:
     """读取清单初始化日期，供遗留文档补齐最新元数据。"""
 
@@ -641,6 +763,14 @@ def build_migration_proposal(
                 path.resolve().relative_to(resolved_root).as_posix(),
                 initialized_at,
             )
+            if result.creates_format_version >= 12:
+                try:
+                    normalized = _format12_requirement(normalized)
+                except ValueError as error:
+                    layout_unresolved += (
+                        MigrationUnresolved(path.resolve(), path.name, str(error)),
+                    )
+                    continue
             if normalized == original:
                 continue
             rewrites = tuple(
@@ -873,6 +1003,8 @@ def apply_migration(
                     move.target.resolve().relative_to(resolved_root).as_posix(),
                     _initialized_at(resolved_root),
                 )
+                if proposal.target_version >= 12:
+                    normalized = _format12_requirement(normalized)
                 if move.target.name == "README.md":
                     normalized = _rewrite_governance_paths(normalized, governance_readme=True)
                 _atomic_write(move.target, normalized)

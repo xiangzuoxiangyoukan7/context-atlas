@@ -27,6 +27,64 @@ class SpecificationValidationTests(TempDirectoryTestCase):
         )
         self.assertIn("KB_SPEC_READY_BLOCKED", [item.code for item in validate_specifications([record])])
 
+    def test_ready_requirement_does_not_require_feature_coverage(self) -> None:
+        """需求自身完整即可 ready，不得强制已经存在功能承接。"""
+
+        record = self.record(
+            "requirement.md",
+            "id: REQ-DEMO-001\ntype: requirement\nreadiness: ready",
+            """# 需求
+
+## 问题与价值
+
+解决明确问题。
+
+## 范围
+
+包含已确认范围。
+
+## 业务规则
+
+| ID | 规则 | 来源 |
+| --- | --- | --- |
+| BR-DEMO-001 | 不重复保存事实 | 用户确认 |
+
+## 成功标准
+
+| ID | 可观察结果 | 验证方式 | 来源 |
+| --- | --- | --- | --- |
+| SC-DEMO-001 | 检查通过 | 自动检查 | 用户确认 |
+
+## 约束与依赖
+
+无外部依赖。
+
+## 来源与确认
+
+| 类型 | 精确定位 | 观察时间 | 确认状态 | 确认时间 |
+| --- | --- | --- | --- | --- |
+| user_statement | 当前测试 | 2026-09-01 | confirmed | 2026-09-01 |
+""",
+        )
+
+        codes = [item.code for item in validate_specifications([record])]
+
+        self.assertNotIn("KB_COVERAGE_REQUIREMENT", codes)
+        self.assertEqual([], codes)
+
+    def test_ready_requirement_reads_blockers_from_body(self) -> None:
+        """格式 12 需求从正文读取开放阻塞问题。"""
+
+        record = self.record(
+            "requirement.md",
+            "id: REQ-DEMO-001\ntype: requirement\nreadiness: ready",
+            "## 待澄清问题\n\n| ID | 问题 | 影响范围 | 状态 |\n| --- | --- | --- | --- |\n| BQ-DEMO-001 | 待确认 | 范围 | open |\n",
+        )
+
+        codes = [item.code for item in validate_specifications([record])]
+
+        self.assertIn("KB_SPEC_READY_BLOCKED", codes)
+
     def test_removed_delta_requires_migration_and_existing_change(self) -> None:
         """删除增量必须指向变更并提供真实迁移信息。"""
 

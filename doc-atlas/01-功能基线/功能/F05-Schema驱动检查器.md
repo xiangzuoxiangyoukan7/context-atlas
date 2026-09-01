@@ -7,9 +7,11 @@ phase: mvp
 priority: P0
 current_slice: included
 depends_on: [F03, F04]
-acceptance: [F05-AC-01, F05-AC-02, F05-AC-03, F05-AC-04, F05-AC-05]
-adr: [ADR-005, ADR-007, ADR-011, ADR-012]
-last_updated: 2026-08-31
+acceptance: [F05-AC-01, F05-AC-02, F05-AC-03, F05-AC-04, F05-AC-05, F05-AC-06]
+adr: [ADR-005, ADR-007, ADR-011, ADR-012, ADR-013]
+last_updated: 2026-09-01
+rel_satisfies:
+  - "[[01-功能基线/需求/REQ-ATLAS-001-知识库README层级导航|REQ-ATLAS-001]]"
 rel_classified_under:
   - "[[01-功能基线/功能/README|IDX-FEATURES]]"
 ---
@@ -57,6 +59,8 @@ rel_classified_under:
 5. 对任务、矩阵和证据检查其引用的场景是否存在。
 6. 分别输出确定性错误和需要人工判断的复核项。
 
+格式 12 的需求就绪度只由需求正文完整性和开放阻塞问题决定。`rel_satisfies` 只形成独立覆盖视图；未被功能承接的完整需求可以保持 `ready`，不得产生结构错误或被解释为已实现。
+
 ### 异常、边界与降级
 
 - `ready` 功能必须包含设计概述、处理流程或状态变化、异常边界以及技术对象说明。
@@ -79,3 +83,4 @@ Schema 保持机器结构权威，Python 规则只检查无法由轻量 Schema �
 - `F05-AC-03`：检查器能识别功能缺少设计、行为缺少验收覆盖、阻塞问题与就绪度矛盾、非法或不完整 Delta，并区分确定性错误与人工复核项。
 - `F05-AC-04`：检查器能验证需求到功能、技术对象、外部任务引用和验收证据的追溯覆盖，且不会把外部任务状态或归档动作当成正式知识批准。
 - `F05-AC-05`：健康检查能稳定定位结构问题、版本权威冲突和人工复核项，且运行前后正式知识摘要不变。
+- `F05-AC-06`：完整但尚无功能承接的需求可以标记 `ready` 并通过结构检查；覆盖视图报告 `uncovered`，但不把它当成规格缺陷或实现完成。

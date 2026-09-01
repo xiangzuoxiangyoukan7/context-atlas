@@ -63,6 +63,94 @@ class MigrationTests(TempDirectoryTestCase):
         policy = CompatibilityPolicy.load(ROOT / "compatibility.json")
         return build_migration_proposal(self.root, records, policy)
 
+    def test_format_twelve_moves_requirement_content_to_body(self) -> None:
+        """格式十一需求应把重复业务元数据等价迁入正文。"""
+
+        from scripts.project_kb.migration import _format12_requirement
+
+        original = """---
+id: REQ-DEMO-001
+type: requirement
+title: 示例需求
+status: proposed
+spec_readiness: ready
+priority: P1
+business_rules: [不得重复维护]
+success_criteria: [新增知识后索引可查询]
+assumptions: []
+blocking_questions: []
+sources:
+  - type: user_statement
+    reference: 当前测试
+    observed_at: 2026-09-01T00:00:00+08:00
+    confirmation_status: confirmed
+    confirmed_at: 2026-09-01T00:00:00+08:00
+last_updated: 2026-09-01
+rel_classified_under:
+  - "[[01-功能基线/需求/README|IDX-REQUIREMENTS]]"
+---
+# 示例需求
+
+## 问题与价值
+
+解决重复维护问题。
+
+## 范围
+
+包含需求文档。
+"""
+
+        converted = _format12_requirement(original)
+
+        self.assertIn("readiness: ready", converted)
+        self.assertNotIn("spec_readiness:", converted)
+        self.assertNotIn("business_rules:", converted)
+        self.assertNotIn("sources:\n", converted.split("---", 2)[1])
+        self.assertIn("| BR-MIGRATED-001 | 不得重复维护 |", converted)
+        self.assertIn("| SC-MIGRATED-001 | 新增知识后索引可查询 |", converted)
+        self.assertIn("| user_statement | 当前测试 |", converted)
+
+    def test_format_eleven_requirement_migrates_end_to_end(self) -> None:
+        """格式十一需求应通过正式迁移提案进入格式十二。"""
+
+        from scripts.project_kb.migration import apply_migration
+
+        manifest = self._manifest()
+        manifest.write_text(
+            "project_id: example\nproject_name: example\nknowledge_base_name: doc-example\n"
+            "project_version: 3.4.0\nformat_version: 11\nknowledge_revision: 1\n",
+            encoding="utf-8",
+        )
+        requirement = self.root / "01-功能基线/需求/REQ-DEMO-001.md"
+        requirement.parent.mkdir(parents=True)
+        requirement.write_text(
+            "---\nid: REQ-DEMO-001\ntype: requirement\ntitle: 示例需求\n"
+            "status: proposed\nspec_readiness: ready\npriority: P1\n"
+            "business_rules: [不得重复维护]\n"
+            "success_criteria: [新增知识后索引可查询]\n"
+            "assumptions: []\nblocking_questions: []\n"
+            "sources:\n  - type: user_statement\n    reference: 当前测试\n"
+            "    observed_at: 2026-09-01T00:00:00+08:00\n"
+            "    confirmation_status: confirmed\n"
+            "    confirmed_at: 2026-09-01T00:00:00+08:00\n"
+            "last_updated: 2026-09-01\n"
+            "rel_classified_under:\n"
+            "  - \"[[01-功能基线/需求/README|IDX-REQUIREMENTS]]\"\n"
+            "---\n# 示例需求\n\n## 问题与价值\n\n解决问题。\n\n"
+            "## 范围\n\n包含示例。\n",
+            encoding="utf-8",
+        )
+
+        proposal = self._proposal()
+
+        self.assertFalse(proposal.unresolved)
+        report = apply_migration(self.root, proposal, proposal.proposal_revision)
+        converted = requirement.read_text(encoding="utf-8")
+        self.assertEqual(12, report.format_version)
+        self.assertIn("readiness: ready", converted)
+        self.assertNotIn("business_rules:", converted)
+        self.assertIn("## 来源与确认", converted)
+
     def test_proposal_lists_equivalent_source_link_without_writing(self) -> None:
         """生成迁移提案只能读文件并列出确定的一对一转换。"""
 
@@ -74,7 +162,7 @@ class MigrationTests(TempDirectoryTestCase):
         proposal = self._proposal()
 
         self.assertEqual(1, proposal.source_version)
-        self.assertEqual(11, proposal.target_version)
+        self.assertEqual(12, proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
         self.assertIn(
             '"reference": "fixture"',
@@ -113,7 +201,7 @@ class MigrationTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
 
-        self.assertEqual(11, proposal.target_version)
+        self.assertEqual(12, proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
 
         from scripts.project_kb.migration import apply_migration
@@ -149,7 +237,7 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertNotIn("SRC-001", content)
         self.assertFalse((self.root / "00-项目总览/SRC-001.md").exists())
         self.assertTrue((self.root / "05-知识治理/公共来源/SRC-001.md").exists())
-        self.assertIn("format_version: 11", manifest_content)
+        self.assertIn("format_version: 12", manifest_content)
         self.assertIn("knowledge_revision: 1", manifest_content)
         self.assertIn("created_by:", manifest_content)
         self.assertNotIn("revision:", manifest_content.replace("knowledge_revision:", ""))
@@ -202,7 +290,7 @@ class MigrationTests(TempDirectoryTestCase):
         )
 
         self.assertEqual(2, proposal.source_version)
-        self.assertEqual(11, proposal.target_version)
+        self.assertEqual(12, proposal.target_version)
         self.assertEqual(2, len(proposal.moves))
         self.assertEqual(2, len(proposal.removals))
         self.assertEqual([], list(proposal.unresolved))
@@ -213,7 +301,7 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertTrue((self.root / "05-知识治理/AI知识采集协议.md").is_file())
         self.assertFalse((legacy / "本地开发.md").exists())
         self.assertFalse((legacy / "测试规则.md").exists())
-        self.assertIn("format_version: 11", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 12", manifest.read_text(encoding="utf-8"))
         self.assertIn("05-知识治理/README.md", root_readme.read_text(encoding="utf-8"))
         self.assertNotIn("05-开发指南", root_readme.read_text(encoding="utf-8"))
         self.assertEqual(
@@ -240,11 +328,11 @@ class MigrationTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
         self.assertEqual([], list(proposal.unresolved))
-        self.assertEqual(11, proposal.target_version)
+        self.assertEqual(12, proposal.target_version)
         apply_migration(self.root, proposal, proposal.proposal_revision)
 
         self.assertIn("rel_satisfies: []", feature.read_text(encoding="utf-8"))
-        self.assertIn("format_version: 11", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 12", manifest.read_text(encoding="utf-8"))
 
     def test_format_six_creates_complete_specification_workspaces_atomically(self) -> None:
         """格式六升级应创建目录说明及其模板，并拒绝提案后的目标冲突。"""
@@ -268,7 +356,7 @@ class MigrationTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
-        self.assertEqual(11, report.format_version)
+        self.assertEqual(12, report.format_version)
         self.assertTrue((self.root / "03-变更与证据/变更/README.md").is_file())
         self.assertFalse((self.root / "03-变更与证据/变更/TEMPLATE.md").exists())
         self.assertFalse((self.root / "03-变更与证据/变更/Delta/TEMPLATE.md").exists())
