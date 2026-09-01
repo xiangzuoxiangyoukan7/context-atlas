@@ -5,6 +5,8 @@ title: 受治理的 LLM Wiki 摄取与场景化使用
 status: accepted
 date: 2026-08-21
 last_updated: 2026-08-21
+rel_classified_under:
+  - "[[04-决策记录/README|IDX-DECISIONS]]"
 ---
 
 # ADR-006：受治理的 LLM Wiki 摄取与场景化使用

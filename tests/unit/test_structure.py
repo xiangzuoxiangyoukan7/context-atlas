@@ -15,7 +15,7 @@ class StructureTests(TempDirectoryTestCase):
         """完整核心模板的固定结构和权威目标均有效。"""
 
         root = materialize_core_template(self.root, "example")
-        records, _ = discover_records(root, frozenset({"90-历史归档"}))
+        records, _ = discover_records(root, frozenset({".project-kb", "90-历史归档"}))
         self.assertEqual([], validate_structure(root, records))
 
     def test_missing_authority_and_wrong_type_directory_fail(self) -> None:
@@ -23,10 +23,10 @@ class StructureTests(TempDirectoryTestCase):
 
         root = materialize_core_template(self.root, "example")
         (root / "01-功能基线/README.md").unlink()
-        (root / "02-架构与契约/F01-wrong.md").write_text(
+        (root / "02-技术基线/F01-wrong.md").write_text(
             "---\nid: F01\ntype: feature\n---\n# wrong\n", encoding="utf-8"
         )
-        records, _ = discover_records(root, frozenset({"90-历史归档"}))
+        records, _ = discover_records(root, frozenset({".project-kb", "90-历史归档"}))
         codes = {issue.code for issue in validate_structure(root, records)}
         self.assertIn("KB_STRUCTURE_REQUIRED", codes)
         self.assertIn("KB_AUTHORITY_MISSING", codes)
@@ -42,7 +42,7 @@ class StructureTests(TempDirectoryTestCase):
         (root / "01-功能基线/F-ORDER-001.md").write_text(
             "---\nid: F-ORDER-001\ntype: feature\n---\n# legacy location\n", encoding="utf-8"
         )
-        records, _ = discover_records(root, frozenset({"90-历史归档"}))
+        records, _ = discover_records(root, frozenset({".project-kb", "90-历史归档"}))
         issues = validate_structure(root, records)
         wrong_paths = {issue.path.name for issue in issues if issue.code == "KB_TYPE_DIRECTORY"}
         self.assertNotIn("REQ-ORDER-001.md", wrong_paths)

@@ -31,7 +31,7 @@ class GoldenExampleTests(unittest.TestCase):
             "multi-stack": "source_types: [database, api, file]",
         }
         for name, expected in expected_types.items():
-            path = Path("examples") / name / "02-架构与契约/数据资产/DATA-001-知识项.md"
+            path = Path("examples") / name / "02-技术基线/数据资产/DATA-001-知识项.md"
             self.assertTrue(path.is_file(), path)
             content = path.read_text(encoding="utf-8")
             self.assertIn(expected, content)
@@ -65,7 +65,7 @@ class GoldenExampleTests(unittest.TestCase):
 
         for name, rows in expected_rows.items():
             with self.subTest(name=name):
-                path = Path("examples") / name / "02-架构与契约/数据资产/DATA-001-知识项.md"
+                path = Path("examples") / name / "02-技术基线/数据资产/DATA-001-知识项.md"
                 content = path.read_text(encoding="utf-8")
                 self.assertIn("| 来源类型 | 名称 | 流向 | 用途 | 技术契约 |", content)
                 for row in rows:
@@ -170,7 +170,7 @@ class GoldenExampleTests(unittest.TestCase):
 
         for name in EXAMPLES:
             with self.subTest(name=name):
-                database = Path("examples") / name / "02-架构与契约/数据库"
+                database = Path("examples") / name / "02-技术基线/数据库"
                 expected = (
                     database / "数据源/DS-KNOWLEDGE.md",
                     database / "数据库单元/DB-KNOWLEDGE.md",
@@ -185,7 +185,7 @@ class GoldenExampleTests(unittest.TestCase):
                 self.assertIn("1=待确认;2=已批准;3=已归档", parent)
                 self.assertIn("rel_logical_parent", child)
                 self.assertIn(
-                    "[[02-架构与契约/数据库/数据表/TABLE-KNOWLEDGE-001#^FIELD-KNOWLEDGE-001|FIELD-KNOWLEDGE-001]]",
+                    "[[02-技术基线/数据库/数据表/TABLE-KNOWLEDGE-001#^FIELD-KNOWLEDGE-001|FIELD-KNOWLEDGE-001]]",
                     child,
                 )
 
@@ -198,12 +198,13 @@ class GoldenExampleTests(unittest.TestCase):
                 queue = root / "03-变更与证据/待确认知识"
                 self.assertFalse((root / "00-项目总览/协作人员.md").exists())
                 self.assertTrue((queue / "README.md").is_file())
-                self.assertTrue((queue / "TEMPLATE.md").is_file())
+                template = root / ".project-kb/templates/knowledge/knowledge-proposal.md"
+                self.assertTrue(template.is_file())
                 self.assertFalse((root / "03-变更与证据/任务包").exists())
                 self.assertFalse((root / "03-变更与证据/执行看板.md").exists())
                 self.assertIn(
                     "status: proposed",
-                    (queue / "TEMPLATE.md").read_text(encoding="utf-8"),
+                    template.read_text(encoding="utf-8"),
                 )
 
 

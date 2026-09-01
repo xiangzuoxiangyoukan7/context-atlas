@@ -200,13 +200,13 @@ class SkillPackageTests(unittest.TestCase):
         ):
             self.assertIn(phrase, content)
 
-    def test_relation_and_impact_templates_are_packaged(self) -> None:
-        """初始化资产必须包含关系目录和影响分析记录模板。"""
+    def test_relation_catalog_and_central_impact_template_are_packaged(self) -> None:
+        """初始化资产必须包含关系目录 Schema 和集中式影响记录模板。"""
 
         assets = self.assets_root / "templates" / "core" / "doc-project"
 
-        self.assertTrue((assets / "02-架构与契约/关系目录.md").is_file())
-        self.assertTrue((assets / "03-变更与证据/影响记录/TEMPLATE.md").is_file())
+        self.assertTrue((self.assets_root / "schemas/relation-catalog.json").is_file())
+        self.assertTrue((assets / ".project-kb/templates/knowledge/impact-record.md").is_file())
         self.assertFalse((assets / "03-变更与证据/任务包").exists())
 
     def test_scenario_guide_is_packaged_with_the_core_template(self) -> None:
@@ -239,11 +239,9 @@ class SkillPackageTests(unittest.TestCase):
             "数据库作为基础知识",
         ):
             self.assertIn(phrase, reference)
-        database_root = (
-            self.assets_root / "templates/core/doc-project/02-架构与契约/数据库"
-        )
-        for relative in ("数据源模板/TEMPLATE.md", "数据表模板/TEMPLATE.md"):
-            self.assertTrue((database_root / relative).is_file(), relative)
+        template_root = self.assets_root / "templates/core/doc-project/.project-kb/templates/knowledge"
+        for relative in ("data-source.md", "database-table.md"):
+            self.assertTrue((template_root / relative).is_file(), relative)
 
     def test_skill_state_machine_has_confirmation_and_revision_gates(self) -> None:
         """验证 skill_state_machine_has_confirmation_and_revision_gates 场景。"""

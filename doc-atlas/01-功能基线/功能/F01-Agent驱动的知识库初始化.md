@@ -10,6 +10,8 @@ depends_on: []
 acceptance: [F01-AC-01, F01-AC-02, F01-AC-03, F01-AC-04]
 adr: [ADR-002, ADR-008, ADR-011]
 last_updated: 2026-08-31
+rel_classified_under:
+  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
 ---
 
 # F01：Agent 驱动的知识库初始化

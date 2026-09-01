@@ -10,6 +10,7 @@ from tests.helpers import TempDirectoryTestCase
 
 ROOT = Path(__file__).resolve().parents[2]
 CORE_RELATIONS = {
+    "rel_classified_under",
     "rel_supported_by",
     "rel_conforms_to",
     "rel_implements",

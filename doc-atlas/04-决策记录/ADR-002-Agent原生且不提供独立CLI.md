@@ -5,6 +5,8 @@ title: Agent 原生且不提供独立用户 CLI
 status: accepted
 date: 2026-08-10
 last_updated: 2026-08-10
+rel_classified_under:
+  - "[[04-决策记录/README|IDX-DECISIONS]]"
 ---
 
 # ADR-002：Agent 原生且不提供独立用户 CLI

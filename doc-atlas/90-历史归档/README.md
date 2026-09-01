@@ -1,3 +1,10 @@
+---
+id: IDX-ARCHIVE
+type: knowledge_index
+title: 历史归档
+rel_classified_under:
+  - "[[README|IDX-ROOT]]"
+---
 # 历史归档
 
 本目录保存已被替代且仍有审计价值的正式知识、原始材料、退役任务和旧验收证据，仅供追溯，不得覆盖当前知识。本目录暂不设计版本基线。

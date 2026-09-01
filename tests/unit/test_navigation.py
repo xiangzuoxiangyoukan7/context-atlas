@@ -49,25 +49,25 @@ status: baselined
 rel_satisfies:
   - "[[01-功能基线/需求/REQ-ORDER-001|REQ-ORDER-001]]"
 rel_calls:
-  - "[[02-架构与契约/接口/API-ORDER-001|API-ORDER-001]]"
+  - "[[02-技术基线/接口/API-ORDER-001|API-ORDER-001]]"
 ---
 # 创建订单
 """,
         )
         self._write(
-            "02-架构与契约/接口/API-ORDER-001.md",
+            "02-技术基线/接口/API-ORDER-001.md",
             """---
 id: API-ORDER-001
 type: interface
 title: 创建订单接口
 status: approved
 rel_writes:
-  - "[[02-架构与契约/数据库/DS-ORDER/TABLE-ORDER-001|TABLE-ORDER-001]]"
+  - "[[02-技术基线/数据库/DS-ORDER/TABLE-ORDER-001|TABLE-ORDER-001]]"
 ---
 # 创建订单接口
 """,
         )
-        self.table_path = "02-架构与契约/数据库/DS-ORDER/TABLE-ORDER-001.md"
+        self.table_path = "02-技术基线/数据库/DS-ORDER/TABLE-ORDER-001.md"
         self._write(
             self.table_path,
             """---
@@ -101,7 +101,7 @@ status: approved
         self.assertEqual((), report.outgoing)
         self.assertEqual(["API-ORDER-001"], [edge.node.id for edge in report.incoming])
         self.assertEqual("rel_writes", report.incoming[0].relation)
-        self.assertEqual("02-架构与契约/接口/API-ORDER-001.md", report.incoming[0].node.path)
+        self.assertEqual("02-技术基线/接口/API-ORDER-001.md", report.incoming[0].node.path)
 
     def test_interface_returns_table_and_calling_feature(self) -> None:
         """接口节点应同时返回正向数据表和反向功能。"""
@@ -136,16 +136,16 @@ status: approved
         """目录查询应返回直接子节点，并使用 README 描述当前目录。"""
 
         self._write(
-            "02-架构与契约/README.md",
+            "02-技术基线/README.md",
             "# 架构与契约\n\n这里保存接口、数据库等技术知识。\n",
         )
-        self._write("02-架构与契约/TEMPLATE.md", "# 模板\n")
+        self._write("02-技术基线/TEMPLATE.md", "# 模板\n")
 
-        report = query_children(self.root, path="02-架构与契约")
+        report = query_children(self.root, path="02-技术基线")
 
         self.assertEqual("这里保存接口、数据库等技术知识。", report.node.description)
         self.assertEqual(
-            ["02-架构与契约/接口", "02-架构与契约/数据库"],
+            ["02-技术基线/接口", "02-技术基线/数据库"],
             [node.path for node in report.children],
         )
         self.assertTrue(all(node.kind == "directory" for node in report.children))
@@ -153,7 +153,7 @@ status: approved
     def test_children_file_summary_exposes_identity_without_body_loading(self) -> None:
         """文件树节点应暴露身份、类型和状态摘要。"""
 
-        report = query_children(self.root, path="02-架构与契约/接口")
+        report = query_children(self.root, path="02-技术基线/接口")
 
         self.assertEqual(1, len(report.children))
         node = report.children[0]

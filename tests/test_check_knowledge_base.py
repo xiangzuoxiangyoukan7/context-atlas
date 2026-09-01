@@ -100,29 +100,26 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
 
         self.assertIn("KB_SCHEMA_LIST", codes)
 
-    def test_rejects_illegal_acceptance_result_and_passed_without_evidence(self) -> None:
-        """验证 rejects_illegal_acceptance_result_and_passed_without_evidence 场景。"""
+    def test_rejects_declared_acceptance_without_embedded_scenario(self) -> None:
+        """格式 11 的功能验收编号必须在功能正文中出现。"""
 
         self.valid_feature()
         self.valid_current()
-        self.matrix("| F01-AC-01 | Feature | condition | failed | — | — |\n")
+        self.assertIn("KB_ACCEPTANCE_SCENARIO", self.codes(validate(self.root)))
 
-        self.assertIn("KB_ACCEPTANCE_RESULT", self.codes(validate(self.root)))
+    def test_rejects_duplicate_acceptance_declarations(self) -> None:
+        """同一验收编号不能由多个知识项重复声明。"""
 
-        self.matrix("| F01-AC-01 | Feature | condition | passed | — | — |\n")
-        self.assertIn("KB_ACCEPTANCE_EVIDENCE", self.codes(validate(self.root)))
-
-    def test_rejects_missing_or_duplicate_matrix_rows(self) -> None:
-        """验证 rejects_missing_or_duplicate_matrix_rows 场景。"""
-
-        self.valid_feature(acceptance=["F01-AC-01", "F01-AC-02"])
-        self.valid_current()
-        self.matrix("| F01-AC-01 | Feature | condition | not_started | — | — |\n| F01-AC-01 | Feature | duplicate | not_started | — | — |\n")
+        self.valid_feature(acceptance=["F01-AC-01"])
+        self.metadata(
+            "01-功能基线/F02.md", id="F02", type="feature", title="Feature 2",
+            status="baselined", phase="mvp", priority="P0", current_slice="included",
+            depends_on=[], acceptance=["F01-AC-01"], adr=[], last_updated="2026-08-07",
+        )
 
         codes = self.codes(validate(self.root))
 
-        self.assertIn("KB_MATRIX_IDS", codes)
-        self.assertIn("KB_MATRIX_DUPLICATE", codes)
+        self.assertIn("KB_ACCEPTANCE_DUPLICATE", codes)
 
     def test_current_is_optional_and_does_not_control_task_execution(self) -> None:
         """验证 current_is_optional_and_does_not_control_task_execution 场景。"""

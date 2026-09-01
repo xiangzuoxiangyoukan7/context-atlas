@@ -48,6 +48,25 @@ class MigrationRewrite:
 
 
 @dataclass(frozen=True)
+class MigrationCreation:
+    """描述格式升级需要创建且提案时不存在的标准文件。"""
+
+    path: Path
+    content: str
+    content_digest: str
+
+
+@dataclass(frozen=True)
+class MigrationAsset:
+    """描述格式升级需要创建或替换的自包含运行资产。"""
+
+    path: Path
+    content: bytes
+    original_digest: str | None
+    content_digest: str
+
+
+@dataclass(frozen=True)
 class MigrationUnresolved:
     """描述无法唯一定位、必须由用户确认的旧来源编号。"""
 
@@ -67,6 +86,8 @@ class MigrationProposal:
     moves: tuple[MigrationMove, ...]
     removals: tuple[MigrationRemoval, ...]
     rewrites: tuple[MigrationRewrite, ...]
+    creations: tuple[MigrationCreation, ...]
+    assets: tuple[MigrationAsset, ...]
     unresolved: tuple[MigrationUnresolved, ...]
 
 
@@ -105,6 +126,8 @@ def _revision(
     moves: Iterable[MigrationMove],
     removals: Iterable[MigrationRemoval],
     rewrites: Iterable[MigrationRewrite],
+    creations: Iterable[MigrationCreation],
+    assets: Iterable[MigrationAsset],
     unresolved: Iterable[MigrationUnresolved],
 ) -> str:
     """根据完整提案内容生成稳定且不可猜测的短修订号。"""
@@ -122,10 +145,103 @@ def _revision(
     )
     parts.extend(f"rewrite:{rewrite.path}:{rewrite.original_digest}" for rewrite in rewrites)
     parts.extend(
+        f"create:{creation.path}:{creation.content_digest}" for creation in creations
+    )
+    parts.extend(
+        f"asset:{asset.path}:{asset.original_digest or 'missing'}:{asset.content_digest}"
+        for asset in assets
+    )
+    parts.extend(
         f"unresolved:{item.path}:{item.source_id}:{item.reason}"
         for item in unresolved
     )
     return "migration-" + hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()[:12]
+
+
+def _current_format_creations(root: Path) -> tuple[MigrationCreation, ...]:
+    """从随插件发布的核心模板补齐当前格式所需目录及其可达模板。"""
+
+    template_root = Path(__file__).resolve().parents[2] / "templates" / "core" / "doc-project"
+    relatives = (
+        Path("01-功能基线/需求/README.md"),
+        Path("01-功能基线/功能/README.md"),
+        Path("02-技术基线/README.md"),
+        Path("02-技术基线/模块/README.md"),
+        Path("02-技术基线/接口/README.md"),
+        Path("02-技术基线/数据库/README.md"),
+        Path("02-技术基线/数据资产/README.md"),
+        Path("02-技术基线/原型/README.md"),
+        Path("02-技术基线/外部依赖/README.md"),
+        Path("03-变更与证据/变更/README.md"),
+        Path("03-变更与证据/验收证据/README.md"),
+        Path("03-变更与证据/待确认知识/README.md"),
+    )
+    creations: list[MigrationCreation] = []
+    for relative in relatives:
+        target = root / relative
+        if target.exists():
+            continue
+        content = (template_root / relative).read_text(encoding="utf-8")
+        creations.append(MigrationCreation(target.resolve(), content, _digest(content.encode("utf-8"))))
+    return tuple(creations)
+
+
+def _asset_source_root() -> Path:
+    """定位源码仓库或已安装插件中的运行资产根。"""
+
+    module_root = Path(__file__).resolve().parents[2]
+    if (module_root / "assets" / "manifest.json").is_file():
+        return module_root
+    if (module_root / "manifest.json").is_file():
+        return module_root
+    raise FileNotFoundError("cannot locate plugin asset manifest")
+
+
+def _current_format_assets(root: Path) -> tuple[MigrationAsset, ...]:
+    """为当前格式提案枚举需要写入 `.project-kb` 的全部运行资产。"""
+
+    source_root = _asset_source_root()
+    manifest_path = (
+        source_root / "assets" / "manifest.json"
+        if (source_root / "assets" / "manifest.json").is_file()
+        else source_root / "manifest.json"
+    )
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    relative_paths = payload.get("files")
+    if not isinstance(relative_paths, list):
+        raise ValueError("plugin asset manifest has no files list")
+    selected = [
+        relative
+        for relative in relative_paths
+        if isinstance(relative, str)
+        and (
+            relative == "compatibility.json"
+            or relative.startswith(("schemas/", "scripts/", "rules/", "operations/"))
+        )
+    ]
+    selected = sorted([*selected, "manifest.json"])
+    assets: list[MigrationAsset] = []
+    for relative_text in selected:
+        relative = Path(relative_text)
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError(f"unsafe plugin asset path: {relative_text}")
+        source = manifest_path if relative_text == "manifest.json" else source_root / relative
+        content = source.read_bytes()
+        target = (root / ".project-kb" / relative).resolve()
+        original_digest = _digest(target.read_bytes()) if target.is_file() else None
+        if original_digest == _digest(content):
+            continue
+        assets.append(
+            MigrationAsset(target, content, original_digest, _digest(content))
+        )
+    knowledge_templates = source_root / "templates" / "core" / "doc-project" / ".project-kb" / "templates" / "knowledge"
+    for source in sorted(knowledge_templates.glob("*.md")):
+        target = (root / ".project-kb" / "templates" / "knowledge" / source.name).resolve()
+        content = source.read_bytes()
+        original_digest = _digest(target.read_bytes()) if target.is_file() else None
+        if original_digest != _digest(content):
+            assets.append(MigrationAsset(target, content, original_digest, _digest(content)))
+    return tuple(assets)
 
 
 LEGACY_PLACEHOLDERS = {
@@ -216,6 +332,7 @@ def _rewrite_governance_paths(content: str, governance_readme: bool = False) -> 
         .replace("03-实施与验收/影响分析", "03-变更与证据/影响记录")
         .replace("03-实施与验收/知识提案", "03-变更与证据/待确认知识")
         .replace("03-实施与验收", "03-变更与证据")
+        .replace("02-架构与契约", "02-技术基线")
     )
     if governance_readme:
         lines = [
@@ -224,6 +341,42 @@ def _rewrite_governance_paths(content: str, governance_readme: bool = False) -> 
         ]
         result = "\n".join(lines).rstrip() + "\n"
     return result
+
+
+FORMAT11_REMOVALS = {
+    "01-功能基线/能力地图.md",
+    "02-技术基线/关系目录.md",
+    "03-变更与证据/当前变更.md",
+    "03-变更与证据/验收矩阵.md",
+}
+
+
+def _format11_layout(root: Path) -> tuple[tuple[MigrationMove, ...], tuple[MigrationRemoval, ...], tuple[MigrationUnresolved, ...]]:
+    """把旧技术目录迁入格式 11，并删除可再生或已退役的物理文件。"""
+
+    moves: list[MigrationMove] = []
+    removals: list[MigrationRemoval] = []
+    unresolved: list[MigrationUnresolved] = []
+    legacy_technical = root / "02-架构与契约"
+    if legacy_technical.is_dir():
+        for source in sorted(path for path in legacy_technical.rglob("*") if path.is_file()):
+            target = root / "02-技术基线" / source.relative_to(legacy_technical)
+            if target.exists():
+                unresolved.append(MigrationUnresolved(source, source.stem, "新旧技术基线路径同时存在"))
+            else:
+                moves.append(MigrationMove(source, target, _digest(source.read_bytes())))
+    for relative in FORMAT11_REMOVALS:
+        path = root / relative
+        if path.is_file():
+            removals.append(MigrationRemoval(path, _digest(path.read_bytes())))
+    for directory in (root / "90-历史归档" / "旧契约", root / "90-历史归档" / "旧验收契约"):
+        if directory.is_dir():
+            for path in sorted(item for item in directory.rglob("*") if item.is_file()):
+                removals.append(MigrationRemoval(path, _digest(path.read_bytes())))
+    for path in sorted(root.rglob("TEMPLATE.md")):
+        if ".project-kb" not in path.parts:
+            removals.append(MigrationRemoval(path, _digest(path.read_bytes())))
+    return tuple(moves), tuple(removals), tuple(unresolved)
 
 
 def build_migration_proposal(
@@ -250,6 +403,19 @@ def build_migration_proposal(
     }
     changes: list[MigrationChange] = []
     unresolved: list[MigrationUnresolved] = []
+    if result.creates_format_version >= 10:
+        for record in record_list:
+            legacy_type = record.metadata.get("type")
+            if legacy_type not in {"contract", "independent_contract", "acceptance_contract"}:
+                continue
+            identifier = str(record.metadata.get("id", record.path.stem))
+            unresolved.append(
+                MigrationUnresolved(
+                    record.path.resolve(),
+                    identifier,
+                    "遗留契约必须先通过知识维护 Proposal 归入需求、功能或具体技术对象",
+                )
+            )
     referenced_source_ids: set[str] = set()
     for record in record_list if result.format_version <= 3 else ():
         if record.metadata.get("type") == "source":
@@ -293,6 +459,11 @@ def build_migration_proposal(
             )
     ordered_changes = tuple(sorted(changes, key=lambda item: str(item.path)))
     moves, removals, rewrites, layout_unresolved = _governance_layout(resolved_root)
+    if result.creates_format_version >= 11:
+        format_moves, format_removals, format_unresolved = _format11_layout(resolved_root)
+        moves += format_moves
+        removals += format_removals
+        layout_unresolved += format_unresolved
     destinations = {move.target for move in moves}
     for move in _evidence_layout(resolved_root):
         if move.target.exists() or move.target in destinations:
@@ -326,6 +497,8 @@ def build_migration_proposal(
     ordered_unresolved = tuple(
         sorted(unresolved, key=lambda item: (str(item.path), item.source_id))
     )
+    creations = _current_format_creations(resolved_root)
+    assets = _current_format_assets(resolved_root)
     return MigrationProposal(
         proposal_revision=_revision(
             result.format_version,
@@ -334,6 +507,8 @@ def build_migration_proposal(
             moves,
             removals,
             rewrites,
+            creations,
+            assets,
             ordered_unresolved,
         ),
         source_version=result.format_version,
@@ -342,6 +517,8 @@ def build_migration_proposal(
         moves=moves,
         removals=removals,
         rewrites=rewrites,
+        creations=creations,
+        assets=assets,
         unresolved=ordered_unresolved,
     )
 
@@ -383,18 +560,48 @@ def _add_supported_by(content: str, links: tuple[str, ...]) -> str:
 
 
 def _set_format_version(content: str, target_version: int) -> str:
-    """更新或补充内部格式版本，同时保持项目业务版本原值。"""
+    """升级根清单版本模型，同时保持项目业务版本原值。"""
 
     lines = content.splitlines(keepends=True)
-    for index, line in enumerate(lines):
+    normalized: list[str] = []
+    has_format = False
+    has_revision = False
+    has_created_by = any(line.startswith("created_by:") for line in lines)
+    for line in lines:
+        if line.startswith(("protocol_version:", "schema_version:")):
+            continue
         if line.startswith("format_version:"):
-            lines[index] = f"format_version: {target_version}\n"
-            return "".join(lines)
+            normalized.append(f"format_version: {target_version}\n")
+            has_format = True
+            continue
+        if line.startswith("revision:"):
+            normalized.append("knowledge_revision:" + line.split(":", maxsplit=1)[1])
+            has_revision = True
+            continue
+        if line.startswith("knowledge_revision:"):
+            normalized.append(line)
+            has_revision = True
+            continue
+        normalized.append(line)
+    lines = normalized
     insertion = next(
         (index + 1 for index, line in enumerate(lines) if line.startswith("project_version:")),
         len(lines),
     )
-    lines.insert(insertion, f"format_version: {target_version}\n")
+    if not has_format:
+        lines.insert(insertion, f"format_version: {target_version}\n")
+        insertion += 1
+    if not has_revision:
+        lines.insert(insertion, "knowledge_revision: 1\n")
+    if not has_created_by:
+        authority_index = next(
+            (index for index, line in enumerate(lines) if line.startswith("authority:")),
+            len(lines),
+        )
+        lines[authority_index:authority_index] = [
+            "created_by:\n",
+            "  product: context-atlas\n",
+        ]
     return "".join(lines)
 
 
@@ -405,6 +612,21 @@ def _atomic_write(path: Path, content: str) -> None:
         mode="w",
         encoding="utf-8",
         newline="\n",
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".migrating",
+        delete=False,
+    ) as handle:
+        handle.write(content)
+        temporary = Path(handle.name)
+    temporary.replace(path)
+
+
+def _atomic_write_bytes(path: Path, content: bytes) -> None:
+    """在目标目录写入二进制临时文件并原子替换运行资产。"""
+
+    with tempfile.NamedTemporaryFile(
+        mode="wb",
         dir=path.parent,
         prefix=f".{path.name}.",
         suffix=".migrating",
@@ -454,13 +676,33 @@ def apply_migration(
     for rewrite in proposal.rewrites:
         if _digest(rewrite.path.read_bytes()) != rewrite.original_digest:
             raise ValueError(f"migration target changed after proposal: {rewrite.path.name}")
+    for creation in proposal.creations:
+        if creation.path.exists():
+            raise ValueError(f"migration creation target already exists: {creation.path}")
+        if _digest(creation.content.encode("utf-8")) != creation.content_digest:
+            raise ValueError(f"migration creation content changed: {creation.path.name}")
+    for asset in proposal.assets:
+        try:
+            asset.path.relative_to(resolved_root / ".project-kb")
+        except ValueError as error:
+            raise ValueError("migration asset escapes runtime root") from error
+        current_digest = _digest(asset.path.read_bytes()) if asset.path.is_file() else None
+        if current_digest != asset.original_digest:
+            raise ValueError(f"migration asset changed after proposal: {asset.path}")
+        if _digest(asset.content) != asset.content_digest:
+            raise ValueError(f"migration asset content changed: {asset.path}")
     manifest = resolved_root / "knowledge-base.yaml"
     manifest_content = _set_format_version(
         manifest.read_text(encoding="utf-8"), proposal.target_version
     )
     manifest_content = _rewrite_governance_paths(manifest_content)
-    affected = {path for path, _ in prepared} | {item.source for item in proposal.moves} | {item.target for item in proposal.moves} | {item.path for item in proposal.removals} | {item.path for item in proposal.rewrites} | {manifest}
+    affected = {path for path, _ in prepared} | {item.source for item in proposal.moves} | {item.target for item in proposal.moves} | {item.path for item in proposal.removals} | {item.path for item in proposal.rewrites} | {item.path for item in proposal.creations} | {item.path for item in proposal.assets} | {manifest}
     backups = {path: path.read_bytes() if path.is_file() else None for path in affected}
+    existing_directories = {
+        directory.resolve()
+        for directory in resolved_root.rglob("*")
+        if directory.is_dir()
+    }
     try:
         for path, content in prepared:
             _atomic_write(path, content)
@@ -479,7 +721,22 @@ def apply_migration(
                 rewrite.path,
                 _rewrite_governance_paths(rewrite.path.read_text(encoding="utf-8")),
             )
+        for creation in proposal.creations:
+            creation.path.parent.mkdir(parents=True, exist_ok=True)
+            _atomic_write(creation.path, creation.content)
+        for asset in proposal.assets:
+            asset.path.parent.mkdir(parents=True, exist_ok=True)
+            _atomic_write_bytes(asset.path, asset.content)
         _atomic_write(manifest, manifest_content)
+        for directory in sorted(
+            (path for path in resolved_root.rglob("*") if path.is_dir()),
+            key=lambda path: len(path.parts),
+            reverse=True,
+        ):
+            try:
+                directory.rmdir()
+            except OSError:
+                pass
     except Exception:
         for path, content in backups.items():
             if content is None:
@@ -487,12 +744,28 @@ def apply_migration(
             else:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(content)
+        created_directories = sorted(
+            (
+                directory
+                for directory in resolved_root.rglob("*")
+                if directory.is_dir() and directory.resolve() not in existing_directories
+            ),
+            key=lambda directory: len(directory.parts),
+            reverse=True,
+        )
+        for directory in created_directories:
+            try:
+                directory.rmdir()
+            except OSError:
+                pass
         raise
     changed = tuple(
         [path.relative_to(resolved_root).as_posix() for path, _ in prepared]
         + [move.target.relative_to(resolved_root).as_posix() for move in proposal.moves]
         + [removal.path.relative_to(resolved_root).as_posix() for removal in proposal.removals]
         + [rewrite.path.relative_to(resolved_root).as_posix() for rewrite in proposal.rewrites]
+        + [creation.path.relative_to(resolved_root).as_posix() for creation in proposal.creations]
+        + [asset.path.relative_to(resolved_root).as_posix() for asset in proposal.assets]
         + ["knowledge-base.yaml"]
     )
     return MigrationReport("migrated", changed, proposal.target_version)

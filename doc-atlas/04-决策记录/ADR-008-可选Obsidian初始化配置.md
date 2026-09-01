@@ -5,6 +5,8 @@ title: 可选 Obsidian 初始化配置
 status: accepted
 date: 2026-08-22
 last_updated: 2026-08-22
+rel_classified_under:
+  - "[[04-决策记录/README|IDX-DECISIONS]]"
 ---
 
 # ADR-008：可选 Obsidian 初始化配置

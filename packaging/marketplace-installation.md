@@ -207,5 +207,5 @@ Proposal，只有用户明确确认后才执行；底层 Python 参数由插件�
 ## 当前验收状态
 
 Marketplace 清单和共享 Skill 契约已通过自动检查。Codex 执行链路已验证；Claude Code 当前真实确认后
-初始化验收仍为 **partial**，因此不能表述为双平台完全通过。详见[验收矩阵](../doc-atlas/03-变更与证据/验收矩阵.md)
+初始化验收仍为 **partial**，因此不能表述为双平台完全通过。详见[验收证据](../doc-atlas/03-变更与证据/验收证据/README.md)
 及其中的跨 Agent 验收证据。Qoder 已完成构建包、资产路径和静态契约检查，真实 Agent 场景尚未完成；用户将继续完成 Claude Code、Codex、Qoder 的真实安装、升级和行为验证。

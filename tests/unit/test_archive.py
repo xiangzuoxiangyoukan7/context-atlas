@@ -23,6 +23,8 @@ sources:
     observed_at: 2026-08-20
     confirmation_status: confirmed
     confirmed_at: 2026-08-20
+rel_classified_under:
+  - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
 ---
 # 旧知识
 """
@@ -43,6 +45,8 @@ sources:
     observed_at: 2026-08-20
     confirmation_status: confirmed
     confirmed_at: 2026-08-20
+rel_classified_under:
+  - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
 ---
 # 新知识
 """
@@ -58,8 +62,8 @@ class ArchiveTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = materialize_core_template(Path(self.temporary.name), "archive")
         shutil.copytree(Path("schemas"), self.root / ".project-kb" / "schemas")
-        self.old = self.root / "02-架构与契约" / "旧知识.md"
-        self.new = self.root / "02-架构与契约" / "新知识.md"
+        self.old = self.root / "02-技术基线" / "旧知识.md"
+        self.new = self.root / "02-技术基线" / "新知识.md"
         self.old.write_text(OLD, encoding="utf-8")
         self.new.write_text(NEW, encoding="utf-8")
 
@@ -67,7 +71,7 @@ class ArchiveTests(unittest.TestCase):
         """返回当前隔离知识库对应的归档提案。"""
 
         return build_archive_proposal(
-            self.root, "02-架构与契约/旧知识.md", "90-历史归档/正式知识/旧知识.md",
+            self.root, "02-技术基线/旧知识.md", "90-历史归档/正式知识/旧知识.md",
             "KB-NEW", "2026-08-20", "已被新知识替代", "用户确认",
         )
 

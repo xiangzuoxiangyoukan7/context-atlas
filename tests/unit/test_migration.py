@@ -74,7 +74,7 @@ class MigrationTests(TempDirectoryTestCase):
         proposal = self._proposal()
 
         self.assertEqual(1, proposal.source_version)
-        self.assertEqual(10, proposal.target_version)
+        self.assertEqual(11, proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
         self.assertIn(
             '"reference": "fixture"',
@@ -104,7 +104,7 @@ class MigrationTests(TempDirectoryTestCase):
             "project_id: example\nproject_version: 3.4.0\nformat_version: 9\nknowledge_revision: 1\n",
             encoding="utf-8",
         )
-        contract = self.root / "02-架构与契约/独立契约/CONTRACT-001.md"
+        contract = self.root / "02-技术基线/独立契约/CONTRACT-001.md"
         contract.parent.mkdir(parents=True)
         contract.write_text(
             "---\nid: CONTRACT-001\ntype: independent_contract\ntitle: 遗留契约\n---\n# 遗留契约\n",
@@ -113,7 +113,7 @@ class MigrationTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
 
-        self.assertEqual(10, proposal.target_version)
+        self.assertEqual(11, proposal.target_version)
         self.assertEqual(1, len(proposal.unresolved))
         self.assertIn("知识维护 Proposal", proposal.unresolved[0].reason)
 
@@ -142,7 +142,7 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertNotIn("SRC-001", content)
         self.assertFalse((self.root / "00-项目总览/SRC-001.md").exists())
         self.assertTrue((self.root / "05-知识治理/公共来源/SRC-001.md").exists())
-        self.assertIn("format_version: 10", manifest_content)
+        self.assertIn("format_version: 11", manifest_content)
         self.assertIn("knowledge_revision: 1", manifest_content)
         self.assertIn("created_by:", manifest_content)
         self.assertNotIn("revision:", manifest_content.replace("knowledge_revision:", ""))
@@ -195,7 +195,7 @@ class MigrationTests(TempDirectoryTestCase):
         )
 
         self.assertEqual(2, proposal.source_version)
-        self.assertEqual(10, proposal.target_version)
+        self.assertEqual(11, proposal.target_version)
         self.assertEqual(2, len(proposal.moves))
         self.assertEqual(2, len(proposal.removals))
         self.assertEqual([], list(proposal.unresolved))
@@ -206,7 +206,7 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertTrue((self.root / "05-知识治理/AI知识采集协议.md").is_file())
         self.assertFalse((legacy / "本地开发.md").exists())
         self.assertFalse((legacy / "测试规则.md").exists())
-        self.assertIn("format_version: 10", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 11", manifest.read_text(encoding="utf-8"))
         self.assertIn("05-知识治理/README.md", root_readme.read_text(encoding="utf-8"))
         self.assertNotIn("05-开发指南", root_readme.read_text(encoding="utf-8"))
         self.assertEqual(
@@ -233,11 +233,11 @@ class MigrationTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
         self.assertEqual([], list(proposal.unresolved))
-        self.assertEqual(10, proposal.target_version)
+        self.assertEqual(11, proposal.target_version)
         apply_migration(self.root, proposal, proposal.proposal_revision)
 
         self.assertIn("rel_satisfies: []", feature.read_text(encoding="utf-8"))
-        self.assertIn("format_version: 10", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 11", manifest.read_text(encoding="utf-8"))
 
     def test_format_six_creates_complete_specification_workspaces_atomically(self) -> None:
         """格式六升级应创建目录说明及其模板，并拒绝提案后的目标冲突。"""
@@ -250,7 +250,7 @@ class MigrationTests(TempDirectoryTestCase):
             encoding="utf-8",
         )
         proposal = self._proposal()
-        self.assertEqual(3, len(proposal.creations))
+        self.assertGreaterEqual(len(proposal.creations), 3)
         conflict = proposal.creations[0].path
         conflict.parent.mkdir(parents=True, exist_ok=True)
         conflict.write_text("conflict\n", encoding="utf-8")
@@ -261,20 +261,20 @@ class MigrationTests(TempDirectoryTestCase):
 
         proposal = self._proposal()
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
-        self.assertEqual(10, report.format_version)
+        self.assertEqual(11, report.format_version)
         self.assertTrue((self.root / "03-变更与证据/变更/README.md").is_file())
-        self.assertTrue((self.root / "03-变更与证据/变更/TEMPLATE.md").is_file())
-        self.assertTrue((self.root / "03-变更与证据/变更/Delta/TEMPLATE.md").is_file())
+        self.assertFalse((self.root / "03-变更与证据/变更/TEMPLATE.md").exists())
+        self.assertFalse((self.root / "03-变更与证据/变更/Delta/TEMPLATE.md").exists())
         change_readme = (self.root / "03-变更与证据/变更/README.md").read_text(
             encoding="utf-8"
         )
-        self.assertIn("./TEMPLATE.md", change_readme)
-        self.assertIn("./Delta/TEMPLATE.md", change_readme)
+        self.assertIn(".project-kb/templates/knowledge/specification-change.md", change_readme)
+        self.assertIn(".project-kb/templates/knowledge/specification-delta.md", change_readme)
         self.assertTrue((self.root / ".project-kb/scripts/check_knowledge_base.py").is_file())
         self.assertTrue((self.root / ".project-kb/schemas/catalog.json").is_file())
         self.assertTrue((self.root / ".project-kb/rules/catalog.json").is_file())
         self.assertTrue((self.root / ".project-kb/operations/validate.json").is_file())
-        self.assertTrue((self.root / ".project-kb/templates/core/doc-project/README.md").is_file())
+        self.assertTrue((self.root / ".project-kb/templates/knowledge/feature.md").is_file())
 
     def test_format_seven_asset_digest_drift_keeps_all_files_unchanged(self) -> None:
         """运行资产在确认前漂移时必须拒绝迁移且不产生其他写入。"""

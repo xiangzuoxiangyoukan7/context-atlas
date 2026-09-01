@@ -16,6 +16,8 @@ from .schema_catalog import SchemaCatalog
 from .security import validate_security
 from .traceability import validate_traceability
 from .structure import validate_structure
+from .archive_validation import discover_archive, validate_current_archive_links
+from .specification import validate_specifications
 
 
 @dataclass(frozen=True)
@@ -24,8 +26,9 @@ class ValidationConfig:
 
     schema_root: Path
     relation_catalog_path: Path | None = None
+    level: str = "all"
     excluded_directories: frozenset[str] = frozenset(
-        {".obsidian", "Excalidraw", "90-历史归档"}
+        {".project-kb", ".obsidian", "Excalidraw", "Clippings", "90-历史归档"}
     )
 
 
@@ -48,6 +51,7 @@ def validate(root: Path, config: ValidationConfig) -> list[Issue]:
         if config.relation_catalog_path is not None
         else config.schema_root / "relation-catalog.json"
     )
+    relation_index: RelationIndex | None = None
     try:
         relation_catalog = RelationCatalog.load(relation_catalog_path)
     except (OSError, ValueError) as error:
@@ -67,6 +71,16 @@ def validate(root: Path, config: ValidationConfig) -> list[Issue]:
     issues.extend(validate_database_fields(records))
     issues.extend(validate_people(resolved_root))
     issues.extend(validate_links(resolved_root, config.excluded_directories))
-    issues.extend(validate_traceability(resolved_root, records))
+    archived_records, archive_issues = discover_archive(resolved_root)
+    issues.extend(archive_issues)
+    issues.extend(validate_current_archive_links(resolved_root, records))
+    archived_ids = frozenset(
+        str(record.metadata["id"])
+        for record in archived_records
+        if isinstance(record.metadata.get("id"), str)
+    )
+    issues.extend(validate_traceability(resolved_root, records, archived_ids))
+    if config.level in {"all", "spec", "readiness"}:
+        issues.extend(validate_specifications(records, relation_index))
     issues.extend(validate_security(records))
     return sorted(issues, key=lambda issue: (str(issue.path), issue.code, issue.message))

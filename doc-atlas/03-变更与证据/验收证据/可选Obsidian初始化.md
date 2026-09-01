@@ -1,3 +1,10 @@
+---
+id: EVID-007
+type: acceptance_evidence
+title: 可选Obsidian初始化
+rel_classified_under:
+  - "[[03-变更与证据/验收证据/README|IDX-EVIDENCE]]"
+---
 # 可选 Obsidian 初始化验收
 
 ## 范围

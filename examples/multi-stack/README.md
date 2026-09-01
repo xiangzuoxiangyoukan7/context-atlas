@@ -1,12 +1,18 @@
+---
+id: IDX-ROOT
+type: knowledge_index
+title: 知识库
+rel_classified_under: []
+---
 # multi-stack 项目知识库
 
-本目录是 `doc-multi-stack`，由 AI Agent 与项目责任人协作维护。先读本页，再读 [AI 知识采集协议](./05-知识治理/AI知识采集协议.md)。[当前变更](./03-变更与证据/当前变更.md)只记录知识库已知的变化，不控制用户或其他插件执行任务。机器入口为 `knowledge-base.yaml`。
+本目录是 `doc-multi-stack`，由 AI Agent 与项目责任人协作维护。先读本页，再读 [AI 知识采集协议](./05-知识治理/AI知识采集协议.md)。机器入口为 `knowledge-base.yaml`。
 
 ## 权威入口
 
 - [项目总览](./00-项目总览/README.md)
 - [功能基线](./01-功能基线/README.md)
-- [架构与契约](./02-架构与契约/README.md)
+- [架构与契约](./02-技术基线/README.md)
 - [变更与证据](./03-变更与证据/README.md)
 - [决策记录](./04-决策记录/README.md)
 - [知识治理](./05-知识治理/README.md)

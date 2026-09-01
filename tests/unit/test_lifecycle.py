@@ -27,7 +27,7 @@ class TechnologyStackModelTests(TempDirectoryTestCase):
                 from tests.helpers import materialize_core_template
 
                 root = materialize_core_template(root.parent, name)
-                technology = root / "02-架构与契约" / "系统架构.md"
+                technology = root / "02-技术基线" / "系统架构.md"
                 content = technology.read_text(encoding="utf-8").replace(
                     "| 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | SRC-001 | missing |",
                     rows,
@@ -69,7 +69,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         }
         metadata.update(overrides)
         return write_record(
-            self.knowledge_base / f"02-架构与契约/数据资产/{identifier}.md",
+            self.knowledge_base / f"02-技术基线/数据资产/{identifier}.md",
             metadata,
         )
 
@@ -97,7 +97,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         """验证 conflicted_item_requires_two_distinct_sources 场景。"""
 
         write_record(
-            self.knowledge_base / "02-架构与契约" / "conflict.md",
+            self.knowledge_base / "02-技术基线" / "conflict.md",
             {
                 "id": "CONFLICT-001",
                 "type": "knowledge_item",
@@ -118,7 +118,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         """验证 conflicted_item_requires_named_resolver 场景。"""
 
         write_record(
-            self.knowledge_base / "02-架构与契约" / "conflict.md",
+            self.knowledge_base / "02-技术基线" / "conflict.md",
             {
                 "id": "CONFLICT-001",
                 "type": "knowledge_item",
@@ -138,7 +138,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         """验证 superseded_item_requires_bidirectional_replacement_link 场景。"""
 
         write_record(
-            self.knowledge_base / "02-架构与契约/old.md",
+            self.knowledge_base / "02-技术基线/old.md",
             {
                 "id": "KNOWLEDGE-OLD",
                 "type": "knowledge_item",
@@ -150,7 +150,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
             },
         )
         write_record(
-            self.knowledge_base / "02-架构与契约/new.md",
+            self.knowledge_base / "02-技术基线/new.md",
             {
                 "id": "KNOWLEDGE-NEW",
                 "type": "knowledge_item",
@@ -173,7 +173,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         """验证 approved_item_rejects_confirmation_for_stale_proposal 场景。"""
 
         write_record(
-            self.knowledge_base / "02-架构与契约/stale.md",
+            self.knowledge_base / "02-技术基线/stale.md",
             {
                 "id": "KNOWLEDGE-STALE",
                 "type": "knowledge_item",
@@ -269,7 +269,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         """验证 superseded_item_rejects_successor_without_reverse_reference 场景。"""
 
         old_path = write_record(
-            self.knowledge_base / "02-架构与契约/old-one-way.md",
+            self.knowledge_base / "02-技术基线/old-one-way.md",
             {
                 "id": "KNOWLEDGE-OLD-ONE-WAY",
                 "type": "knowledge_item",
@@ -282,7 +282,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
             },
         )
         write_record(
-            self.knowledge_base / "02-架构与契约/new-one-way.md",
+            self.knowledge_base / "02-技术基线/new-one-way.md",
             {
                 "id": "KNOWLEDGE-NEW-ONE-WAY",
                 "type": "knowledge_item",
@@ -362,7 +362,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         """验证 data_asset_rejects_broken_local_contract_link 场景。"""
 
         self.write_data_asset(status="proposed")
-        path = self.knowledge_base / "02-架构与契约/数据资产/DATA-001.md"
+        path = self.knowledge_base / "02-技术基线/数据资产/DATA-001.md"
         path.write_text(
             path.read_text(encoding="utf-8") + "\n[缺失数据库契约](../数据库/DB-999.md)\n",
             encoding="utf-8",

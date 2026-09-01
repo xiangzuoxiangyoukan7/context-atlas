@@ -8,8 +8,10 @@ priority: P0
 current_slice: included
 depends_on: [F03, F04]
 acceptance: [F05-AC-01, F05-AC-02, F05-AC-03, F05-AC-04, F05-AC-05]
-adr: [ADR-005, ADR-007, ADR-011]
+adr: [ADR-005, ADR-007, ADR-011, ADR-012]
 last_updated: 2026-08-31
+rel_classified_under:
+  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
 ---
 
 # F05：Schema 驱动的确定性检查器
@@ -44,7 +46,7 @@ last_updated: 2026-08-31
 
 ### 设计概述
 
-检查器先由 Schema 校验受控元数据，再由确定性规则检查目录归属、关系、规格就绪度、功能设计章节、内嵌场景覆盖和证据引用。格式 10 的 Catalog 不登记独立契约或验收契约。
+检查器先由 Schema 校验受控元数据，再由确定性规则检查目录归属、唯一分类关系、目录与分类一致性、规格就绪度、功能设计章节、内嵌场景覆盖和证据引用。格式 11 的 Catalog 不登记独立契约或验收契约。
 
 ### 处理流程
 

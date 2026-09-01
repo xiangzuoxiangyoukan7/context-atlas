@@ -30,7 +30,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         """格式诊断应明确当前版本是否可写及是否需要转换。"""
 
         (self.root / "knowledge-base.yaml").write_text(
-            "project_version: 1.0.0\nformat_version: 10\n", encoding="utf-8"
+            "project_version: 1.0.0\nformat_version: 11\n", encoding="utf-8"
         )
 
         exit_code, payload = self._run(
@@ -76,7 +76,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
 
         self.assertEqual(0, exit_code)
         self.assertEqual("conversion_available", payload["status"])
-        self.assertEqual(10, payload["created_format_version"])
+        self.assertEqual(11, payload["created_format_version"])
         self.assertTrue(payload["conversion_available"])
         self.assertNotEqual(str(embedded.resolve()), payload["compatibility_path"])
 
@@ -139,7 +139,11 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
             assets_root=self.assets_root,
         )
         content_file = self.root / "replacement.md"
-        content_file.write_text("# 已确认更新\n", encoding="utf-8")
+        content_file.write_text(
+            "---\nid: OVERVIEW-PROJECT\ntype: overview_document\ntitle: 已确认更新\n"
+            "rel_classified_under:\n  - \"[[00-项目总览/README|IDX-OVERVIEW]]\"\n---\n# 已确认更新\n",
+            encoding="utf-8",
+        )
 
         exit_code, payload = self._run(
             "update",
@@ -149,14 +153,14 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
             "--confirmed-revision",
             "proposal-update-1",
             "--file",
-            "README.md",
+            "00-项目总览/项目概述.md",
             "--content-file",
             str(content_file),
         )
 
         self.assertEqual(0, exit_code)
         self.assertEqual("updated", payload["operation"])
-        self.assertEqual("# 已确认更新\n", (target / "README.md").read_text(encoding="utf-8"))
+        self.assertIn("# 已确认更新", (target / "00-项目总览/项目概述.md").read_text(encoding="utf-8"))
         self.assertIn("knowledge_revision: 2", (target / "knowledge-base.yaml").read_text(encoding="utf-8"))
         self.assertIn("knowledge-base.yaml", payload["changed_files"])
 
@@ -322,7 +326,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         """旧格式诊断命令仅作为兼容别名继续工作。"""
 
         (self.root / "knowledge-base.yaml").write_text(
-            "project_version: 1.0.0\nformat_version: 10\n", encoding="utf-8"
+            "project_version: 1.0.0\nformat_version: 11\n", encoding="utf-8"
         )
 
         exit_code, payload = self._run(

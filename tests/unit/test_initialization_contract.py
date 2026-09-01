@@ -94,16 +94,17 @@ class InitializationContractTests(InstalledPluginTestCase):
         self.assertEqual(3, report.execution.runtime_detection.attempts[0].python_major)
         self.assertEqual(("UNKNOWN-001",), report.unknowns)
         target = self.root / "doc-example"
-        self.assertIn("Python", (target / "02-架构与契约/系统架构.md").read_text(encoding="utf-8"))
+        self.assertIn("Python", (target / "02-技术基线/系统架构.md").read_text(encoding="utf-8"))
         self.assertIn("提供可验证的知识库", (target / "00-项目总览/项目概述.md").read_text(encoding="utf-8"))
         self.assertIn("Atlas", (target / "00-项目总览/术语表.md").read_text(encoding="utf-8"))
-        self.assertIn("初始化命令", (target / "01-功能基线/能力地图.md").read_text(encoding="utf-8"))
-        self.assertIn("应用模块", (target / "02-架构与契约/模块/MOD-001.md").read_text(encoding="utf-8"))
-        self.assertIn("POST /init", (target / "02-架构与契约/接口/API-001-POST-init.md").read_text(encoding="utf-8"))
-        self.assertIn("sqlite", (target / "02-架构与契约/数据库/README.md").read_text(encoding="utf-8"))
-        self.assertIn("GitHub API", (target / "02-架构与契约/外部依赖/README.md").read_text(encoding="utf-8"))
-        self.assertIn("py -m unittest", (target / "02-架构与契约/系统架构.md").read_text(encoding="utf-8"))
-        self.assertIn("使用 Markdown", (target / "04-决策记录/README.md").read_text(encoding="utf-8"))
+        self.assertFalse((target / "01-功能基线/能力地图.md").exists())
+        self.assertTrue(any("初始化命令" in path.read_text(encoding="utf-8") for path in (target / "01-功能基线/功能").glob("FEATURE-001-*.md")))
+        self.assertIn("应用模块", (target / "02-技术基线/模块/MOD-001.md").read_text(encoding="utf-8"))
+        self.assertIn("POST /init", (target / "02-技术基线/接口/API-001-POST-init.md").read_text(encoding="utf-8"))
+        self.assertTrue(any("sqlite" in path.read_text(encoding="utf-8") for path in (target / "02-技术基线/数据库").glob("DB-001-*.md")))
+        self.assertTrue(any("GitHub API" in path.read_text(encoding="utf-8") for path in (target / "02-技术基线/外部依赖").glob("EXT-001-*.md")))
+        self.assertIn("py -m unittest", (target / "02-技术基线/系统架构.md").read_text(encoding="utf-8"))
+        self.assertTrue(any("使用 Markdown" in path.read_text(encoding="utf-8") for path in (target / "04-决策记录").glob("ADR-001-*.md")))
 
     def test_initialized_bundle_runs_navigation_without_plugin_assets(self) -> None:
         """生成知识库内置脚本必须能独立执行渐进导航。"""
@@ -187,9 +188,9 @@ class InitializationContractTests(InstalledPluginTestCase):
         combined = "\n".join(
             (target / relative).read_text(encoding="utf-8")
             for relative in (
-                "01-功能基线/能力地图.md", "02-架构与契约/模块/README.md",
-                "02-架构与契约/接口/README.md", "02-架构与契约/数据库/README.md",
-                "02-架构与契约/外部依赖/README.md", "04-决策记录/README.md",
+                "01-功能基线/功能/README.md", "02-技术基线/模块/README.md",
+                "02-技术基线/接口/README.md", "02-技术基线/数据库/README.md",
+                "02-技术基线/外部依赖/README.md", "04-决策记录/README.md",
             )
         )
         for fictional in ("MOD-001", "API-001", "EXT-001", "示例组件", "示例服务"):

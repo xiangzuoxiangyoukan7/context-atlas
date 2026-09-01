@@ -1,3 +1,10 @@
+---
+id: IDX-ARCHIVE
+type: knowledge_index
+title: 历史归档
+rel_classified_under:
+  - "[[README|IDX-ROOT]]"
+---
 # 历史归档
 
 本目录保存被替代的知识、旧任务和旧验收证据。归档内容只解释历史，不能覆盖当前总览、功能卡、现行 ADR、当前变更或验收矩阵。

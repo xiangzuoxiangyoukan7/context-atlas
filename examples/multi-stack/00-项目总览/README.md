@@ -1,3 +1,10 @@
+---
+id: IDX-OVERVIEW
+type: knowledge_index
+title: 项目总览
+rel_classified_under:
+  - "[[README|IDX-ROOT]]"
+---
 # 项目总览
 
 这里保存理解项目身份所需的最少全局信息。

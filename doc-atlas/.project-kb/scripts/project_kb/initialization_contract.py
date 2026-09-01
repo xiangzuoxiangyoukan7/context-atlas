@@ -8,6 +8,8 @@ from pathlib import Path
 import re
 from typing import Any
 
+from .agent_entry import validate_entry
+
 
 REVISION_RE = re.compile(r"^sha256:[a-f0-9]{64}$")
 SAFE_ID_RE = re.compile(r"^[A-Z]+-[0-9]{3}$")
@@ -140,7 +142,7 @@ def validate_initialization_proposal(proposal: object) -> dict[str, Any]:
     root = _object(
         proposal,
         "proposal",
-        {"operation", "proposal_revision", "project", "facts", "unknowns", "conflicts"},
+        {"operation", "proposal_revision", "project", "facts", "unknowns", "conflicts", "agent_entry"},
         {"operation", "proposal_revision", "project", "facts", "unknowns", "conflicts"},
     )
     if root["operation"] != "initialize":
@@ -152,7 +154,7 @@ def validate_initialization_proposal(proposal: object) -> dict[str, Any]:
     project = _object(
         root["project"],
         "proposal.project",
-        {"root", "id", "name", "knowledge_base_name"},
+        {"root", "id", "name", "knowledge_base_name", "workspace_profile"},
         {"root", "id", "name", "knowledge_base_name"},
     )
     project_id = _text(project["id"], "proposal.project.id")
@@ -161,6 +163,12 @@ def validate_initialization_proposal(proposal: object) -> dict[str, Any]:
     knowledge_base_name = _text(project["knowledge_base_name"], "proposal.project.knowledge_base_name")
     if knowledge_base_name != f"doc-{project_id}":
         raise ValueError("knowledge_base_name must equal doc-<project.id>")
+    workspace_profile = _text(
+        project.get("workspace_profile", "standard"),
+        "proposal.project.workspace_profile",
+    )
+    if workspace_profile not in {"standard", "obsidian"}:
+        raise ValueError("proposal.project.workspace_profile is unsupported")
 
     facts = _object(root["facts"], "proposal.facts", FACT_GROUPS, FACT_GROUPS)
     normalized_facts: dict[str, list[dict[str, Any]]] = {}
@@ -204,6 +212,14 @@ def validate_initialization_proposal(proposal: object) -> dict[str, Any]:
             })
         return result
 
+    agent_entry = None
+    if "agent_entry" in root:
+        entry = _object(root["agent_entry"], "proposal.agent_entry", {"host", "filename"}, {"host", "filename"})
+        host = _text(entry["host"], "proposal.agent_entry.host")
+        filename = _text(entry["filename"], "proposal.agent_entry.filename")
+        validate_entry(host, filename)
+        agent_entry = {"host": host, "filename": filename}
+
     return {
         "operation": "initialize",
         "proposal_revision": revision,
@@ -212,8 +228,10 @@ def validate_initialization_proposal(proposal: object) -> dict[str, Any]:
             "id": project_id,
             "name": _text(project["name"], "proposal.project.name"),
             "knowledge_base_name": knowledge_base_name,
+            "workspace_profile": workspace_profile,
         },
         "facts": normalized_facts,
         "unknowns": open_items("unknowns"),
         "conflicts": open_items("conflicts"),
+        "agent_entry": agent_entry,
     }

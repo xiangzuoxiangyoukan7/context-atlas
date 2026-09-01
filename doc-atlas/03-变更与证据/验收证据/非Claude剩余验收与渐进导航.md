@@ -1,3 +1,10 @@
+---
+id: EVID-004
+type: acceptance_evidence
+title: 非Claude剩余验收与渐进导航
+rel_classified_under:
+  - "[[03-变更与证据/验收证据/README|IDX-EVIDENCE]]"
+---
 # 非 Claude 剩余验收与渐进导航
 
 ## 范围

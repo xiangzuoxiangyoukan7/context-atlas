@@ -10,6 +10,8 @@ depends_on: [F01]
 acceptance: [F02-AC-01, F02-AC-02, F02-AC-03, F02-AC-04, F02-AC-05, F02-AC-06, F02-AC-07]
 adr: [ADR-002, ADR-004, ADR-006, ADR-007, ADR-009, ADR-011]
 last_updated: 2026-08-31
+rel_classified_under:
+  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
 ---
 
 # F02：AI 知识采集与确认

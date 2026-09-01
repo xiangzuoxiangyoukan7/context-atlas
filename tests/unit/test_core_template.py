@@ -42,8 +42,8 @@ class CoreTemplateTests(TempDirectoryTestCase):
         self.assertIn("./使用场景.md", governance)
         self.assertNotIn("docs/context-atlas-usage-scenarios.md", readme)
 
-    def test_current_change_is_optional_knowledge_not_an_execution_gate(self) -> None:
-        """验证 current_change_is_optional_knowledge_not_an_execution_gate 场景。"""
+    def test_current_change_is_a_dynamic_view_not_a_maintained_file(self) -> None:
+        """格式 11 不再生成重复的当前变更汇总文件。"""
 
         root = Path("templates/core/doc-project")
         current_change = root / "03-变更与证据/当前变更.md"
@@ -52,10 +52,10 @@ class CoreTemplateTests(TempDirectoryTestCase):
             root / "05-知识治理/AI知识采集协议.md"
         ).read_text(encoding="utf-8")
 
-        self.assertTrue(current_change.is_file())
+        self.assertFalse(current_change.exists())
         self.assertFalse((root / "03-变更与证据/CURRENT.md").exists())
         self.assertNotIn("current:", manifest)
-        self.assertIn("不构成任务执行许可", current_change.read_text(encoding="utf-8"))
+        self.assertNotIn("当前变更.md", collaboration)
         self.assertNotIn("无可执行开发任务", collaboration)
 
     def test_capture_guide_is_durable_fallback_not_runtime_specification(self) -> None:
@@ -93,19 +93,19 @@ class CoreTemplateTests(TempDirectoryTestCase):
     ) -> None:
         """验证 data_asset_readme_has_inventory_columns_and_valid_card_template_link 场景。"""
 
-        root = Path("templates/core/doc-project/02-架构与契约/数据资产")
+        root = Path("templates/core/doc-project/02-技术基线/数据资产")
         readme = (root / "README.md").read_text(encoding="utf-8")
 
         self.assertIn("## 资产总清单", readme)
         self.assertIn("| 资产编号 | 名称 | 负责人 | 状态 | 说明卡 |", readme)
-        self.assertIn("./TEMPLATE.md", LINK_PATTERN.findall(readme))
-        self.assertTrue((root / "TEMPLATE.md").is_file())
+        self.assertIn(".project-kb/templates/knowledge/data-asset.md", readme)
+        self.assertFalse((root / "TEMPLATE.md").exists())
 
     def test_data_asset_template_has_complete_basis_fields(self) -> None:
         """验证 data_asset_template_has_complete_basis_fields 场景。"""
 
         template = Path(
-            "templates/core/doc-project/02-架构与契约/数据资产/TEMPLATE.md"
+            "templates/core/doc-project/.project-kb/templates/knowledge/data-asset.md"
         ).read_text(encoding="utf-8")
 
         for field in ("关联功能", "技术契约", "知识来源", "批准信息", "未决问题"):
@@ -115,9 +115,9 @@ class CoreTemplateTests(TempDirectoryTestCase):
     def test_data_asset_template_explains_governance_boundaries(self) -> None:
         """验证 data_asset_template_explains_governance_boundaries 场景。"""
 
-        root = Path("templates/core/doc-project/02-架构与契约/数据资产")
+        root = Path("templates/core/doc-project/02-技术基线/数据资产")
         readme = (root / "README.md").read_text(encoding="utf-8")
-        template = (root / "TEMPLATE.md").read_text(encoding="utf-8")
+        template = Path("templates/core/doc-project/.project-kb/templates/knowledge/data-asset.md").read_text(encoding="utf-8")
 
         for phrase in ("业务含义", "数据来源", "质量要求", "安全要求", "保存规则"):
             self.assertIn(phrase, template)

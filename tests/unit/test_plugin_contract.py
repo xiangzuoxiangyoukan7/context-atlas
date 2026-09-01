@@ -211,8 +211,8 @@ class PluginContractTests(unittest.TestCase):
         guide_path = ROOT / "packaging/marketplace-installation.md"
         self.assertTrue(guide_path.is_file(), "缺少 Marketplace 安装文档")
         guide = guide_path.read_text(encoding="utf-8")
-        matrix = (ROOT / "doc-atlas/03-变更与证据/验收矩阵.md").read_text(encoding="utf-8")
-        combined = "\n".join((readme, guide, matrix))
+        evidence = (ROOT / "doc-atlas/03-变更与证据/README.md").read_text(encoding="utf-8")
+        combined = "\n".join((readme, guide, evidence))
 
         for phrase in (
             "不是 Python 包",

@@ -1,3 +1,10 @@
+---
+id: IDX-GOVERNANCE
+type: knowledge_index
+title: 知识治理
+rel_classified_under:
+  - "[[README|IDX-ROOT]]"
+---
 # 知识治理
 
 这里保存知识库自身的持久维护规则，不定义项目如何开发。

@@ -5,6 +5,8 @@ title: 知识维护 Skill 按治理语义拆分
 status: accepted
 date: 2026-08-21
 last_updated: 2026-08-21
+rel_classified_under:
+  - "[[04-决策记录/README|IDX-DECISIONS]]"
 ---
 
 # ADR-004：知识维护 Skill 按治理语义拆分

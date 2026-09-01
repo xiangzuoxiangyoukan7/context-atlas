@@ -133,8 +133,8 @@ class TraceabilityTests(TempDirectoryTestCase):
             messages,
         )
 
-    def test_passed_acceptance_requires_resolvable_current_evidence(self) -> None:
-        """通过项的证据名称必须唯一解析到当前验收证据文件。"""
+    def test_completed_acceptance_requires_locatable_evidence(self) -> None:
+        """完成项必须能在当前验收证据中定位其场景编号。"""
 
         write_record(
             self.knowledge_base / "01-功能基线/F01.md",
@@ -142,7 +142,7 @@ class TraceabilityTests(TempDirectoryTestCase):
                 "id": "F01",
                 "type": "feature",
                 "title": "Feature",
-                "status": "baselined",
+                "status": "completed",
                 "phase": "mvp",
                 "priority": "P0",
                 "current_slice": "included",
@@ -153,15 +153,9 @@ class TraceabilityTests(TempDirectoryTestCase):
                 "last_updated": "2026-08-10",
             },
         )
-        matrix = self.knowledge_base / "03-变更与证据/验收矩阵.md"
-        matrix.write_text(
-            "# 验收矩阵\n\n"
-            "| 验收编号 | 对象 | 条件摘要 | 结果 | 证据位置 | 对应版本 |\n"
-            "| --- | --- | --- | --- | --- | --- |\n"
-            "| F01-AC-01 | F01 | condition | passed | 不存在证据 | v1 |\n",
-            encoding="utf-8",
-        )
+        feature = self.knowledge_base / "01-功能基线/F01.md"
+        feature.write_text(feature.read_text(encoding="utf-8") + "\n## 验收场景\n\nF01-AC-01\n", encoding="utf-8")
 
         codes = {issue.code for issue in validate(self.knowledge_base, self.config)}
 
-        self.assertIn("KB_COVERAGE_EVIDENCE_PATH", codes)
+        self.assertIn("KB_COMPLETION_EVIDENCE", codes)

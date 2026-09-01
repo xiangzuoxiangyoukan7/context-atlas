@@ -1,3 +1,10 @@
+---
+id: GOV-AI-COLLABORATION
+type: governance_document
+title: AI 协作规则
+rel_classified_under:
+  - "[[05-知识治理/README|IDX-GOVERNANCE]]"
+---
 # AI 协作规则
 
 ## 读取顺序

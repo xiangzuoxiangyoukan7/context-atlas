@@ -11,7 +11,7 @@ from .model import DocumentRecord, Issue
 # context-atlas-rules: [[rules/知识治理规则#RULE-SRC-001|RULE-SRC-001]]
 
 
-ACCEPTANCE_PATTERN = re.compile(r"(?:F\d{2}|KB)-AC-\d{2}\Z")
+ACCEPTANCE_PATTERN = re.compile(r"(?:(?:F\d{2}|KB)-AC-\d{2}|AC-[A-Z0-9]+-[0-9]{3})\Z")
 ACCEPTANCE_RESULTS = {"not_started", "partial", "passed", "not_applicable"}
 SOURCE_TYPES = {"user_statement", "repository_file", "command_output", "existing_document", "external_document", "ai_inference"}
 REFERENCE_FIELDS = (
@@ -205,6 +205,7 @@ def _validate_lifecycle(
 def _validate_references(
     records: Iterable[DocumentRecord],
     ids: Mapping[str, DocumentRecord],
+    archived_ids: frozenset[str] = frozenset(),
 ) -> list[Issue]:
     """验证受控引用字段均指向已登记知识编号。"""
 
@@ -212,7 +213,7 @@ def _validate_references(
     for record in _records_with_metadata(records):
         for field in REFERENCE_FIELDS:
             for reference in as_list(record.metadata.get(field)):
-                if reference and reference not in ids:
+                if reference and reference not in ids and not (field == "supersedes" and reference in archived_ids):
                     issues.append(
                         Issue(
                             "KB_TRACE_REFERENCE",
@@ -276,71 +277,73 @@ def _registered(value: str) -> bool:
     return bool(value.strip() and value.strip() not in {"—", "-"})
 
 
-def _validate_matrix(root: Path, records: Iterable[DocumentRecord]) -> list[Issue]:
-    """核对验收声明、矩阵行和完成状态证据。"""
+def _evidence_path(root: Path, value: str) -> Path | None:
+    """把矩阵证据单元格解析为当前证据目录中的实际文件。"""
+
+    link = re.search(r"\[[^\]]+\]\((?P<path>[^)]+)\)", value)
+    if link:
+        candidate = (root / "03-变更与证据" / link.group("path")).resolve()
+        try:
+            candidate.relative_to(root.resolve())
+        except ValueError:
+            return None
+        return candidate if candidate.is_file() else None
+    evidence_root = root / "03-变更与证据" / "验收证据"
+    normalized = re.sub(r"[^0-9A-Za-z\u4e00-\u9fff]+", "", value)
+    matches = [
+        path
+        for path in evidence_root.glob("*.md")
+        if re.sub(r"[^0-9A-Za-z\u4e00-\u9fff]+", "", path.stem) == normalized
+    ]
+    return matches[0] if len(matches) == 1 else None
+
+
+def _validate_acceptance_views(root: Path, records: Iterable[DocumentRecord]) -> list[Issue]:
+    """从功能内场景和实际证据动态核对验收追溯，不依赖人工矩阵。"""
 
     issues: list[Issue] = []
-    declared: set[str] = set()
+    declarations: dict[str, list[Path]] = {}
     completed: list[tuple[Path, list[str]]] = []
-    for record in _records_with_metadata(records):
+    record_list = list(_records_with_metadata(records))
+    for record in record_list:
         if record.metadata.get("type") not in {"feature", "task", "governance_task"}:
             continue
         acceptance = as_list(record.metadata.get("acceptance"))
-        declared.update(acceptance)
+        for identifier in acceptance:
+            declarations.setdefault(identifier, []).append(record.path)
+            if record.metadata.get("type") == "feature" and identifier not in record.body:
+                issues.append(Issue("KB_ACCEPTANCE_SCENARIO", record.path, f"declared acceptance scenario is missing from feature body: {identifier}"))
         if record.metadata.get("status") == "completed":
             completed.append((record.path, acceptance))
 
-    matrix = root / "03-变更与证据" / "验收矩阵.md"
-    if not matrix.exists():
-        if declared:
-            issues.append(Issue("KB_MATRIX_REQUIRED", matrix, "acceptance matrix is required"))
-        return issues
+    for identifier, paths in declarations.items():
+        if len(paths) > 1:
+            issues.append(Issue("KB_ACCEPTANCE_DUPLICATE", paths[0], f"acceptance ID is declared by multiple records: {identifier}"))
 
-    rows = _matrix_rows(matrix, issues)
-    row_ids = [row[0] for row in rows]
-    row_set = set(row_ids)
-    if row_set != declared:
-        issues.append(
-            Issue(
-                "KB_MATRIX_IDS",
-                matrix,
-                f"matrix IDs do not match declarations; missing={sorted(declared - row_set)}, extra={sorted(row_set - declared)}",
-            )
-        )
-    for identifier in row_set:
-        if row_ids.count(identifier) != 1:
-            issues.append(
-                Issue("KB_MATRIX_DUPLICATE", matrix, f"matrix ID appears more than once: {identifier}")
-            )
-    row_map = {row[0]: row for row in rows if row_ids.count(row[0]) == 1}
-    for identifier, result, evidence, version in rows:
-        if result not in ACCEPTANCE_RESULTS:
-            issues.append(Issue("KB_ACCEPTANCE_RESULT", matrix, f"invalid result: {result!r}"))
-        if result == "passed" and (not _registered(evidence) or not _registered(version)):
-            issues.append(
-                Issue("KB_ACCEPTANCE_EVIDENCE", matrix, f"passed acceptance lacks evidence: {identifier}")
-            )
+    evidence_root = root / "03-变更与证据" / "验收证据"
+    evidence_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in evidence_root.glob("*.md")
+        if path.name != "README.md"
+    ) if evidence_root.is_dir() else ""
     for path, acceptance in completed:
         for identifier in acceptance:
-            row = row_map.get(identifier)
-            if row is None or row[1] != "passed" or not _registered(row[2]) or not _registered(row[3]):
-                issues.append(
-                    Issue(
-                        "KB_COMPLETION_EVIDENCE",
-                        path,
-                        f"completed record lacks passed evidence: {identifier}",
-                    )
-                )
+            if identifier not in evidence_text:
+                issues.append(Issue("KB_COMPLETION_EVIDENCE", path, f"completed record lacks locatable evidence: {identifier}"))
     return issues
 
 
-def validate_traceability(root: Path, records: Iterable[DocumentRecord]) -> list[Issue]:
+def validate_traceability(
+    root: Path,
+    records: Iterable[DocumentRecord],
+    archived_ids: frozenset[str] = frozenset(),
+) -> list[Issue]:
     """汇总生命周期、引用和验收矩阵的追溯问题。"""
 
     materialized = list(records)
     issues: list[Issue] = []
     ids = _id_index(materialized, issues)
     issues.extend(_validate_lifecycle(materialized, ids))
-    issues.extend(_validate_references(materialized, ids))
-    issues.extend(_validate_matrix(root, materialized))
+    issues.extend(_validate_references(materialized, ids, archived_ids))
+    issues.extend(_validate_acceptance_views(root, materialized))
     return issues
