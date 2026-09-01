@@ -2,12 +2,12 @@
 id: REQ-ATLAS-001
 type: requirement
 title: 知识库 README 层级导航
-status: proposed
+status: approved
 readiness: ready
 priority: P1
 rel_classified_under:
   - "[[01-功能基线/需求/README|IDX-REQUIREMENTS]]"
-last_updated: 2026-09-01
+last_updated: 2026-09-02
 ---
 
 # REQ-ATLAS-001：知识库 README 层级导航
@@ -116,6 +116,7 @@ Context Atlas 生成的知识库需要让 Agent 稳定判断知识文件的类�
 | repository_file | `doc-landSurvey/README.md` 及其子目录 README 层级导航现状 | 2026-09-01T00:00:00+08:00 | observed | — |
 | user_statement | 当前会话对 `BQ-README-NAV-001` 至 `008` 的逐项回答 | 2026-09-01T23:02:05+08:00 | confirmed | 2026-09-01T23:02:05+08:00 |
 | user_statement | Proposal `CA-REQUIREMENT-SIMPLIFICATION-20260901-R1` | 2026-09-01 | confirmed | 2026-09-01 |
+| command_output | `py -m unittest discover -s tests -p 'test_*.py'`、知识库导航冒烟与三平台构建 | 2026-09-02 | observed | — |
 
 ## 校验与运行时验证
 
@@ -129,8 +130,8 @@ Context Atlas 生成的知识库需要让 Agent 稳定判断知识文件的类�
 - 不把 README 导航关系当作业务事实关系。
 - 不把 `.project-kb`、`.obsidian` 或 `Clippings` 转换成业务知识分类。
 - 不在 README 中生成人工成员清单。
-- 本需求当前只入库，不在本次操作中修改插件实现。
+- 本需求的实现结果由 F04、F05 及 `EVID-REQ-ATLAS-001` 追溯，知识结构检查通过不替代业务确认。
 
-## 后续实现范围
+## 实现范围
 
-后续实现应覆盖核心模板、初始化器、知识维护执行器、升级器、结构校验器、导航查询和跨平台验收测试，并保证重复执行幂等。实现不得重新引入 README 成员清单。
+实现覆盖核心模板、初始化和升级使用的自包含资产、结构校验器、导航查询及跨平台构建验证，并保证查询与检查不会修改正式知识。实现不重新引入 README 成员清单。

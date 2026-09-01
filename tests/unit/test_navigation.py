@@ -150,6 +150,20 @@ status: approved
         )
         self.assertTrue(all(node.kind == "directory" for node in report.children))
 
+    def test_root_children_include_archive_but_exclude_system_directories(self) -> None:
+        """历史归档属于知识树，暂存箱和内部运行目录不属于。"""
+
+        self._write("90-历史归档/README.md", "# 历史归档\n")
+        self._write("Clippings/README.md", "# 暂存\n")
+        self._write(".obsidian/README.md", "# 配置\n")
+
+        report = query_children(self.root)
+        paths = [node.path for node in report.children]
+
+        self.assertIn("90-历史归档", paths)
+        self.assertNotIn("Clippings", paths)
+        self.assertNotIn(".obsidian", paths)
+
     def test_children_file_summary_exposes_identity_without_body_loading(self) -> None:
         """文件树节点应暴露身份、类型和状态摘要。"""
 
@@ -199,6 +213,85 @@ status: approved
             [node.id for node in report.nodes],
         )
         self.assertEqual(["rel_satisfies"], [edge.relation for edge in report.edges])
+
+    def test_graph_stops_at_classification_index_by_default(self) -> None:
+        """普通图到达 README 分类节点后不得反向扩展同类成员。"""
+
+        self._write(
+            "01-功能基线/功能/README.md",
+            """---
+id: IDX-FEATURES
+type: knowledge_index
+title: 功能
+rel_classified_under: []
+---
+# 功能
+""",
+        )
+        for name in ("F-ORDER-001.md",):
+            path = self.root / "01-功能基线/功能" / name
+            content = path.read_text(encoding="utf-8").replace(
+                "status: baselined\n",
+                'status: baselined\nrel_classified_under:\n  - "[[01-功能基线/功能/README|IDX-FEATURES]]"\n',
+            )
+            path.write_text(content, encoding="utf-8")
+        self._write(
+            "01-功能基线/功能/F-ORDER-002.md",
+            """---
+id: F-ORDER-002
+type: feature
+title: 查询订单
+status: baselined
+rel_classified_under:
+  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
+---
+# 查询订单
+""",
+        )
+
+        report = query_graph(self.root, start="F-ORDER-001", depth=2)
+
+        self.assertIn("IDX-FEATURES", [node.id for node in report.nodes])
+        self.assertNotIn("F-ORDER-002", [node.id for node in report.nodes])
+
+    def test_graph_expands_classification_members_only_when_explicit(self) -> None:
+        """显式分类成员查询仍受深度和节点上限控制。"""
+
+        self._write(
+            "01-功能基线/功能/README.md",
+            """---
+id: IDX-FEATURES
+type: knowledge_index
+title: 功能
+rel_classified_under: []
+---
+# 功能
+""",
+        )
+        for identifier in ("F-ORDER-001", "F-ORDER-002"):
+            path = self.root / "01-功能基线/功能" / f"{identifier}.md"
+            if identifier == "F-ORDER-001":
+                content = path.read_text(encoding="utf-8").replace(
+                    "status: baselined\n",
+                    'status: baselined\nrel_classified_under:\n  - "[[01-功能基线/功能/README|IDX-FEATURES]]"\n',
+                )
+                path.write_text(content, encoding="utf-8")
+            else:
+                self._write(
+                    f"01-功能基线/功能/{identifier}.md",
+                    f'''---\nid: {identifier}\ntype: feature\ntitle: 查询订单\nstatus: baselined\nrel_classified_under:\n  - "[[01-功能基线/功能/README|IDX-FEATURES]]"\n---\n# 查询订单\n''',
+                )
+
+        report = query_graph(
+            self.root,
+            start="IDX-FEATURES",
+            depth=1,
+            max_nodes=2,
+            expand_classification_members=True,
+        )
+
+        self.assertTrue(report.truncated)
+        self.assertEqual(2, len(report.nodes))
 
     def test_cli_exposes_children_and_graph_as_json(self) -> None:
         """统一 Agent 命令应公开树导航和关系图查询。"""

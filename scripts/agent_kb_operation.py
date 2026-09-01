@@ -123,6 +123,11 @@ def _parser() -> argparse.ArgumentParser:
     graph.add_argument("--relation")
     graph.add_argument("--type", dest="node_type")
     graph.add_argument("--status")
+    graph.add_argument(
+        "--expand-classification-members",
+        action="store_true",
+        help="显式允许图查询从 README 分类节点继续展开成员",
+    )
 
     health = subparsers.add_parser("health")
     health.add_argument("knowledge_base_root", type=Path)
@@ -275,6 +280,7 @@ def _execute(args: argparse.Namespace) -> tuple[object, int]:
             relation=args.relation,
             node_type=args.node_type,
             status=args.status,
+            expand_classification_members=args.expand_classification_members,
         ), 0
     if args.operation == "health":
         return inspect_health(
