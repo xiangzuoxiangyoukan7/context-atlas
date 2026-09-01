@@ -1,9 +1,9 @@
 ---
 id: IDX-ARCHIVE
 type: knowledge_index
-title: 历史归档
 rel_classified_under:
   - "[[README|IDX-ROOT]]"
+title: 历史归档
 ---
 # 历史归档
 

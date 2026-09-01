@@ -146,7 +146,7 @@ rel_classified_under:
         self.assertFalse(proposal.unresolved)
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
         converted = requirement.read_text(encoding="utf-8")
-        self.assertEqual(12, report.format_version)
+        self.assertEqual(13, report.format_version)
         self.assertIn("readiness: ready", converted)
         self.assertNotIn("business_rules:", converted)
         self.assertIn("## 来源与确认", converted)
@@ -162,7 +162,7 @@ rel_classified_under:
         proposal = self._proposal()
 
         self.assertEqual(1, proposal.source_version)
-        self.assertEqual(12, proposal.target_version)
+        self.assertEqual(13, proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
         self.assertIn(
             '"reference": "fixture"',
@@ -201,7 +201,7 @@ rel_classified_under:
 
         proposal = self._proposal()
 
-        self.assertEqual(12, proposal.target_version)
+        self.assertEqual(13, proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
 
         from scripts.project_kb.migration import apply_migration
@@ -237,7 +237,7 @@ rel_classified_under:
         self.assertNotIn("SRC-001", content)
         self.assertFalse((self.root / "00-项目总览/SRC-001.md").exists())
         self.assertTrue((self.root / "05-知识治理/公共来源/SRC-001.md").exists())
-        self.assertIn("format_version: 12", manifest_content)
+        self.assertIn("format_version: 13", manifest_content)
         self.assertIn("knowledge_revision: 1", manifest_content)
         self.assertIn("created_by:", manifest_content)
         self.assertNotIn("revision:", manifest_content.replace("knowledge_revision:", ""))
@@ -290,7 +290,7 @@ rel_classified_under:
         )
 
         self.assertEqual(2, proposal.source_version)
-        self.assertEqual(12, proposal.target_version)
+        self.assertEqual(13, proposal.target_version)
         self.assertEqual(2, len(proposal.moves))
         self.assertEqual(2, len(proposal.removals))
         self.assertEqual([], list(proposal.unresolved))
@@ -301,7 +301,7 @@ rel_classified_under:
         self.assertTrue((self.root / "05-知识治理/AI知识采集协议.md").is_file())
         self.assertFalse((legacy / "本地开发.md").exists())
         self.assertFalse((legacy / "测试规则.md").exists())
-        self.assertIn("format_version: 12", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 13", manifest.read_text(encoding="utf-8"))
         self.assertIn("05-知识治理/README.md", root_readme.read_text(encoding="utf-8"))
         self.assertNotIn("05-开发指南", root_readme.read_text(encoding="utf-8"))
         self.assertEqual(
@@ -328,11 +328,11 @@ rel_classified_under:
 
         proposal = self._proposal()
         self.assertEqual([], list(proposal.unresolved))
-        self.assertEqual(12, proposal.target_version)
+        self.assertEqual(13, proposal.target_version)
         apply_migration(self.root, proposal, proposal.proposal_revision)
 
         self.assertIn("rel_satisfies: []", feature.read_text(encoding="utf-8"))
-        self.assertIn("format_version: 12", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 13", manifest.read_text(encoding="utf-8"))
 
     def test_format_six_creates_complete_specification_workspaces_atomically(self) -> None:
         """格式六升级应创建目录说明及其模板，并拒绝提案后的目标冲突。"""
@@ -356,7 +356,7 @@ rel_classified_under:
 
         proposal = self._proposal()
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
-        self.assertEqual(12, report.format_version)
+        self.assertEqual(13, report.format_version)
         self.assertTrue((self.root / "03-变更与证据/变更/README.md").is_file())
         self.assertFalse((self.root / "03-变更与证据/变更/TEMPLATE.md").exists())
         self.assertFalse((self.root / "03-变更与证据/变更/Delta/TEMPLATE.md").exists())

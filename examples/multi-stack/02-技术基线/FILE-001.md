@@ -1,6 +1,8 @@
 ---
 id: FILE-001
 type: knowledge_item
+rel_classified_under:
+  - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
 title: 知识项导入文件契约
 status: approved
 version: 1.0.0
@@ -20,8 +22,6 @@ sources:
     observed_at: "2026-08-10T00:00:00Z"
     confirmation_status: "confirmed"
     confirmed_at: "2026-08-10T00:00:00Z"
-rel_classified_under:
-  - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
 ---
 # FILE-001：知识项导入文件契约
 

@@ -1,9 +1,9 @@
 ---
 id: IDX-GOVERNANCE
 type: knowledge_index
-title: 知识治理
 rel_classified_under:
   - "[[README|IDX-ROOT]]"
+title: 知识治理
 ---
 # 知识治理
 

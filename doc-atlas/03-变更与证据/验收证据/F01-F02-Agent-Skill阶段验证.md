@@ -1,9 +1,9 @@
 ---
 id: EVID-015
 type: acceptance_evidence
-title: F01-F02-Agent-Skill阶段验证
 rel_classified_under:
   - "[[03-变更与证据/验收证据/README|IDX-EVIDENCE]]"
+title: F01-F02-Agent-Skill阶段验证
 ---
 # F01/F02 Agent Skill 阶段验证
 

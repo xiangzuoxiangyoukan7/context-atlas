@@ -2,7 +2,7 @@
 id: TASK-KB-002
 type: governance_task
 title: 项目知识库重新基线化
-plan: ../../02-架构与契约/系统架构.md
+plan: ../../02-技术基线/系统架构.md
 status: completed
 acceptance: [KB-AC-11, KB-AC-12, KB-AC-13, KB-AC-14, KB-AC-15, KB-AC-16, KB-AC-17, KB-AC-18]
 last_updated: 2026-08-10

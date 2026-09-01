@@ -1,6 +1,8 @@
 ---
 id: DS-KNOWLEDGE
 type: data_source
+rel_classified_under:
+  - "[[02-技术基线/数据库/数据源/README|IDX-DATA-SOURCES]]"
 title: 知识示例数据源
 status: approved
 product: postgresql
@@ -17,8 +19,6 @@ sources:
     observed_at: "2026-08-10T00:00:00Z"
     confirmation_status: "confirmed"
     confirmed_at: "2026-08-10T00:00:00Z"
-rel_classified_under:
-  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
 ---
 # DS-KNOWLEDGE 知识示例数据源
 

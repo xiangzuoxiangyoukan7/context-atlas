@@ -1,6 +1,8 @@
 ---
 id: DATA-001
 type: data_asset
+rel_classified_under:
+  - "[[02-技术基线/数据资产/README|IDX-DATA-ASSETS]]"
 title: 知识项数据
 status: approved
 version: 1.0.0
@@ -24,8 +26,6 @@ sources:
     observed_at: "2026-08-10T00:00:00Z"
     confirmation_status: "confirmed"
     confirmed_at: "2026-08-10T00:00:00Z"
-rel_classified_under:
-  - "[[02-技术基线/数据资产/README|IDX-DATA-ASSETS]]"
 ---
 # DATA-001：知识项数据
 

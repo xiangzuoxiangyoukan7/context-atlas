@@ -1,9 +1,9 @@
 ---
 id: GOV-CAPTURE-PROTOCOL
 type: governance_document
-title: AI 知识采集协议
 rel_classified_under:
   - "[[05-知识治理/README|IDX-GOVERNANCE]]"
+title: AI 知识采集协议
 ---
 # AI 知识采集协议
 
@@ -39,4 +39,10 @@ rel_classified_under:
 
 ## 产品边界
 
-Context Atlas 只负责知识的采集、确认、沉淀、读取、关系、影响、版本、冲突和归档，不负责规定项目如何开发。项目命令如有沉淀价值，应当作技术栈或相关技术契约中的带来源事实，不生成独立“开发指南”。
+Context Atlas 只负责知识的采集、确认、沉淀、读取、关系、影响、版本、冲突和归档，不负责规定项目如何开发。项目命令如有沉淀价值，应当作技术栈或相关技术契约中的带来源事实，不生成独立“知识治理”。
+
+## 关键决策与依据
+
+- `references/` 是完整执行协议的唯一规范源，Skill 是薄适配层，目标知识库只保存持久治理语义，Schema 与执行器提供确定性约束。
+- 决策依据属于其约束的知识，不建立独立 ADR 权威；治理决策直接保存在本目录的对应治理文档中。
+- 来源与确认：原 ADR-003、ADR-004 的批准内容；格式 13 归并由 Proposal `CA-DECISION-INTEGRATION-FORMAT13-20260902-R1` 确认。

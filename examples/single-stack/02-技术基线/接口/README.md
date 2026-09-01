@@ -1,9 +1,9 @@
 ---
 id: IDX-INTERFACES
 type: knowledge_index
-title: 接口
 rel_classified_under:
   - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
+title: 接口
 ---
 # 接口
 

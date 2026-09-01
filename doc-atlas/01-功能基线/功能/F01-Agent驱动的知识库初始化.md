@@ -1,6 +1,8 @@
 ---
 id: F01
 type: feature
+rel_classified_under:
+  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
 title: Agent 驱动的知识库初始化
 status: baselined
 phase: mvp
@@ -8,10 +10,7 @@ priority: P0
 current_slice: included
 depends_on: []
 acceptance: [F01-AC-01, F01-AC-02, F01-AC-03, F01-AC-04]
-adr: [ADR-002, ADR-008, ADR-011]
 last_updated: 2026-08-31
-rel_classified_under:
-  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
 ---
 
 # F01：Agent 驱动的知识库初始化
@@ -83,3 +82,9 @@ rel_classified_under:
 - `F01-AC-02`：初始化不会覆盖已有目录；若 Proposal 明确了当前宿主，则只创建或补充对应入口文件的 Context Atlas 受管区块，并保留原内容。
 - `F01-AC-03`：标准和 Obsidian 初始化模式均产生可验证且不覆盖已有配置的目标，Obsidian 展示配置不进入正式知识治理。
 - `F01-AC-04`：初始化产生的所有临时目录均位于项目根固定 `.context-atlas-temp/` 内，操作结束后清理操作子目录，且不迁移或删除旧 `.context-atlas-tmp/`。
+
+## 关键决策与依据
+
+- 产品采用 Agent、Skill、共享协议、模板、Schema 和确定性检查器，不提供独立用户 CLI。
+- 初始化默认使用标准工作区，只有用户明确选择时生成最小 Obsidian 配置；展示配置不参与正式知识治理，已有配置不得覆盖。
+- 来源与确认：原 ADR-002、ADR-008、ADR-011 的批准内容；本节由 Proposal `CA-DECISION-INTEGRATION-FORMAT13-20260902-R1` 归并。

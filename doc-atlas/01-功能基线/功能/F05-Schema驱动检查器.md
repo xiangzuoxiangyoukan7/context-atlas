@@ -1,19 +1,18 @@
 ---
 id: F05
 type: feature
+rel_classified_under:
+  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
 title: Schema 驱动的确定性检查器
 status: baselined
 phase: mvp
 priority: P0
 current_slice: included
 depends_on: [F03, F04]
-acceptance: [F05-AC-01, F05-AC-02, F05-AC-03, F05-AC-04, F05-AC-05, F05-AC-06, F05-AC-07]
-adr: [ADR-005, ADR-007, ADR-011, ADR-012, ADR-013]
+acceptance: [F05-AC-01, F05-AC-02, F05-AC-03, F05-AC-04, F05-AC-05, F05-AC-06, F05-AC-07, F05-AC-08]
 last_updated: 2026-09-02
 rel_satisfies:
   - "[[01-功能基线/需求/REQ-ATLAS-001-知识库README层级导航|REQ-ATLAS-001]]"
-rel_classified_under:
-  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
 ---
 
 # F05：Schema 驱动的确定性检查器
@@ -87,3 +86,11 @@ Schema 保持机器结构权威，Python 规则只检查无法由轻量 Schema �
 - `F05-AC-05`：健康检查能稳定定位结构问题、版本权威冲突和人工复核项，且运行前后正式知识摘要不变。
 - `F05-AC-06`：完整但尚无功能承接的需求可以标记 `ready` 并通过结构检查；覆盖视图报告 `uncovered`，但不把它当成规格缺陷或实现完成。
 - `F05-AC-07`：检查器能报告缺失 README、错误或重复分类身份、缺失或重复分类关系、跨级父分类、分类循环及物理直接目录不一致，并且不把 `Clippings`、`.project-kb` 或 `.obsidian` 当作正式分类。
+- `F05-AC-08`：格式 13 升级完成后不存在旧决策目录、authority、模板或功能 `adr` 字段；无法判断归属的旧 ADR 无损转入待确认知识，重复升级保持幂等。
+
+## 关键决策与依据
+
+- Schema 和检查器只验证结构、状态、来源、关系与追溯，不批准内容或证明业务完成。
+- 健康检查只读报告问题，不自动修复；规格就绪度与批准、覆盖和实现状态分别判断。
+- 格式升级必须完成最新结构归一化；格式 13 拒绝独立 ADR 目录、`authority.decisions` 和功能 `adr` 字段。
+- 来源与确认：原 ADR-005、ADR-007、ADR-011、ADR-012、ADR-013；格式 13 归并由 Proposal `CA-DECISION-INTEGRATION-FORMAT13-20260902-R1` 确认。

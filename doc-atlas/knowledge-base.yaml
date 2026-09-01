@@ -1,16 +1,15 @@
-protocol_version: 1.0
-schema_version: 1.0
 project_id: context-atlas
 project_name: context-atlas
 knowledge_base_name: 脉络地图
 project_version: 0.1.0
-format_version: 12
-knowledge_revision: 6
+format_version: 13
+knowledge_revision: 7
 initialized_at: 2026-08-17
+created_by:
+  product: context-atlas
 authority:
   overview: 00-项目总览/README.md
   features: 01-功能基线/README.md
   technical_baseline: 02-技术基线/README.md
   evidence: 03-变更与证据/README.md
-  decisions: 04-决策记录/README.md
   collaboration: 05-知识治理/AI知识采集协议.md

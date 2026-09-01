@@ -1,9 +1,9 @@
 ---
 id: EVID-020
 type: acceptance_evidence
-title: TASK-KB-012-非渐进读取工作验收
 rel_classified_under:
   - "[[03-变更与证据/验收证据/README|IDX-EVIDENCE]]"
+title: TASK-KB-012-非渐进读取工作验收
 ---
 # TASK-KB-012 非渐进读取工作验收
 

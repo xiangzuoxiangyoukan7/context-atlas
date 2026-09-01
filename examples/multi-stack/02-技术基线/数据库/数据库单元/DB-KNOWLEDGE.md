@@ -1,6 +1,8 @@
 ---
 id: DB-KNOWLEDGE
 type: database_unit
+rel_classified_under:
+  - "[[02-技术基线/数据库/数据库单元/README|IDX-DATABASE-UNITS]]"
 title: 知识示例数据库
 status: approved
 version: 1.0.0
@@ -18,8 +20,6 @@ sources:
     observed_at: "2026-08-10T00:00:00Z"
     confirmation_status: "confirmed"
     confirmed_at: "2026-08-10T00:00:00Z"
-rel_classified_under:
-  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
 ---
 # DB-KNOWLEDGE 知识示例数据库
 

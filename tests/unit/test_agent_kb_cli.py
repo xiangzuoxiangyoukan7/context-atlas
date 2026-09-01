@@ -77,7 +77,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
 
         self.assertEqual(0, exit_code)
         self.assertEqual("conversion_available", payload["status"])
-        self.assertEqual(12, payload["created_format_version"])
+        self.assertEqual(13, payload["created_format_version"])
         self.assertTrue(payload["conversion_available"])
         self.assertNotEqual(str(embedded.resolve()), payload["compatibility_path"])
 
@@ -107,7 +107,6 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
                 "databases": [],
                 "external_dependencies": [],
                 "tests": [],
-                "adrs": [],
             },
             "unknowns": [],
             "conflicts": [],

@@ -1,6 +1,8 @@
 ---
 id: F02
 type: feature
+rel_classified_under:
+  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
 title: AI 知识采集与确认
 status: baselined
 phase: mvp
@@ -8,10 +10,7 @@ priority: P0
 current_slice: included
 depends_on: [F01]
 acceptance: [F02-AC-01, F02-AC-02, F02-AC-03, F02-AC-04, F02-AC-05, F02-AC-06, F02-AC-07]
-adr: [ADR-002, ADR-004, ADR-006, ADR-007, ADR-009, ADR-011]
 last_updated: 2026-08-31
-rel_classified_under:
-  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
 ---
 
 # F02：AI 知识采集与确认
@@ -91,3 +90,10 @@ rel_classified_under:
 - `F02-AC-05`：批量和网页来源保持逐来源隔离、不可信内容边界、汇总路由和正式知识零写入。
 - `F02-AC-06`：查询结论只在显式摄取时候选化，可选历史经过脱敏、限额和非正式边界约束。
 - `F02-AC-07`：暂存外部文件逐项报告，确认后安全移动并可追溯，失败不丢失且不把保存行为解释为内容批准。
+
+## 关键决策与依据
+
+- 正式维护按治理语义拆分为 add、revise、retire，并由 work 编排混合操作；不恢复通用 update 入口。
+- 场景化使用指南与只读 ingest 并存；批量来源逐项隔离，网页正文视为不可信数据，运行历史不是正式知识。
+- `Clippings/` 是必处理暂存箱；受管保存采用复制、摘要校验、验证成功后删除原件的原子流程。
+- 来源与确认：原 ADR-004、ADR-006、ADR-007、ADR-009 的批准内容；本节由 Proposal `CA-DECISION-INTEGRATION-FORMAT13-20260902-R1` 归并。

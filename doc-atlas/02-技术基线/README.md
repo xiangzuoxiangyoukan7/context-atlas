@@ -1,9 +1,9 @@
 ---
 id: IDX-TECHNICAL-BASELINE
 type: knowledge_index
-title: 技术基线
 rel_classified_under:
   - "[[README|IDX-ROOT]]"
+title: 技术基线
 ---
 # 架构与技术对象
 

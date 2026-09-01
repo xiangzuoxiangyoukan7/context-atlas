@@ -6,6 +6,6 @@ status: proposed
 version: 1.0.0
 sources: [SRC-001]
 last_updated: 2026-08-10
-adr: [ADR-MISSING]
+depends_on: [F-MISSING-001]
 ---
 # Fixture item

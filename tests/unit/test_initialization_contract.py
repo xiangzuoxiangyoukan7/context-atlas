@@ -51,7 +51,6 @@ class InitializationContractTests(InstalledPluginTestCase):
                 "databases": [{"id": "DB-001", "value": "sqlite 数据库", "status": "proposed", "source": {"type": "repository_file", "reference": "migrations/"}}],
                 "external_dependencies": [{"id": "EXT-001", "value": "GitHub API", "status": "proposed", "source": {"type": "repository_file", "reference": "pyproject.toml"}}],
                 "tests": [{"id": "TEST-001", "value": "py -m unittest", "status": "confirmed", "source": {"type": "repository_file", "reference": "tests/"}}],
-                "adrs": [{"id": "ADR-001", "value": "使用 Markdown", "status": "confirmed", "source": {"type": "existing_document", "reference": "docs/adr/001.md"}}],
             },
             "unknowns": [{"id": "UNKNOWN-001", "question": "部署环境是什么？", "owner_action": "项目负责人确认"}],
             "conflicts": [],
@@ -104,7 +103,7 @@ class InitializationContractTests(InstalledPluginTestCase):
         self.assertTrue(any("sqlite" in path.read_text(encoding="utf-8") for path in (target / "02-技术基线/数据库").glob("DB-001-*.md")))
         self.assertTrue(any("GitHub API" in path.read_text(encoding="utf-8") for path in (target / "02-技术基线/外部依赖").glob("EXT-001-*.md")))
         self.assertIn("py -m unittest", (target / "02-技术基线/系统架构.md").read_text(encoding="utf-8"))
-        self.assertTrue(any("使用 Markdown" in path.read_text(encoding="utf-8") for path in (target / "04-决策记录").glob("ADR-001-*.md")))
+        self.assertFalse((target / "04-决策记录").exists())
 
     def test_initialized_bundle_runs_navigation_without_plugin_assets(self) -> None:
         """生成知识库内置脚本必须能独立执行渐进导航。"""
@@ -190,7 +189,7 @@ class InitializationContractTests(InstalledPluginTestCase):
             for relative in (
                 "01-功能基线/功能/README.md", "02-技术基线/模块/README.md",
                 "02-技术基线/接口/README.md", "02-技术基线/数据库/README.md",
-                "02-技术基线/外部依赖/README.md", "04-决策记录/README.md",
+                "02-技术基线/外部依赖/README.md",
             )
         )
         for fictional in ("MOD-001", "API-001", "EXT-001", "示例组件", "示例服务"):

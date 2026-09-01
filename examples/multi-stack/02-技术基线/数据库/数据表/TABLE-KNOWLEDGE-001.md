@@ -1,6 +1,8 @@
 ---
 id: TABLE-KNOWLEDGE-001
 type: database_table
+rel_classified_under:
+  - "[[02-技术基线/数据库/数据表/README|IDX-DATABASE-TABLES]]"
 title: 知识项表
 status: approved
 version: 1.0.0
@@ -19,8 +21,6 @@ sources:
     observed_at: "2026-08-10T00:00:00Z"
     confirmation_status: "confirmed"
     confirmed_at: "2026-08-10T00:00:00Z"
-rel_classified_under:
-  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
 ---
 # TABLE-KNOWLEDGE-001 知识项表
 

@@ -1,9 +1,9 @@
 ---
 id: IDX-OVERVIEW
 type: knowledge_index
-title: 项目总览
 rel_classified_under:
   - "[[README|IDX-ROOT]]"
+title: 项目总览
 ---
 # 项目总览
 

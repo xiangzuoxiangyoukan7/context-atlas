@@ -1,9 +1,9 @@
 ---
 id: EVID-008
 type: acceptance_evidence
-title: 跨Agent执行一致性与Claude验收
 rel_classified_under:
   - "[[03-变更与证据/验收证据/README|IDX-EVIDENCE]]"
+title: 跨Agent执行一致性与Claude验收
 ---
 # 跨 Agent 执行一致性与 Claude Code 验收
 

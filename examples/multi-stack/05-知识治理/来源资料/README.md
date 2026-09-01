@@ -1,9 +1,9 @@
 ---
 id: IDX-SOURCES
 type: knowledge_index
-title: 来源资料
 rel_classified_under:
   - "[[05-知识治理/README|IDX-GOVERNANCE]]"
+title: 来源资料
 ---
 # 受管来源资料
 

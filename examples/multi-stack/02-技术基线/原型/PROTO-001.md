@@ -1,6 +1,8 @@
 ---
 id: PROTO-001
 type: knowledge_item
+rel_classified_under:
+  - "[[02-技术基线/原型/README|IDX-PROTOTYPES]]"
 title: 查询流程原型
 status: approved
 version: 1.0.0
@@ -20,8 +22,6 @@ sources:
     observed_at: "2026-08-10T00:00:00Z"
     confirmation_status: "confirmed"
     confirmed_at: "2026-08-10T00:00:00Z"
-rel_classified_under:
-  - "[[02-技术基线/原型/README|IDX-PROTOTYPES]]"
 ---
 # PROTO-001：查询流程原型
 

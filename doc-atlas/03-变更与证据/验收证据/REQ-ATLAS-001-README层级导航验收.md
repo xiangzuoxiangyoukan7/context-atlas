@@ -1,9 +1,9 @@
 ---
 id: EVID-REQ-ATLAS-001
 type: acceptance_evidence
-title: REQ-ATLAS-001 README 层级导航实现验收
 rel_classified_under:
   - "[[03-变更与证据/验收证据/README|IDX-EVIDENCE]]"
+title: REQ-ATLAS-001 README 层级导航实现验收
 ---
 # REQ-ATLAS-001 README 层级导航实现验收
 

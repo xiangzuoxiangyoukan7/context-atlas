@@ -31,7 +31,7 @@ class TraceabilityTests(TempDirectoryTestCase):
                 "current_slice": "included",
                 "depends_on": [],
                 "acceptance": ["F01-AC-01"],
-                "adr": ["ADR-404"],
+                "database": ["DB-404"],
                 "last_updated": "2026-08-10",
             },
         )
@@ -46,7 +46,7 @@ class TraceabilityTests(TempDirectoryTestCase):
         issues = validate(self.knowledge_base, self.config)
 
         self.assertIn(
-            ("KB_TRACE_REFERENCE", "unknown adr reference: ADR-404"),
+            ("KB_TRACE_REFERENCE", "unknown database reference: DB-404"),
             {(issue.code, issue.message) for issue in issues},
         )
 

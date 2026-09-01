@@ -1,9 +1,9 @@
 ---
 id: IDX-MODULES
 type: knowledge_index
-title: 模块
 rel_classified_under:
   - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
+title: 模块
 ---
 # 模块
 

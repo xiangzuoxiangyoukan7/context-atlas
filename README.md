@@ -2,7 +2,7 @@
 
 Context Atlas 是面向长期项目协作的知识治理插件，支持 Codex、Claude Code 和 Qoder。它把需求、架构、接口、数据库、决策、变更和验收证据整理为项目内唯一的 `doc-<项目名>/` 知识库，让不同 Agent 读取同一套可确认、可追溯的事实。
 
-当前源码清单版本为 `0.15.1`。源码版本不等于 Marketplace 实际安装版本；安装或升级后请以宿主显示的版本为准。
+当前源码清单版本为 `0.16.0`。源码版本不等于 Marketplace 实际安装版本；安装或升级后请以宿主显示的版本为准。
 
 ## 它解决什么问题
 
@@ -42,7 +42,6 @@ Agent 调研并展示 Proposal，用户确认精确的 `proposal_revision`，确
    ├─ 01-功能基线/
    ├─ 02-技术基线/
    ├─ 03-变更与证据/
-   ├─ 04-决策记录/
    ├─ 05-知识治理/
    └─ 90-历史归档/
 ```
@@ -123,7 +122,7 @@ Codex 不要把 `CODEX_HOME` 指向项目 `.codex/`，否则沙箱、缓存、�
 
 - 项目目标、范围、术语、需求和功能；
 - 架构、模块、接口、数据库、数据资产和外部依赖；
-- ADR、规格变化、内嵌验收场景、验收结果和实际证据；
+- 归属于需求、功能、技术或治理文档的决策依据、规格变化、内嵌验收场景、验收结果和实际证据；
 - 来源、关系、未知项、冲突和替代关系。
 
 ### 不进入正式知识库
@@ -140,7 +139,7 @@ Codex 不要把 `CODEX_HOME` 指向项目 `.codex/`，否则沙箱、缓存、�
 
 仓库观察、用户陈述、外部来源和 AI 推测必须分别标记。AI 推测只能作为待确认假设；发现冲突时保留竞争值、来源和待裁决问题，不能自行选择看起来更合理的内容。
 
-正式知识使用 Markdown 和 YAML Front Matter。`knowledge-base.yaml` 是机器入口，`schemas/catalog.json` 与各类型 Schema 是格式权威，`.project-kb/scripts/check_knowledge_base.py` 负责确定性结构验证。当前初始化格式为 `format_version: 12`。格式 12 的需求以 Markdown 正文保存业务内容，Front Matter 只保留机器身份、状态、分类和更新时间。
+正式知识使用 Markdown 和 YAML Front Matter。`knowledge-base.yaml` 是机器入口，`schemas/catalog.json` 与各类型 Schema 是格式权威，`.project-kb/scripts/check_knowledge_base.py` 负责确定性结构验证。当前初始化格式为 `format_version: 13`。决策依据保存在所属需求、功能、技术或治理文档中，不建立独立 ADR；需求以 Markdown 正文保存业务内容，Front Matter 只保留机器身份、状态、分类和更新时间。
 
 知识关系使用登记过的正向 `rel_<type>` 字段和知识库内部链接，不维护人工反向列表。查询遵循 `children → neighbors → bounded graph`；返回 `truncated: true` 时不得把省略节点推断为不存在。
 

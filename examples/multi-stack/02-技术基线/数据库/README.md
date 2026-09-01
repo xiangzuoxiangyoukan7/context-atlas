@@ -1,9 +1,9 @@
 ---
 id: IDX-DATABASE
 type: knowledge_index
-title: 数据库
 rel_classified_under:
   - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
+title: 数据库
 ---
 # 数据库知识
 

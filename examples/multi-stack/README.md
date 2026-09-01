@@ -1,8 +1,8 @@
 ---
 id: IDX-ROOT
 type: knowledge_index
-title: 知识库
 rel_classified_under: []
+title: 知识库
 ---
 # multi-stack 项目知识库
 
@@ -14,7 +14,6 @@ rel_classified_under: []
 - [功能基线](./01-功能基线/README.md)
 - [架构与契约](./02-技术基线/README.md)
 - [变更与证据](./03-变更与证据/README.md)
-- [决策记录](./04-决策记录/README.md)
 - [知识治理](./05-知识治理/README.md)
 - [历史归档](./90-历史归档/README.md)
 

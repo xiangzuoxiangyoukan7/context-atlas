@@ -1,9 +1,9 @@
 ---
 id: IDX-PROPOSALS
 type: knowledge_index
-title: 待确认知识
 rel_classified_under:
   - "[[03-变更与证据/README|IDX-CHANGES-EVIDENCE]]"
+title: 待确认知识
 ---
 # 待确认知识
 

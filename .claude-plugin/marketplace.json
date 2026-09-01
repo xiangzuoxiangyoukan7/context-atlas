@@ -8,7 +8,7 @@
     {
       "name": "context-atlas",
       "description": "通过统一协议维护项目知识库",
-      "version": "0.15.4",
+      "version": "0.16.0",
       "source": "./",
       "author": {
         "name": "Context Atlas Maintainers"

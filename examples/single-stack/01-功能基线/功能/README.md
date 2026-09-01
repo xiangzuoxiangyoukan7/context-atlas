@@ -1,9 +1,9 @@
 ---
 id: IDX-FEATURES
 type: knowledge_index
-title: 功能
 rel_classified_under:
   - "[[01-功能基线/README|IDX-FUNCTIONAL-BASELINE]]"
+title: 功能
 ---
 # 功能
 

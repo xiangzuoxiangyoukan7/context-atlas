@@ -1,9 +1,9 @@
 ---
 id: IDX-DATA-ASSETS
 type: knowledge_index
-title: 数据资产
 rel_classified_under:
   - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
+title: 数据资产
 ---
 # 数据资产
 

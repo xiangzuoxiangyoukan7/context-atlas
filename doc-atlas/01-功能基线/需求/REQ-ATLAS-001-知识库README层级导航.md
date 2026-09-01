@@ -1,12 +1,12 @@
 ---
 id: REQ-ATLAS-001
 type: requirement
+rel_classified_under:
+  - "[[01-功能基线/需求/README|IDX-REQUIREMENTS]]"
 title: 知识库 README 层级导航
 status: approved
 readiness: ready
 priority: P1
-rel_classified_under:
-  - "[[01-功能基线/需求/README|IDX-REQUIREMENTS]]"
 last_updated: 2026-09-02
 ---
 
