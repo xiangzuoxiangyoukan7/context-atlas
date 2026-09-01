@@ -41,8 +41,9 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         )
 
         self.assertEqual(0, exit_code)
-        self.assertEqual("compatible", payload["status"])
+        self.assertEqual("needs_normalization", payload["status"])
         self.assertFalse(payload["write_blocked"])
+        self.assertTrue(payload["conversion_available"])
         self.assertEqual(str(ROOT.resolve()), payload["runtime_assets_root"])
         self.assertEqual(
             str((ROOT / "compatibility.json").resolve()),
@@ -337,7 +338,7 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         )
 
         self.assertEqual(0, exit_code)
-        self.assertEqual("compatible", payload["status"])
+        self.assertEqual("needs_normalization", payload["status"])
 
 
 if __name__ == "__main__":
