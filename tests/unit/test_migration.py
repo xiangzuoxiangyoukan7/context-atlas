@@ -96,8 +96,8 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertEqual([], list(proposal.changes))
         self.assertEqual(before, knowledge.read_bytes())
 
-    def test_legacy_contract_requires_knowledge_maintenance_before_format_ten(self) -> None:
-        """遗留契约不能由格式升级器猜测归入某个功能。"""
+    def test_legacy_contract_is_normalized_for_format_eleven(self) -> None:
+        """遗留契约应转换为最新格式的待确认知识，而不是阻断升级。"""
 
         manifest = self._manifest()
         manifest.write_text(
@@ -114,8 +114,15 @@ class MigrationTests(TempDirectoryTestCase):
         proposal = self._proposal()
 
         self.assertEqual(11, proposal.target_version)
-        self.assertEqual(1, len(proposal.unresolved))
-        self.assertIn("知识维护 Proposal", proposal.unresolved[0].reason)
+        self.assertEqual([], list(proposal.unresolved))
+
+        from scripts.project_kb.migration import apply_migration
+
+        apply_migration(self.root, proposal, proposal.proposal_revision)
+        converted = self.root / "03-变更与证据/待确认知识/CONTRACT-001.md"
+        self.assertTrue(converted.is_file())
+        self.assertIn("type: knowledge_item", converted.read_text(encoding="utf-8"))
+        self.assertFalse(contract.exists())
 
     def test_confirmation_gate_applies_links_and_only_format_version(self) -> None:
         """确认同修订后才写链接，并保持项目版本不变。"""
@@ -369,6 +376,20 @@ class MigrationTests(TempDirectoryTestCase):
         template.write_text("# 旧模板\n", encoding="utf-8")
         document = legacy / "API-001.md"
         document.write_text("# 接口\n", encoding="utf-8")
+        old_relation = self.root / "02-架构与契约/关系目录.md"
+        old_relation.write_text("# 旧关系目录\n", encoding="utf-8")
+        independent = self.root / "02-架构与契约/独立契约/CONTRACT-002.md"
+        independent.parent.mkdir(parents=True)
+        independent.write_text(
+            "---\nid: CONTRACT-002\ntype: independent_contract\ntitle: 旧独立契约\n---\n# 旧独立契约\n",
+            encoding="utf-8",
+        )
+        acceptance = self.root / "03-变更与证据/验收契约/AC-001.md"
+        acceptance.parent.mkdir(parents=True)
+        acceptance.write_text(
+            "---\nid: AC-001\ntype: acceptance_contract\ntitle: 旧验收契约\n---\n# 旧验收契约\n",
+            encoding="utf-8",
+        )
 
         first = self._proposal()
         second = self._proposal()
@@ -383,3 +404,8 @@ class MigrationTests(TempDirectoryTestCase):
         apply_migration(self.root, first, first.proposal_revision)
         self.assertFalse(template.exists())
         self.assertTrue((self.root / "02-技术基线/接口/API-001.md").exists())
+        self.assertFalse(old_relation.exists())
+        self.assertFalse(independent.exists())
+        self.assertFalse(acceptance.exists())
+        self.assertTrue((self.root / "03-变更与证据/待确认知识/CONTRACT-002.md").exists())
+        self.assertTrue((self.root / "03-变更与证据/待确认知识/AC-001.md").exists())
