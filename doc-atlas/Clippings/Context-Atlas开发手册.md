@@ -2,7 +2,7 @@
 
 > 面向项目开发人员的使用说明。
 >
-> 本文位于 `doc-atlas/Clippings/`，是阅读手册，不是正式知识库条目。它帮助开发人员在自己的项目中使用 Context Atlas；其中的项目事实、命令版本和宿主能力，以目标项目、宿主环境及 [Marketplace 安装与使用](../../packaging/marketplace-installation.md) 为准。
+> 本文位于 `doc-atlas/Clippings/`，是阅读手册，不是正式知识库条目。它帮助开发人员在自己的项目中使用 Context Atlas；其中的项目事实、命令版本和宿主能力，以目标项目、宿主环境及当前插件版本为准。
 
 ## 一、概述：Context Atlas 是做什么的
 
@@ -41,14 +41,14 @@ Context Atlas 不替代：
 
 ### 1.3 开发人员什么时候使用
 
-| 时机 | 使用目的 |
-| --- | --- |
-| 接手已有项目 | 了解项目目标、技术结构、约束和当前验收状态 |
-| 开发新功能 | 查询相关基线、明确范围并形成可验收的开发依据 |
-| 修改接口或数据库 | 找到影响范围，避免只改代码不改知识 |
-| 排查缺陷 | 区分已知事实、实际观察和未验证假设 |
-| 完成功能开发 | 对照基线记录实现差异、测试结果和验收证据 |
-| 摄取会议纪要或设计文档 | 将外部资料整理为可确认的知识候选 |
+| 时机          | 使用目的                   |
+| ----------- | ---------------------- |
+| 接手已有项目      | 了解项目目标、技术结构、约束和当前验收状态  |
+| 开发新功能       | 查询相关基线、明确范围并形成可验收的开发依据 |
+| 修改接口或数据库    | 找到影响范围，避免只改代码不改知识      |
+| 排查缺陷        | 区分已知事实、实际观察和未验证假设      |
+| 完成功能开发      | 对照基线记录实现差异、测试结果和验收证据   |
+| 摄取会议纪要或设计文档 | 将外部资料整理为可确认的知识候选       |
 
 ## 二、总体设计：开发人员需要理解的模型
 
@@ -80,42 +80,47 @@ Context Atlas 不替代：
 
 `Clippings/` 是资料暂存区。放入其中的文档不会自动成为正式项目事实。
 
-### 2.2 总体架构
+### 2.2 Context Atlas 在开发协作中的位置
 
 下面这张图只展示 Context Atlas 的职责边界。主路径是：开发人员 → Agent 宿主 → Context Atlas → 项目知识库；项目代码、IDE、测试框架和部署系统属于外部开发体系，不是插件架构的一部分。
 
-```mermaid
-flowchart TB
-    DEV[开发人员\n提出需求 · 查询知识 · 确认知识变更]
+![Context Atlas 在开发协作中的位置图](./Context-Atlas开发协作位置图.svg)
 
-    subgraph HOST[Agent 宿主层]
-        HOSTS[Codex / Claude Code / Qoder]
-    end
+Context Atlas 的核心是项目知识库：收录并治理需求、功能、架构、模块、接口和数据库等项目知识，并将已确认的知识提供给 Agent 作为开发依据。功能验收场景写在对应功能文档中，功能完成后的测试、构建和验收结果以可定位的验收证据进行记录。
 
-    subgraph PLUGIN[Context Atlas 插件层]
-        ADAPTER[平台适配\nPlugin Manifest / Skill]
-        CORE[核心编排\ncontext-atlas-work]
-        CAP[知识能力\n采集 · 查询 · 审查 · 维护]
-        ASSETS[运行资产\n协议 · 模板 · Schema · 执行器]
-        ADAPTER --> CORE --> CAP
-        ASSETS -.规则与格式.-> CORE
-        ASSETS -.规则与格式.-> CAP
-    end
+### 2.3 Context Atlas 总体系统架构
 
-    subgraph KB_LAYER[项目知识库层]
-        KB[(doc-项目名/\n唯一项目知识库)]
-        BASELINE[项目知识基线\n需求 · 功能 · 架构 · 模块 · 接口 · 数据库]
-        ACCEPT[功能验收知识\n验收场景 · 实现证据 · 变更记录]
-        KB --> BASELINE --> ACCEPT
-    end
+上一张图回答“插件在开发协作中的位置”；本图回答“插件内部由什么组成”。插件采用“一主多适配”设计：不同宿主通过平台适配层调用同一套核心 Skill、协议、Schema 和确定性执行器。
 
-    DEV --> HOSTS --> ADAPTER
-    CAP <-->|收录 / 查询 / 形成 Proposal / 确认后更新| KB
-```
+![Context Atlas 系统架构图](./Context-Atlas系统架构图.svg)
 
-图中不再单独放置“项目工程环境”和“交付确认层”。Context Atlas 的核心是项目知识库：收录需求、功能、架构、模块、接口和数据库设计，并把已确认的知识提供给 Agent 作为开发依据。功能完成后，验收场景和实现证据仍然归入对应的功能与验收知识中。
+系统架构中的职责边界如下：
 
-### 2.3 一次开发任务的知识流
+| 层次         | 职责                                                    |
+| ---------- | ----------------------------------------------------- |
+| 宿主适配层      | 让 Codex、Claude Code 和 Qoder 能以各自的插件格式加载 Context Atlas |
+| Skill 层    | 接收开发人员请求，选择查询、审查、摄取、维护或升级操作                           |
+| 共享规则与运行资产层 | 统一定义知识格式、关系、Proposal、确认门禁和操作规则                        |
+| 确定性执行器     | 执行初始化、更新、导航和结构验证，保证结果可重复                              |
+| 项目知识库层     | 保存项目需求、功能、技术基线、治理规则、验收场景和实现证据                         |
+
+开发人员通常不直接操作协议、Schema 或执行器，而是通过宿主中的 Skill 使用插件。插件运行资产也不属于业务项目知识；它们只是帮助 Agent 正确读写和验证知识库的公共能力。
+
+### 2.4 知识库的垂直结构：树状层级
+
+树状图只表达知识库的目录层级和分类归属：知识项属于哪个目录、目录下有哪些子分类。它不表达业务依赖，也不代表功能调用关系。
+
+![Context Atlas 知识库树状结构图](./Context-Atlas知识库树状结构图.svg)
+
+### 2.5 正式知识的水平结构：关系图
+
+图状图表达具体知识文件之间的业务和技术关系。本手册中的图是跨项目的正式知识关系示意图，以一个功能文件为中心，展示需求、模块、接口、数据库、外部依赖，以及功能文档中内嵌的验收场景对应哪些实现证据。示意节点不代表当前 `doc-atlas` 已经存在这些业务文件。
+
+![Context Atlas 知识库图状结构图](./Context-Atlas知识库图状结构图.svg)
+
+两种结构的区别是：树状结构回答“知识放在哪里”，图状结构回答“知识与什么相关”。目录归属通过 `rel_classified_under` 表达；业务和技术关系使用 Schema 登记的 `rel_<type>` 字段表达，不能用目录层级替代。实际项目的关系图应根据当前知识库中已经存在的叶子节点和正式关系生成；历史归档节点、Clippings 和不存在的技术对象不应当作为当前正式链路展示。
+
+### 2.6 一次开发任务的知识流
 
 ```text
 开发人员描述任务
@@ -141,19 +146,19 @@ inspect → propose → await_confirmation → apply → validate → report
 
 开发人员可以让插件自由查询和分析，但正式知识只有在开发人员或项目责任人明确确认当前 Proposal 后才会写入。
 
-### 2.4 Skill 速查
+### 2.7 Skill 速查
 
-| 开发目的 | Codex | Claude Code | 是否修改正式知识 |
-| --- | --- | --- | --- |
-| 自动编排一次开发目标 | `$context-atlas-work` | `/context-atlas:context-atlas-work` | 默认只读；确认 Proposal 后可写 |
-| 初始化新项目知识库 | `$context-atlas-init` | `/context-atlas:context-atlas-init` | 确认后初始化 |
-| 查询知识和关系 | `$context-atlas-navigate` | `/context-atlas:context-atlas-navigate` | 否 |
-| 审查需求、设计或验收是否就绪 | `$context-atlas-review` | `/context-atlas:context-atlas-review` | 否 |
-| 摄取会议纪要、网页或文档 | `$context-atlas-ingest` | `/context-atlas:context-atlas-ingest` | 只生成候选，不直接写入 |
-| 新增知识 | `$context-atlas-add` | `/context-atlas:context-atlas-add` | 确认后新增 |
-| 修订或替代知识 | `$context-atlas-revise` | `/context-atlas:context-atlas-revise` | 确认后修订 |
-| 退役无后继知识 | `$context-atlas-retire` | `/context-atlas:context-atlas-retire` | 确认后退役 |
-| 升级知识库格式 | `$context-atlas-upgrade` | `/context-atlas:context-atlas-upgrade` | 确认后升级 |
+| 开发目的           | Codex                     | Claude Code                             | 是否修改正式知识             |
+| -------------- | ------------------------- | --------------------------------------- | -------------------- |
+| 自动编排一次开发目标     | `$context-atlas-work`     | `/context-atlas:context-atlas-work`     | 默认只读；确认 Proposal 后可写 |
+| 初始化新项目知识库      | `$context-atlas-init`     | `/context-atlas:context-atlas-init`     | 确认后初始化               |
+| 查询知识和关系        | `$context-atlas-navigate` | `/context-atlas:context-atlas-navigate` | 否                    |
+| 审查需求、设计或验收是否就绪 | `$context-atlas-review`   | `/context-atlas:context-atlas-review`   | 否                    |
+| 摄取会议纪要、网页或文档   | `$context-atlas-ingest`   | `/context-atlas:context-atlas-ingest`   | 只生成候选，不直接写入          |
+| 新增知识           | `$context-atlas-add`      | `/context-atlas:context-atlas-add`      | 确认后新增                |
+| 修订或替代知识        | `$context-atlas-revise`   | `/context-atlas:context-atlas-revise`   | 确认后修订                |
+| 退役无后继知识        | `$context-atlas-retire`   | `/context-atlas:context-atlas-retire`   | 确认后退役                |
+| 升级知识库格式        | `$context-atlas-upgrade`  | `/context-atlas:context-atlas-upgrade`  | 确认后升级                |
 
 通常开发人员只需使用 `context-atlas-work`；需要单独查询时使用 `navigate`，需要单独审查规格时使用 `review`。
 
@@ -232,7 +237,7 @@ inspect → propose → await_confirmation → apply → validate → report
 
 ### 阶段 5：验收并沉淀证据
 
-验收以需求承接的功能验收场景为中心：先验证实现是否满足功能场景，再验证知识库结构和证据引用是否有效，最后由项目责任人确认功能结果。只有证据可定位且责任人明确确认后，对应功能验收场景才可记录为通过。
+验收以需求承接的功能文档内嵌验收场景为中心：验证功能实现是否满足场景要求，并记录对应的实现证据；知识库结构和证据引用另行进行结构验证。最后由项目责任人确认功能验收结果。
 
 ## 五、场景实践：具体任务怎么用
 
@@ -335,7 +340,7 @@ inspect → propose → await_confirmation → apply → validate → report
 
 ### 场景七：功能完成后的知识回写
 
-**适用情况**：代码、测试和功能验收场景验证已经完成，需要让知识库与实际实现保持一致。
+**适用情况**：代码、测试和功能文档内嵌验收场景验证已经完成，需要让知识库与实际实现保持一致。
 
 ```text
 请对照“租户批量导入”的开发前基线，检查当前代码、接口、数据库迁移、测试和构建结果。
@@ -347,7 +352,7 @@ inspect → propose → await_confirmation → apply → validate → report
 
 ## 六、开发环境：目标项目需要具备什么
 
-本节描述“要在一个项目中使用 Context Atlas，项目和开发机器需要准备什么”。它不描述 Context Atlas 源码仓库的开发测试环境；源码仓库的测试命令请看根目录 `README.md`。
+本节描述“要在一个项目中使用 Context Atlas，项目和开发机器需要准备什么”。它不描述 Context Atlas 源码仓库的内部开发测试环境。
 
 ### 6.1 必需的项目条件
 
@@ -396,9 +401,22 @@ qoder --version
 
 ## 七、资源下载与插件安装
 
-本节重点说明“插件从哪里获取、如何安装到目标项目、如何确认安装成功”。完整的发布、升级、卸载和版本说明见：[Marketplace 安装与使用](../../packaging/marketplace-installation.md)。
+本节完整说明插件的获取、安装、安装验证、升级和卸载。
 
-### 7.1 安装前确认
+### 7.1 资源获取方式
+
+开发人员通常不需要下载源码、复制 `skills/` 目录或安装 Python 包。根据使用的 Agent 宿主，直接从对应的 Marketplace 发布源安装插件：
+
+| 宿主 | 插件来源 | 推荐获取方式 |
+| --- | --- | --- |
+| Codex | [Context Atlas Codex 插件仓库](https://github.com/xiangzuoxiangyoukan7/context-atlas-codex-plugin) | 通过 Codex Marketplace 登记并安装 |
+| Claude Code | [Context Atlas Claude 插件仓库](https://github.com/xiangzuoxiangyoukan7/context-atlas-claude-plugin) | 通过 Claude Code 项目级 Marketplace 安装 |
+| Qoder | [Context Atlas Qoder 插件仓库](https://github.com/xiangzuoxiangyoukan7/context-atlas-qoder-plugin) | 通过 Qoder 项目级 Marketplace 安装 |
+| 源码、构建和发布说明 | [Context Atlas 源码仓库](https://github.com/xiangzuoxiangyoukan7/context-atlas) | 仅用于维护插件或排查发布问题 |
+
+安装时应使用与宿主匹配的发布仓库。源码仓库不是目标项目的运行目录，也不建议将构建产物手工复制到项目中。插件安装完成后，知识库仍保存在目标项目自己的 `doc-<项目名>/` 目录中。
+
+### 7.2 安装前确认
 
 1. 确认目标项目根目录和项目范围；
 2. 确认已经安装 Codex、Claude Code 或 Qoder；
@@ -406,7 +424,7 @@ qoder --version
 4. 关闭旧的 Agent 会话，安装完成后重新创建会话；
 5. 不要把源码仓库中的 `skills/` 目录单独复制到项目或用户目录。
 
-### 7.2 Codex：用户级安装，项目级启用
+### 7.3 Codex：用户级安装，项目级启用
 
 Codex 的插件实体、Marketplace 和缓存保存在用户级；目标项目通过 `.codex/config.toml` 启用。保持默认用户级 `CODEX_HOME`，不要把它指向项目的 `.codex/`。
 
@@ -426,7 +444,7 @@ enabled = true
 
 然后进入受信任的目标项目，新建 Codex 会话，并确认 `$context-atlas-work`、`$context-atlas-navigate` 等 Skill 可见。
 
-### 7.3 Claude Code：项目级安装
+### 7.4 Claude Code：项目级安装
 
 在目标项目目录执行：
 
@@ -437,7 +455,7 @@ claude plugin install --scope project context-atlas@context-atlas
 
 不要省略两个命令中的 `--scope project`。安装后新建 Claude Code 会话，并确认 `/context-atlas:context-atlas-work` 等命令可用。
 
-### 7.4 Qoder：项目级安装
+### 7.5 Qoder：项目级安装
 
 在 Qoder 打开的目标项目范围中执行：
 
@@ -448,7 +466,7 @@ qoder plugins install context-atlas@context-atlas
 
 重启 Qoder，在输入框中输入 `/`，确认九个 Context Atlas Skill 已出现。不要安装到用户级 `~/.qoder/skills/`。
 
-### 7.5 安装成功检查
+### 7.6 安装成功检查
 
 安装后依次确认：
 
@@ -466,15 +484,59 @@ qoder plugins install context-atlas@context-atlas
 没有知识库：请使用 context-atlas-init 检查当前项目是否适合初始化，只输出 Proposal，不要写入。
 ```
 
-### 7.6 升级和卸载
+### 7.7 升级和卸载
 
 升级时以宿主显示的实际安装版本为准。三个宿主升级后都应新建 Agent 会话，并再次检查 Skill 是否完整加载。
 
-- Codex：刷新 Marketplace，移除并重新添加插件，再用 `codex plugin list` 检查版本；
-- Claude Code：按项目 scope 移除 Marketplace 和插件，再按项目 scope 重新安装；
-- Qoder：在 Project 范围更新 Marketplace 和插件。
+#### 升级插件
 
-完整命令不要从手册中复制旧版本，直接以 [Marketplace 安装与使用](../../packaging/marketplace-installation.md) 的当前说明为准。
+Codex 的 Marketplace 只在首次登记时执行 `add`；升级时先刷新源，再移除并重新安装用户级插件：
+
+```powershell
+codex plugin marketplace upgrade context-atlas
+codex plugin remove context-atlas@context-atlas
+codex plugin add context-atlas@context-atlas
+codex plugin list
+```
+
+Claude Code 在目标项目中按项目范围重新登记并安装：
+
+```powershell
+claude plugin marketplace remove --scope project context-atlas
+claude plugin marketplace add --scope project https://github.com/xiangzuoxiangyoukan7/context-atlas-claude-plugin.git
+claude plugin install --scope project context-atlas@context-atlas
+```
+
+Qoder 在 Marketplace 的 Project 范围更新：
+
+```powershell
+qoder plugins marketplace update context-atlas
+qoder plugins update context-atlas@context-atlas
+```
+
+#### 卸载插件
+
+卸载前确认是否还有其他项目依赖该插件。卸载插件只移除 Agent 的插件能力，不会删除目标项目中的 `doc-<项目名>/` 知识库。
+
+Codex 的插件是用户级共享安装，完整卸载会影响该用户的所有项目：
+
+```powershell
+codex plugin remove context-atlas@context-atlas
+codex plugin marketplace remove context-atlas
+```
+
+如果只是不想让某个项目使用 Codex 插件，应在该项目 `.codex/config.toml` 中删除插件启用项或将 `enabled` 设为 `false`，不要删除整个 `.codex/` 目录。
+
+Claude Code 的项目级卸载：
+
+```powershell
+claude plugin uninstall --scope project context-atlas@context-atlas
+claude plugin marketplace remove --scope project context-atlas
+```
+
+Qoder 应在插件管理界面选择目标项目的 Project 范围，卸载 `context-atlas` 并移除对应 Marketplace。不同 Qoder 版本的卸载命令可能不同，以界面显示的当前操作为准。
+
+完成升级或卸载后，都应关闭旧会话并重新打开 Agent；升级后检查 Skill 是否完整，卸载后确认 Context Atlas Skill 不再出现在命令面板中。
 
 ## 八、常见问题
 
@@ -516,7 +578,7 @@ qoder plugins install context-atlas@context-atlas
 
 - [ ] 已安装并启用插件；
 - [ ] 已确认目标项目的当前知识库；
-- [ ] 已查询相关需求、功能、模块、接口、数据库和验收场景；
+- [ ] 已查询相关需求、功能文档内嵌验收场景、模块、接口和数据库；
 - [ ] 已明确范围、非范围、失败行为和验收标准；
 - [ ] 已识别安全、性能、兼容性和数据影响；
 - [ ] 已决定本轮是否建立知识基线；
@@ -524,10 +586,3 @@ qoder plugins install context-atlas@context-atlas
 - [ ] 已对照基线检查实现差异；
 - [ ] 已记录可定位的实现和验收证据；
 - [ ] 已完成必要的知识 Proposal 和功能验收确认。
-
-## 参考资料
-
-- [项目 README](../../README.md)
-- [正式场景化使用指南](../../templates/core/doc-project/05-知识治理/使用场景.md)
-- [Marketplace 安装与使用](../../packaging/marketplace-installation.md)
-- [AI 协作规则](../05-知识治理/AI协作规则.md)

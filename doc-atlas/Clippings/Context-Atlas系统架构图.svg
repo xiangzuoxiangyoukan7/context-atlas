@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Context Atlas 系统架构图</title>
+  <desc id="desc">Context Atlas 由宿主适配层、Skill 层、共享规则与运行资产层、确定性执行器和项目知识库层组成。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#64748b"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .title { font: 700 30px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 16px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #475569; }
+      .layer-title { font: 700 18px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #334155; }
+      .box-title { font: 700 17px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #0f172a; }
+      .box-text { font: 400 14px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #475569; }
+      .arrow-label { font: 400 13px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #64748b; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="900" fill="#f8fafc"/>
+  <text x="60" y="58" class="title">Context Atlas 系统架构</text>
+  <text x="60" y="88" class="subtitle">一主多适配：不同 Agent 宿主使用同一套知识治理能力，维护各项目自己的知识库</text>
+
+  <rect x="40" y="120" width="1120" height="125" rx="16" fill="#eff6ff" stroke="#bfdbfe" stroke-width="2"/>
+  <text x="65" y="151" class="layer-title">宿主适配层</text>
+  <rect x="75" y="170" width="300" height="52" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="450" y="170" width="300" height="52" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="825" y="170" width="300" height="52" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="2" filter="url(#shadow)"/>
+  <text x="225" y="202" text-anchor="middle" class="box-title">Codex 插件适配</text>
+  <text x="600" y="202" text-anchor="middle" class="box-title">Claude Code 插件适配</text>
+  <text x="975" y="202" text-anchor="middle" class="box-title">Qoder 插件适配</text>
+
+  <line x1="225" y1="245" x2="225" y2="275" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="600" y1="245" x2="600" y2="275" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="975" y1="245" x2="975" y2="275" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="40" y="275" width="1120" height="135" rx="16" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="2"/>
+  <text x="65" y="306" class="layer-title">Skill 与工作编排层</text>
+  <rect x="75" y="326" width="300" height="55" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="450" y="326" width="300" height="55" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="825" y="326" width="300" height="55" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="2" filter="url(#shadow)"/>
+  <text x="225" y="350" text-anchor="middle" class="box-title">工作编排</text>
+  <text x="225" y="369" text-anchor="middle" class="box-text">context-atlas-work</text>
+  <text x="600" y="350" text-anchor="middle" class="box-title">只读与摄取</text>
+  <text x="600" y="369" text-anchor="middle" class="box-text">init · navigate · review · ingest</text>
+  <text x="975" y="350" text-anchor="middle" class="box-title">知识维护</text>
+  <text x="975" y="369" text-anchor="middle" class="box-text">add · revise · retire · upgrade</text>
+
+  <line x1="225" y1="410" x2="225" y2="445" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="600" y1="410" x2="600" y2="445" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="975" y1="410" x2="975" y2="445" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="40" y="445" width="1120" height="135" rx="16" fill="#fff7ed" stroke="#fed7aa" stroke-width="2"/>
+  <text x="65" y="476" class="layer-title">共享规则与运行资产层</text>
+  <rect x="75" y="496" width="300" height="55" rx="10" fill="#ffffff" stroke="#fdba74" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="450" y="496" width="300" height="55" rx="10" fill="#ffffff" stroke="#fdba74" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="825" y="496" width="300" height="55" rx="10" fill="#ffffff" stroke="#fdba74" stroke-width="2" filter="url(#shadow)"/>
+  <text x="225" y="520" text-anchor="middle" class="box-title">执行协议</text>
+  <text x="225" y="539" text-anchor="middle" class="box-text">状态机 · 确认门禁 · 报告</text>
+  <text x="600" y="520" text-anchor="middle" class="box-title">Schema 与关系目录</text>
+  <text x="600" y="539" text-anchor="middle" class="box-text">知识类型 · Proposal · 关系</text>
+  <text x="975" y="520" text-anchor="middle" class="box-title">模板与操作定义</text>
+  <text x="975" y="539" text-anchor="middle" class="box-text">知识模板 · 初始化 · 更新</text>
+
+  <line x1="600" y1="580" x2="600" y2="620" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="620" y="605" class="arrow-label">统一规则驱动</text>
+
+  <rect x="40" y="620" width="1120" height="95" rx="16" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="2"/>
+  <text x="65" y="651" class="layer-title">确定性执行层</text>
+  <rect x="300" y="665" width="600" height="32" rx="8" fill="#ffffff" stroke="#c4b5fd" stroke-width="2" filter="url(#shadow)"/>
+  <text x="600" y="687" text-anchor="middle" class="box-title">初始化 · 更新 · 导航 · 影响分析 · 结构验证</text>
+
+  <line x1="600" y1="715" x2="600" y2="755" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="620" y="740" class="arrow-label">读写与验证</text>
+
+  <rect x="40" y="755" width="1120" height="105" rx="16" fill="#ecfeff" stroke="#a5f3fc" stroke-width="2"/>
+  <text x="65" y="786" class="layer-title">项目知识库层</text>
+  <rect x="75" y="803" width="300" height="38" rx="8" fill="#ffffff" stroke="#67e8f9" stroke-width="2"/>
+  <rect x="450" y="803" width="300" height="38" rx="8" fill="#ffffff" stroke="#67e8f9" stroke-width="2"/>
+  <rect x="825" y="803" width="300" height="38" rx="8" fill="#ffffff" stroke="#67e8f9" stroke-width="2"/>
+  <text x="225" y="827" text-anchor="middle" class="box-title">knowledge-base.yaml</text>
+  <text x="600" y="827" text-anchor="middle" class="box-title">需求 · 功能 · 技术基线</text>
+  <text x="975" y="827" text-anchor="middle" class="box-title">验收场景 · 证据 · 变更</text>
+</svg>

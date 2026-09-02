@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="950" viewBox="0 0 1800 950">
+<defs><marker id="arrow" markerWidth="11" markerHeight="11" refX="10" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#64748b"/></marker><style>.title{font:700 30px "Microsoft YaHei";fill:#0f172a}.sub{font:400 16px "Microsoft YaHei";fill:#475569}.h{font:700 17px "Microsoft YaHei";fill:#0f172a}.t{font:400 14px "Microsoft YaHei";fill:#475569}.layer{font:700 18px "Microsoft YaHei";fill:#334155}.node{fill:#fff;stroke-width:2}.arrow{stroke:#64748b;stroke-width:2.5;fill:none;marker-end:url(#arrow)}.dev{fill:#fef3c7;stroke:#f59e0b}.host{fill:#dbeafe;stroke:#60a5fa}.plugin{fill:#dcfce7;stroke:#4ade80}.kb{fill:#f3e8ff;stroke:#a855f7}.note{fill:#fff;stroke:#e2e8f0;stroke-width:2}</style></defs>
+<rect width="1800" height="950" fill="#f8fafc"/>
+<text x="55" y="55" class="title">Context Atlas 在开发协作中的位置</text>
+<text x="55" y="86" class="sub">协作视图：开发人员通过 Agent 宿主使用插件，插件为 Agent 提供项目知识和开发依据</text>
+
+<rect x="55" y="150" width="1690" height="125" rx="16" fill="#fffbeb" stroke="#fde68a" stroke-width="2"/><text x="85" y="185" class="layer">使用者层</text><rect x="610" y="178" width="580" height="62" rx="11" class="node dev"/><text x="900" y="205" text-anchor="middle" class="h">开发人员</text><text x="900" y="228" text-anchor="middle" class="t">提出需求 · 查询知识 · 确认知识变更</text>
+<line x1="900" y1="275" x2="900" y2="320" class="arrow"/>
+
+<rect x="55" y="320" width="1690" height="125" rx="16" fill="#eff6ff" stroke="#bfdbfe" stroke-width="2"/><text x="85" y="355" class="layer">Agent 宿主层</text><rect x="610" y="348" width="580" height="62" rx="11" class="node host"/><text x="900" y="375" text-anchor="middle" class="h">Codex · Claude Code · Qoder</text><text x="900" y="398" text-anchor="middle" class="t">加载插件并承载 Agent 会话</text>
+<line x1="900" y1="445" x2="900" y2="490" class="arrow"/>
+
+<rect x="55" y="490" width="1690" height="155" rx="16" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="2"/><text x="85" y="525" class="layer">Context Atlas 插件层</text><rect x="220" y="545" width="330" height="65" rx="10" class="node plugin"/><text x="385" y="573" text-anchor="middle" class="h">Skill 入口</text><text x="385" y="596" text-anchor="middle" class="t">work · init · navigate · review</text><rect x="735" y="545" width="330" height="65" rx="10" class="node plugin"/><text x="900" y="573" text-anchor="middle" class="h">知识处理</text><text x="900" y="596" text-anchor="middle" class="t">采集 · 查询 · 审查 · 维护</text><rect x="1250" y="545" width="330" height="65" rx="10" class="node plugin"/><text x="1415" y="573" text-anchor="middle" class="h">运行资产</text><text x="1415" y="596" text-anchor="middle" class="t">协议 · 模板 · Schema · 执行器</text><line x1="550" y1="578" x2="735" y2="578" class="arrow"/><line x1="1065" y1="578" x2="1250" y2="578" class="arrow"/>
+<line x1="900" y1="645" x2="900" y2="690" class="arrow"/>
+
+<rect x="55" y="690" width="1690" height="145" rx="16" fill="#faf5ff" stroke="#e9d5ff" stroke-width="2"/><text x="85" y="725" class="layer">项目知识库层</text><rect x="220" y="745" width="1360" height="62" rx="11" class="node kb"/><text x="900" y="772" text-anchor="middle" class="h">doc-&lt;项目名&gt;/ · 唯一项目知识库</text><text x="900" y="795" text-anchor="middle" class="t">需求 · 功能 · 架构 · 模块 · 接口 · 数据库 · 变更 · 验收证据</text>
+<path d="M735,610 C680,665 620,690 560,745" class="arrow"/><path d="M1065,610 C1120,665 1180,690 1240,745" class="arrow"/><text x="900" y="675" text-anchor="middle" class="t">查询 / 形成 Proposal / 确认后更新</text>
+
+<rect x="300" y="865" width="1200" height="55" rx="11" class="note"/><text x="900" y="899" text-anchor="middle" class="t">本图是开发协作位置图，不是插件内部系统架构；插件内部组成见“Context Atlas 总体系统架构图”。</text>
+</svg>
