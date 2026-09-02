@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1250" viewBox="0 0 1900 1250">
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#64748b"/></marker>
+<style>.title{font:700 30px "Microsoft YaHei";fill:#0f172a}.sub{font:400 16px "Microsoft YaHei";fill:#475569}.type{font:700 12px "Microsoft YaHei";fill:#475569}.h{font:700 16px "Microsoft YaHei";fill:#0f172a}.t{font:400 13px "Microsoft YaHei";fill:#475569}.edge{stroke:#64748b;stroke-width:2;fill:none;marker-end:url(#arrow)}.req{fill:#dbeafe;stroke:#60a5fa;stroke-width:2}.feature{fill:#dcfce7;stroke:#16a34a;stroke-width:4}.tech{fill:#ffedd5;stroke:#fb923c;stroke-width:2}.accept{fill:#f3e8ff;stroke:#a855f7;stroke-width:2}.evid{fill:#fce7f3;stroke:#ec4899;stroke-width:2}.dep{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.note{fill:#fff;stroke:#e2e8f0;stroke-width:2}</style>
+</defs>
+<rect width="1900" height="1250" fill="#f8fafc"/>
+<text x="55" y="52" class="title">Context Atlas 正式知识关系图（叶子知识节点示意）</text>
+<text x="55" y="82" class="sub">水平关系主要发生在具体知识文件之间；README 只负责树状分类、约束和门禁</text>
+
+<!-- center leaf node -->
+<rect x="700" y="475" width="500" height="145" rx="18" class="feature"/><text x="950" y="515" text-anchor="middle" class="type">feature · F-ORDER-001.md</text><text x="950" y="552" text-anchor="middle" class="h">订单创建功能.md</text><text x="950" y="582" text-anchor="middle" class="t">中心叶子节点：Agent 要实现的功能</text><text x="950" y="607" text-anchor="middle" class="t">示意文件，不代表当前仓库已有节点</text>
+
+<!-- leaf nodes around the center -->
+<rect x="80" y="475" width="430" height="95" rx="12" class="req"/><text x="295" y="510" text-anchor="middle" class="type">requirement · REQ-ORDER-001.md</text><text x="295" y="545" text-anchor="middle" class="h">订单创建需求.md</text>
+<rect x="720" y="205" width="430" height="95" rx="12" class="tech"/><text x="935" y="240" text-anchor="middle" class="type">module · MOD-ORDER-001.md</text><text x="935" y="275" text-anchor="middle" class="h">订单模块.md</text>
+<rect x="1260" y="365" width="430" height="95" rx="12" class="tech"/><text x="1475" y="400" text-anchor="middle" class="type">interface · API-ORDER-001.md</text><text x="1475" y="435" text-anchor="middle" class="h">POST-orders接口.md</text>
+<rect x="1260" y="650" width="430" height="95" rx="12" class="tech"/><text x="1475" y="685" text-anchor="middle" class="type">database_table · TABLE-ORDER-001.md</text><text x="1475" y="720" text-anchor="middle" class="h">orders数据表.md</text>
+<rect x="80" y="730" width="430" height="95" rx="12" class="dep"/><text x="295" y="765" text-anchor="middle" class="type">dependency · DEP-PAYMENT-001.md</text><text x="295" y="800" text-anchor="middle" class="h">支付服务依赖.md</text>
+<rect x="1260" y="900" width="430" height="95" rx="12" class="evid"/><text x="1475" y="935" text-anchor="middle" class="type">acceptance_evidence · EVID-ORDER-001.md</text><text x="1475" y="970" text-anchor="middle" class="h">订单创建测试证据.md</text>
+
+<!-- forward relations between leaf documents -->
+<path d="M510,522 C585,520 625,530 700,535" class="edge"/><text x="605" y="505" text-anchor="middle" class="t">rel_satisfies</text>
+<path d="M850,300 C850,370 875,420 885,475" class="edge"/><text x="805" y="395" class="t">rel_primary_module</text>
+<path d="M1200,530 C1260,490 1320,450 1380,445" class="edge"/><text x="1280" y="475" class="t">rel_exposes</text>
+<path d="M1475,460 L1475,650" class="edge"/><text x="1500" y="560" class="t">rel_reads / rel_writes</text>
+<path d="M700,570 C620,650 550,710 510,760" class="edge"/><text x="590" y="690" class="t">rel_depends_on</text>
+<path d="M1120,590 C1260,700 1380,820 1380,925" class="edge"/><text x="1260" y="755" class="t">rel_evidenced_by</text>
+
+<!-- legends -->
+<rect x="80" y="1050" width="760" height="135" rx="14" class="note"/><text x="460" y="1085" text-anchor="middle" class="h">节点类型</text><rect x="120" y="1110" width="125" height="42" rx="8" class="req"/><text x="182" y="1137" text-anchor="middle" class="t">需求</text><rect x="265" y="1110" width="125" height="42" rx="8" class="feature"/><text x="327" y="1137" text-anchor="middle" class="t">功能（含验收场景）</text><rect x="410" y="1110" width="125" height="42" rx="8" class="tech"/><text x="472" y="1137" text-anchor="middle" class="t">技术对象</text><rect x="555" y="1110" width="125" height="42" rx="8" class="evid"/><text x="617" y="1137" text-anchor="middle" class="t">验收证据</text>
+<rect x="900" y="1050" width="820" height="135" rx="14" class="note"/><text x="1310" y="1085" text-anchor="middle" class="h">连线类型</text><line x1="960" y1="1120" x2="1130" y2="1120" class="edge"/><text x="1170" y="1125" class="t">实线箭头 = 正向关系</text><text x="960" y="1160" class="t">关系字段由 Schema 统一定义，例如 rel_satisfies、rel_reads、rel_writes。</text>
+</svg>

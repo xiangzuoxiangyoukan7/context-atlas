@@ -13,8 +13,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03-变更与证据/变更/Delta/TEMPLATE.md",
-                "mode": "source",
+                "file": "Clippings/Context-Atlas开发手册.md",
+                "mode": "preview",
                 "source": false,
                 "backlinks": true,
                 "backlinkOpts": {
@@ -28,7 +28,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "TEMPLATE"
+              "title": "Context-Atlas开发手册"
             }
           }
         ]
@@ -93,7 +93,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "959da53ba2d9ae2f",
@@ -109,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "03-变更与证据/变更/Delta/TEMPLATE.md",
+                "file": "Clippings/Context-Atlas开发手册.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -171,7 +172,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "03-变更与证据/变更/Delta/TEMPLATE.md",
+                "file": "Clippings/Context-Atlas开发手册.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -180,7 +181,8 @@
               "title": "大纲"
             }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
@@ -198,8 +200,9 @@
       "bases:新建数据库": false
     }
   },
-  "active": "9e0c5cfff008b20b",
+  "active": "532bea24fb30cf8f",
   "lastOpenFiles": [
+    "Clippings/Context-Atlas开发手册.md",
     "未命名 1.base",
     "未命名.md",
     "README.md",

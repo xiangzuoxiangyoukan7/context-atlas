@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2300" height="1800" viewBox="0 0 2300 1800">
+<defs><style>
+.title{font:700 30px "Microsoft YaHei";fill:#0f172a}.sub{font:400 16px "Microsoft YaHei";fill:#475569}.h{font:700 14px "Microsoft YaHei";fill:#0f172a}.t{font:400 12px "Microsoft YaHei";fill:#475569}.root{fill:#1e3a8a;stroke:#1e3a8a}.gate{fill:#dbeafe;stroke:#2563eb;stroke-width:2}.leaf{fill:#dcfce7;stroke:#16a34a;stroke-width:2}.archive{fill:#f1f5f9;stroke:#94a3b8;stroke-width:2}.line{stroke:#94a3b8;stroke-width:2;fill:none}.guide{fill:#fff;stroke:#e2e8f0;stroke-width:2}
+</style></defs>
+<rect width="2300" height="1800" fill="#f8fafc"/>
+<text x="50" y="52" class="title">Context Atlas 知识库树状结构</text>
+<text x="50" y="82" class="sub">目录不是节点；README 是约束与门禁节点，具体 Markdown 文件是叶子节点。每条一级分支独立展开，避免连线和节点重叠。</text>
+
+<rect x="50" y="850" width="310" height="70" rx="12" class="root"/><text x="205" y="892" text-anchor="middle" style="font:700 18px 'Microsoft YaHei';fill:#fff">doc-atlas/README.md</text>
+
+<!-- root to six fixed README nodes -->
+<path d="M360,885 H400 V150 H500 M400,885 V1600 H500" class="line"/>
+<g class="line"><line x1="400" y1="150" x2="500" y2="150"/><line x1="400" y1="430" x2="500" y2="430"/><line x1="400" y1="720" x2="500" y2="720"/><line x1="400" y1="1030" x2="500" y2="1030"/><line x1="400" y1="1330" x2="500" y2="1330"/><line x1="400" y1="1600" x2="500" y2="1600"/></g>
+
+<!-- level 1 -->
+<g>
+<rect x="500" y="120" width="300" height="60" rx="10" class="gate"/><text x="650" y="157" text-anchor="middle" class="h">00-项目总览/README.md</text>
+<rect x="500" y="400" width="300" height="60" rx="10" class="gate"/><text x="650" y="437" text-anchor="middle" class="h">01-功能基线/README.md</text>
+<rect x="500" y="690" width="300" height="60" rx="10" class="gate"/><text x="650" y="727" text-anchor="middle" class="h">02-技术基线/README.md</text>
+<rect x="500" y="1000" width="300" height="60" rx="10" class="gate"/><text x="650" y="1037" text-anchor="middle" class="h">03-变更与证据/README.md</text>
+<rect x="500" y="1300" width="300" height="60" rx="10" class="gate"/><text x="650" y="1337" text-anchor="middle" class="h">05-知识治理/README.md</text>
+<rect x="500" y="1570" width="300" height="60" rx="10" class="gate"/><text x="650" y="1607" text-anchor="middle" class="h">90-历史归档/README.md</text>
+</g>
+
+<!-- 00 branch -->
+<path d="M800,150 H920 V120 M920,150 V180" class="line"/><g><rect x="920" y="95" width="250" height="50" rx="8" class="leaf"/><text x="1045" y="126" text-anchor="middle" class="t">项目概述.md</text><rect x="920" y="155" width="250" height="50" rx="8" class="leaf"/><text x="1045" y="186" text-anchor="middle" class="t">术语表.md</text></g>
+
+<!-- 01 branch: requirement README and feature README are siblings -->
+<path d="M800,430 H880 V350 M880,430 V510" class="line"/>
+<rect x="880" y="325" width="260" height="50" rx="8" class="gate"/><text x="1010" y="356" text-anchor="middle" class="h">需求/README.md</text>
+<rect x="880" y="485" width="260" height="50" rx="8" class="gate"/><text x="1010" y="516" text-anchor="middle" class="h">功能/README.md</text>
+<path d="M1140,350 H1220" class="line"/><rect x="1220" y="325" width="390" height="50" rx="8" class="leaf"/><text x="1415" y="356" text-anchor="middle" class="t">REQ-ATLAS-001-知识库README层级导航.md</text>
+<path d="M1140,510 H1190 V450 M1190,510 V650" class="line"/>
+<g><rect x="1190" y="425" width="360" height="46" rx="8" class="leaf"/><text x="1370" y="454" text-anchor="middle" class="t">F01-Agent驱动的知识库初始化.md</text><rect x="1190" y="480" width="360" height="46" rx="8" class="leaf"/><text x="1370" y="509" text-anchor="middle" class="t">F02-AI知识采集与确认.md</text><rect x="1190" y="535" width="360" height="46" rx="8" class="leaf"/><text x="1370" y="564" text-anchor="middle" class="t">F03-知识存储版本与追溯.md</text><rect x="1190" y="590" width="360" height="46" rx="8" class="leaf"/><text x="1370" y="619" text-anchor="middle" class="t">F04-完整核心模板与知识模型.md</text><rect x="1190" y="645" width="360" height="46" rx="8" class="leaf"/><text x="1370" y="674" text-anchor="middle" class="t">F05-Schema驱动检查器.md</text></g>
+
+<!-- 02 branch: all technical README nodes are siblings -->
+<path d="M800,720 H850 V820 M850,720 V1230" class="line"/>
+<g class="line"><line x1="850" y1="820" x2="900" y2="820"/><line x1="850" y1="890" x2="900" y2="890"/><line x1="850" y1="960" x2="900" y2="960"/><line x1="850" y1="1030" x2="900" y2="1030"/><line x1="850" y1="1100" x2="900" y2="1100"/><line x1="850" y1="1170" x2="900" y2="1170"/><line x1="850" y1="1240" x2="900" y2="1240"/></g>
+<g><rect x="900" y="795" width="260" height="50" rx="8" class="gate"/><text x="1030" y="826" text-anchor="middle" class="h">原型/README.md</text><rect x="900" y="865" width="260" height="50" rx="8" class="gate"/><text x="1030" y="896" text-anchor="middle" class="h">外部依赖/README.md</text><rect x="900" y="935" width="260" height="50" rx="8" class="gate"/><text x="1030" y="966" text-anchor="middle" class="h">接口/README.md</text><rect x="900" y="1005" width="260" height="50" rx="8" class="gate"/><text x="1030" y="1036" text-anchor="middle" class="h">数据库/README.md</text><rect x="900" y="1075" width="260" height="50" rx="8" class="gate"/><text x="1030" y="1106" text-anchor="middle" class="h">数据资产/README.md</text><rect x="900" y="1145" width="260" height="50" rx="8" class="gate"/><text x="1030" y="1176" text-anchor="middle" class="h">模块/README.md</text><rect x="900" y="1215" width="260" height="50" rx="8" class="gate"/><text x="1030" y="1246" text-anchor="middle" class="h">系统架构.md · ARCH-001</text></g>
+
+<!-- 03 branch: all evidence category README nodes are siblings -->
+<path d="M800,1030 H850 V1390 M850,1030 V1530" class="line"/><g class="line"><line x1="850" y1="1390" x2="900" y2="1390"/><line x1="850" y1="1460" x2="900" y2="1460"/><line x1="850" y1="1530" x2="900" y2="1530"/></g>
+<rect x="900" y="1365" width="270" height="50" rx="8" class="gate"/><text x="1035" y="1396" text-anchor="middle" class="h">变更/README.md</text><rect x="900" y="1435" width="270" height="50" rx="8" class="gate"/><text x="1035" y="1466" text-anchor="middle" class="h">待确认知识/README.md</text><rect x="900" y="1505" width="270" height="50" rx="8" class="gate"/><text x="1035" y="1536" text-anchor="middle" class="h">验收证据/README.md</text>
+<path d="M1170,1530 H1240" class="line"/><rect x="1240" y="1505" width="390" height="50" rx="8" class="leaf"/><text x="1435" y="1536" text-anchor="middle" class="t">EVID-REQ-ATLAS-001-README层级导航验收.md</text>
+
+<!-- 05 branch -->
+<path d="M800,1330 H850 V1330 M850,1330 H900" class="line"/><g><rect x="900" y="1300" width="250" height="50" rx="8" class="leaf"/><text x="1025" y="1331" text-anchor="middle" class="t">AI协作规则.md</text><rect x="1170" y="1300" width="250" height="50" rx="8" class="leaf"/><text x="1295" y="1331" text-anchor="middle" class="t">AI知识采集协议.md</text><rect x="1440" y="1300" width="250" height="50" rx="8" class="leaf"/><text x="1565" y="1331" text-anchor="middle" class="t">文档元数据规范.md</text></g>
+
+<!-- 90 branch -->
+<path d="M800,1600 H900" class="line"/><rect x="900" y="1570" width="430" height="60" rx="8" class="archive"/><text x="1115" y="1607" text-anchor="middle" class="t">历史实施任务和原始设计材料叶子文件</text>
+
+<rect x="50" y="1680" width="2000" height="75" rx="12" class="guide"/><text x="1050" y="1712" text-anchor="middle" class="h">蓝色 README = 主要约束和门禁；绿色 Markdown = 独立叶子知识；灰色 = 历史背景。父子连线只表达树状导航，需求—功能—技术—验收之间的水平关系见图状图。</text>
+</svg>
