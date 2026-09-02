@@ -8,6 +8,7 @@ status: approved
 version: 1.0.0
 owner: example-owner
 source_types: [database, api, file]
+independence_basis: [cross_feature, cross_technical_object]
 sensitivity: internal
 retention: project-lifetime
 approved_by: example-owner

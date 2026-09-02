@@ -63,6 +63,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
             "sources": ["SRC-001"],
             "owner": "project-owner",
             "source_types": ["database"],
+            "independence_basis": ["cross_feature"],
             "sensitivity": "internal",
             "retention": "project-lifetime",
             "last_updated": "2026-08-10",

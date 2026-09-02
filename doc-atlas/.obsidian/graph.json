@@ -7,48 +7,35 @@
   "showOrphans": true,
   "collapse-color-groups": false,
   "colorGroups": [
-    {
-      "query": "tag:architecture",
-      "color": {
-        "a": 1,
-        "rgb": 14048348
-      }
-    },
-    {
-      "query": "path:00-项目总览 [\"aliases\":",
-      "color": {
-        "a": 1,
-        "rgb": 14069084
-      }
-    },
-    {
-      "query": "file:xxx",
-      "color": {
-        "a": 1,
-        "rgb": 11392604
-      }
-    },
-    {
-      "query": "line:()",
-      "color": {
-        "a": 1,
-        "rgb": 6084188
-      }
-    },
-    {
-      "query": "section:()",
-      "color": {
-        "a": 1,
-        "rgb": 6084269
-      }
-    },
-    {
-      "query": "[\"cssclasses\":",
-      "color": {
-        "a": 1,
-        "rgb": 6073814
-      }
-    }
+    {"query": "[type:knowledge_index]", "color": {"a": 1, "rgb": 10027212}},
+    {"query": "[type:overview_document]", "color": {"a": 1, "rgb": 14069084}},
+    {"query": "[type:requirement]", "color": {"a": 1, "rgb": 14701138}},
+    {"query": "[type:feature]", "color": {"a": 1, "rgb": 4360181}},
+    {"query": "[type:architecture]", "color": {"a": 1, "rgb": 14048348}},
+    {"query": "[type:module]", "color": {"a": 1, "rgb": 39423}},
+    {"query": "[type:interface]", "color": {"a": 1, "rgb": 16753920}},
+    {"query": "[type:database_namespace]", "color": {"a": 1, "rgb": 3447003}},
+    {"query": "[type:database_unit]", "color": {"a": 1, "rgb": 3447003}},
+    {"query": "[type:database_table]", "color": {"a": 1, "rgb": 3447003}},
+    {"query": "[type:data_source]", "color": {"a": 1, "rgb": 3447003}},
+    {"query": "[type:data_asset]", "color": {"a": 1, "rgb": 16766720}},
+    {"query": "[type:specification_change]", "color": {"a": 1, "rgb": 10040012}},
+    {"query": "[type:specification_delta]", "color": {"a": 1, "rgb": 10040012}},
+    {"query": "[type:acceptance]", "color": {"a": 1, "rgb": 6084269}},
+    {"query": "[type:acceptance_evidence]", "color": {"a": 1, "rgb": 6084269}},
+    {"query": "[type:knowledge_proposal]", "color": {"a": 1, "rgb": 10040012}},
+    {"query": "[type:knowledge_item]", "color": {"a": 1, "rgb": 10027212}},
+    {"query": "[type:managed_source]", "color": {"a": 1, "rgb": 11392604}},
+    {"query": "[type:source]", "color": {"a": 1, "rgb": 11392604}},
+    {"query": "[type:governance_document]", "color": {"a": 1, "rgb": 6073814}},
+    {"query": "[type:governance_task]", "color": {"a": 1, "rgb": 6073814}},
+    {"query": "[type:task]", "color": {"a": 1, "rgb": 6073814}},
+    {"query": "tag:architecture", "color": {"a": 1, "rgb": 14048348}},
+    {"query": "path:00-项目总览 [\"aliases\":", "color": {"a": 1, "rgb": 14069084}},
+    {"query": "file:xxx", "color": {"a": 1, "rgb": 11392604}},
+    {"query": "line:()", "color": {"a": 1, "rgb": 6084188}},
+    {"query": "section:()", "color": {"a": 1, "rgb": 6084269}},
+    {"query": "[\"cssclasses\":", "color": {"a": 1, "rgb": 6073814}}
   ],
   "collapse-display": true,
   "showArrow": false,

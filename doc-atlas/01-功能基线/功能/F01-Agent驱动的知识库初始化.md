@@ -10,7 +10,7 @@ priority: P0
 current_slice: included
 depends_on: []
 acceptance: [F01-AC-01, F01-AC-02, F01-AC-03, F01-AC-04]
-last_updated: 2026-08-31
+last_updated: 2026-09-02
 ---
 
 # F01：Agent 驱动的知识库初始化
@@ -25,6 +25,7 @@ last_updated: 2026-08-31
 - 允许用户明确覆盖项目名称。
 - 初始化统一知识库，不选择技术栈或技术栈模板。
 - 默认使用标准工作区；用户可明确选择 Obsidian 模式并获得最小 Vault 与关系图谱颜色配置。
+- Obsidian 图谱按每篇正式文档的 `type` 分色；初始化与升级使用同一映射，升级只更新受管类型查询并保留用户颜色组和其他设置。
 - 初始化前展示目录和首版候选内容。
 - 目标存在时停止并转入更新流程。
 - 根据当前宿主 Agent 创建或补充对应的 `AGENTS.md` 或 `CLAUDE.md` 入口说明。
@@ -80,11 +81,13 @@ last_updated: 2026-08-31
 
 - `F01-AC-01`：Agent 能生成完整、自包含的 `doc-<项目名>/`。
 - `F01-AC-02`：初始化不会覆盖已有目录；若 Proposal 明确了当前宿主，则只创建或补充对应入口文件的 Context Atlas 受管区块，并保留原内容。
-- `F01-AC-03`：标准和 Obsidian 初始化模式均产生可验证且不覆盖已有配置的目标，Obsidian 展示配置不进入正式知识治理。
+- `F01-AC-03`：标准和 Obsidian 初始化模式均产生可验证且不覆盖已有配置的目标；每种正式文档类型都有且仅有一个主颜色查询，升级保留用户自定义颜色组和 `workspace.json`，Obsidian 展示配置不进入正式知识治理。
 - `F01-AC-04`：初始化产生的所有临时目录均位于项目根固定 `.context-atlas-temp/` 内，操作结束后清理操作子目录，且不迁移或删除旧 `.context-atlas-tmp/`。
 
 ## 关键决策与依据
 
 - 产品采用 Agent、Skill、共享协议、模板、Schema 和确定性检查器，不提供独立用户 CLI。
 - 初始化默认使用标准工作区，只有用户明确选择时生成最小 Obsidian 配置；展示配置不参与正式知识治理，已有配置不得覆盖。
+- 类型颜色映射是初始化、升级和健康质检的单一事实源；`type` 查询标识 Context Atlas 受管颜色组，其他查询属于用户配置并保留。
+- 来源与确认：Proposal `CA-TEMPLATE-DATA-OBSIDIAN-FORMAT14-20260902-R1`，由项目责任人于 2026-09-02 确认。
 - 来源与确认：原 ADR-002、ADR-008、ADR-011 的批准内容；本节由 Proposal `CA-DECISION-INTEGRATION-FORMAT13-20260902-R1` 归并。

@@ -23,6 +23,7 @@ class DataAssetSchemaTests(unittest.TestCase):
             "sources": ["SRC-001"],
             "owner": "missing",
             "source_types": ["database", "api"],
+            "independence_basis": ["cross_feature"],
             "sensitivity": "missing",
             "retention": "missing",
             "last_updated": "2026-08-10",
@@ -49,7 +50,7 @@ class DataAssetSchemaTests(unittest.TestCase):
     def test_data_asset_requires_governance_fields(self) -> None:
         """验证 data_asset_requires_governance_fields 场景。"""
 
-        for field in ("owner", "source_types", "sensitivity", "retention"):
+        for field in ("owner", "source_types", "independence_basis", "sensitivity", "retention"):
             with self.subTest(field=field):
                 metadata = dict(self.metadata)
                 metadata.pop(field)

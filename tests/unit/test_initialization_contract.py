@@ -104,6 +104,7 @@ class InitializationContractTests(InstalledPluginTestCase):
         self.assertTrue(any("GitHub API" in path.read_text(encoding="utf-8") for path in (target / "02-技术基线/外部依赖").glob("EXT-001-*.md")))
         self.assertIn("py -m unittest", (target / "02-技术基线/系统架构.md").read_text(encoding="utf-8"))
         self.assertFalse((target / "04-决策记录").exists())
+        self.assertFalse((self.assets_root / "templates/core/doc-project/04-决策记录").exists())
 
     def test_initialized_bundle_runs_navigation_without_plugin_assets(self) -> None:
         """生成知识库内置脚本必须能独立执行渐进导航。"""
@@ -230,6 +231,8 @@ class InitializationContractTests(InstalledPluginTestCase):
         graph = json.loads((settings / "graph.json").read_text(encoding="utf-8"))
         queries = {item["query"] for item in graph["colorGroups"]}
         self.assertIn("[type:feature]", queries)
+        self.assertIn("[type:acceptance_evidence]", queries)
+        self.assertIn("[type:governance_document]", queries)
         self.assertNotIn("[type:contract OR independent_contract]", queries)
         self.assertEqual('-path:"90-历史归档"', graph["search"])
         self.assertIn(".obsidian/app.json", report.written_files)

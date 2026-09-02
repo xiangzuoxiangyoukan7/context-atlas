@@ -124,6 +124,8 @@ class CoreTemplateTests(TempDirectoryTestCase):
         self.assertIn("知识来源", readme)
         self.assertIn("数据库", readme)
         self.assertIn("接口契约", readme)
+        self.assertIn("单一功能", readme)
+        self.assertIn("independence_basis", template)
 
     def test_core_template_contains_every_required_knowledge_type(self) -> None:
         """验证 core_template_contains_every_required_knowledge_type 场景。"""
