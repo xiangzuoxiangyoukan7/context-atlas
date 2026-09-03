@@ -103,6 +103,85 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertIn("graph", rewrite.content)
         self.assertNotIn("## 本目录文件", rewrite.content)
 
+    def test_agent_plan_resolves_legacy_data_source_merge_before_formal_apply(self) -> None:
+        """Agent 可合并旧数据源双文件，并在隔离副本证明最终结构收敛。"""
+
+        import json
+
+        from scripts.project_kb.compatibility import CompatibilityPolicy
+        from scripts.project_kb.migration import (
+            build_migration_proposal,
+            merge_agent_migration_plan,
+            preflight_migration,
+        )
+
+        root = materialize_core_template(self.root, "agent-upgrade")
+        directory = root / "02-技术基线/数据库/DS-NKGIS"
+        directory.mkdir()
+        legacy_entity = directory / "DS-NKGIS.md"
+        legacy_entity.write_text(
+            "---\nid: DS-NKGIS\ntype: data_source\ntitle: NKGIS\nstatus: proposed\n"
+            "product: oracle\nproduct_version: unknown\nowner: missing\n"
+            "config_reference: APP_DATABASE_URL\ndatabase: NKGIS\nnamespace: NKGIS\n"
+            "environments: [development]\nsources:\n"
+            "  - type: user_statement\n    reference: 测试迁移输入\n"
+            "    observed_at: 2026-09-03T00:00:00+08:00\n"
+            "    confirmation_status: observed\nlast_updated: 2026-09-03\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "---\n# NKGIS\n\n旧数据源说明。\n",
+            encoding="utf-8",
+        )
+        readme = directory / "README.md"
+        readme.write_text(
+            "---\nid: IDX-DATABASE-DS-NKGIS\ntype: knowledge_index\ntitle: NKGIS 目录\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "---\n# NKGIS 目录\n\n旧目录说明。\n",
+            encoding="utf-8",
+        )
+        target_content = legacy_entity.read_text(encoding="utf-8").replace(
+            "# NKGIS\n\n旧数据源说明。",
+            "# NKGIS\n\n## 目录契约\n\n"
+            "本目录只保存当前数据源及其数据库结构知识。使用 `children`、`neighbors` 和 `graph` 查询。\n\n"
+            "## 用途、访问与治理\n\n旧数据源说明；旧目录说明。",
+        )
+        plan = root.parent / "agent-plan.json"
+        plan.write_text(json.dumps({"decisions": [
+            {
+                "action": "rewrite",
+                "path": "02-技术基线/数据库/DS-NKGIS/README.md",
+                "content": target_content,
+                "reason": "合并旧数据源实体与目录入口，保留二者语义",
+                "source_paths": [
+                    "02-技术基线/数据库/DS-NKGIS/DS-NKGIS.md",
+                    "02-技术基线/数据库/DS-NKGIS/README.md",
+                ],
+            },
+            {
+                "action": "remove",
+                "path": "02-技术基线/数据库/DS-NKGIS/DS-NKGIS.md",
+                "reason": "实体内容已完整合并到数据源 README",
+                "source_paths": [
+                    "02-技术基线/数据库/DS-NKGIS/DS-NKGIS.md",
+                    "02-技术基线/数据库/DS-NKGIS/README.md",
+                ],
+            },
+        ]}, ensure_ascii=False), encoding="utf-8")
+        records, issues = discover_records(root, frozenset())
+        self.assertEqual([], issues)
+        proposal = build_migration_proposal(
+            root, records, CompatibilityPolicy.load(ROOT / "compatibility.json")
+        )
+        proposal = merge_agent_migration_plan(root, proposal, plan)
+        proposal = preflight_migration(root, proposal, ROOT / "schemas")
+
+        self.assertEqual(
+            "passed",
+            proposal.preflight_status,
+            (proposal.preflight_validation_issues, proposal.preflight_health_findings),
+        )
+        self.assertEqual(2, len(proposal.agent_decisions))
+        self.assertEqual((), proposal.preflight_validation_issues)
+
     def test_format_twelve_moves_requirement_content_to_body(self) -> None:
         """格式十一需求应把重复业务元数据等价迁入正文。"""
 

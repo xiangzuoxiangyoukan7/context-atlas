@@ -68,6 +68,23 @@ class HealthTests(unittest.TestCase):
             graph.write_text(graph_text(), encoding="utf-8")
             self.assertNotIn("KB_OBSIDIAN_COLOR_COVERAGE", {item.code for item in inspect_health(root).findings})
 
+    def test_approved_requirement_body_source_is_not_reported_as_unverified(self) -> None:
+        """格式十二需求正文已有来源表时不得误报为无来源。"""
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "requirement.md").write_text(
+                "---\nid: REQ-001\ntype: requirement\nstatus: approved\n"
+                "last_updated: 2026-09-03\n---\n# 需求\n\n"
+                "## 来源与确认\n\n| 类型 | 精确定位 |\n| --- | --- |\n"
+                "| repository_file | src/example.py |\n",
+                encoding="utf-8",
+            )
+
+            codes = {item.code for item in inspect_health(root).findings}
+
+            self.assertNotIn("KB_HEALTH_UNVERIFIED_SOURCE", codes)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -314,14 +314,13 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
             str(proposal["proposal_revision"]),
         )
 
-        self.assertEqual(0, propose_code)
+        self.assertEqual(3, propose_code)
         self.assertEqual(1, apply_code)
-        self.assertEqual("validation_failed", report["status"])
+        self.assertEqual("preflight_failed", report["status"])
         self.assertGreater(report["validation_issue_count"], 0)
         migrated = target.read_text(encoding="utf-8")
-        self.assertIn("sources:", migrated)
-        self.assertIn("confirmation_status: \"confirmed\"", migrated)
-        self.assertNotIn("sources: [SRC-001]", migrated)
+        self.assertIn("sources: [SRC-001]", migrated)
+        self.assertNotIn("confirmation_status: \"confirmed\"", migrated)
 
     def test_legacy_diagnose_format_alias_remains_available(self) -> None:
         """旧格式诊断命令仅作为兼容别名继续工作。"""
