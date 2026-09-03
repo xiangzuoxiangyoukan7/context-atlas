@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts.project_kb.discovery import discover_records
-from tests.helpers import TempDirectoryTestCase
+from tests.helpers import TempDirectoryTestCase, materialize_core_template
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -72,6 +72,36 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertEqual([], issues)
         policy = CompatibilityPolicy.load(ROOT / "compatibility.json")
         return build_migration_proposal(self.root, records, policy)
+
+    def test_current_format_rewrites_stale_managed_readme_contract(self) -> None:
+        """当前格式中的旧 README 正文也必须进入归一化提案。"""
+
+        root = materialize_core_template(self.root, "readme-upgrade")
+        feature_readme = root / "01-功能基线/功能/README.md"
+        content = feature_readme.read_text(encoding="utf-8")
+        frontmatter = content.split("---", 2)[1]
+        feature_readme.write_text(
+            f"---{frontmatter}---\n# 功能\n\n## 本目录文件\n\n- 旧静态清单。\n",
+            encoding="utf-8",
+        )
+
+        from scripts.project_kb.compatibility import CompatibilityPolicy
+        from scripts.project_kb.migration import build_migration_proposal
+
+        records, issues = discover_records(root, frozenset())
+        self.assertEqual([], issues)
+        proposal = build_migration_proposal(
+            root, records, CompatibilityPolicy.load(ROOT / "compatibility.json")
+        )
+        rewrite = next(
+            item for item in proposal.rewrites if item.path == feature_readme.resolve()
+        )
+
+        self.assertIn("## 目录契约", rewrite.content)
+        self.assertIn("children", rewrite.content)
+        self.assertIn("neighbors", rewrite.content)
+        self.assertIn("graph", rewrite.content)
+        self.assertNotIn("## 本目录文件", rewrite.content)
 
     def test_format_twelve_moves_requirement_content_to_body(self) -> None:
         """格式十一需求应把重复业务元数据等价迁入正文。"""

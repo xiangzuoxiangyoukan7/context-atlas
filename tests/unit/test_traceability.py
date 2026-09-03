@@ -133,6 +133,36 @@ class TraceabilityTests(TempDirectoryTestCase):
             messages,
         )
 
+    def test_data_source_database_metadata_is_not_an_identity_reference(self) -> None:
+        """数据源中的物理数据库名称和 missing 不得进入旧引用校验。"""
+
+        write_record(
+            self.knowledge_base / "02-技术基线/数据库/DS-ORDER/README.md",
+            {
+                "id": "DS-ORDER",
+                "type": "data_source",
+                "title": "订单数据源",
+                "status": "proposed",
+                "product": "postgresql",
+                "product_version": "unknown",
+                "owner": "missing",
+                "config_reference": "APP_DATABASE_URL",
+                "database": "missing",
+                "namespace": "public",
+                "environments": ["development"],
+                "sources": ["SRC-001"],
+                "last_updated": "2026-08-10",
+            },
+        )
+
+        messages = {
+            issue.message
+            for issue in validate(self.knowledge_base, self.config)
+            if issue.code == "KB_TRACE_REFERENCE"
+        }
+
+        self.assertNotIn("unknown database reference: missing", messages)
+
     def test_completed_acceptance_requires_locatable_evidence(self) -> None:
         """完成项必须能在当前验收证据中定位其场景编号。"""
 

@@ -101,6 +101,9 @@ class MigrationReport:
     status: str
     changed_files: tuple[str, ...]
     format_version: int
+    validation_issue_count: int = 0
+    health_finding_count: int = 0
+    blocking_health_finding_count: int = 0
 
 
 def _digest(data: bytes) -> str:
@@ -193,6 +196,83 @@ def _current_format_creations(root: Path) -> tuple[MigrationCreation, ...]:
         content = (template_root / relative).read_text(encoding="utf-8")
         creations.append(MigrationCreation(target.resolve(), content, _digest(content.encode("utf-8"))))
     return tuple(creations)
+
+
+def _readme_contract_section(content: str) -> str:
+    """提取模板 README 的受管目录契约章节。"""
+
+    match = re.search(r"(?ms)^## 目录契约\s*\n.*?(?=^## |\Z)", content)
+    if match is None:
+        raise ValueError("README template has no 目录契约 section")
+    return match.group(0).rstrip() + "\n"
+
+
+def _merge_readme_contract(content: str, contract: str) -> str:
+    """替换或插入目录契约，同时保留未受管的项目补充章节。"""
+
+    current = re.search(r"(?ms)^## 目录契约\s*\n.*?(?=^## |\Z)", content)
+    if current is not None:
+        return content[: current.start()] + contract + content[current.end() :]
+    heading = re.search(r"(?m)^# .+$", content)
+    if heading is None:
+        return content
+    insertion = heading.end()
+    return content[:insertion] + "\n\n" + contract.rstrip() + "\n" + content[insertion:].lstrip("\r\n")
+
+
+def _current_format_readme_rewrites(
+    root: Path, records: Iterable[DocumentRecord]
+) -> tuple[MigrationRewrite, ...]:
+    """把现有正式 README 归一到当前模板契约。"""
+
+    template_root = Path(__file__).resolve().parents[2] / "templates" / "core" / "doc-project"
+    rewrites: dict[Path, MigrationRewrite] = {}
+    managed_paths: set[Path] = set()
+    for source in sorted(template_root.rglob("README.md")):
+        relative = source.relative_to(template_root)
+        if (
+            relative.as_posix() in {"README.md", "Clippings/README.md", "90-历史归档/README.md"}
+            or ".project-kb" in relative.parts
+        ):
+            continue
+        target = (root / relative).resolve()
+        if not target.is_file():
+            continue
+        managed_paths.add(target)
+        expected = source.read_text(encoding="utf-8")
+        if target.read_text(encoding="utf-8") != expected:
+            rewrites[target] = MigrationRewrite(
+                target, _digest(target.read_bytes()), expected
+            )
+
+    data_source_template = (
+        template_root / ".project-kb/templates/knowledge/data-source.md"
+    ).read_text(encoding="utf-8")
+    data_source_contract = _readme_contract_section(data_source_template)
+    archive_contract = _readme_contract_section(
+        (template_root / "90-历史归档/README.md").read_text(encoding="utf-8")
+    )
+    for record in records:
+        target = record.path.resolve()
+        if record.path.name != "README.md" or target in managed_paths:
+            continue
+        relative = target.relative_to(root.resolve()).as_posix()
+        if relative in {"README.md", "Clippings/README.md"}:
+            continue
+        kind = record.metadata.get("type")
+        if kind == "data_source":
+            contract = data_source_contract
+        elif relative == "90-历史归档/README.md":
+            contract = archive_contract
+        else:
+            continue
+        original = target.read_text(encoding="utf-8")
+        normalized = _merge_readme_contract(original, contract)
+        if normalized != original:
+            rewrites[target] = MigrationRewrite(
+                target, _digest(target.read_bytes()), normalized
+            )
+    return tuple(sorted(rewrites.values(), key=lambda item: str(item.path)))
 
 
 def _asset_source_root() -> Path:
@@ -850,6 +930,11 @@ def build_migration_proposal(
             rewrites = tuple(
                 item for item in rewrites if item.path.resolve() != path.resolve()
             ) + (MigrationRewrite(path.resolve(), _digest(path.read_bytes()), normalized),)
+    readme_rewrites = _current_format_readme_rewrites(resolved_root, record_list)
+    readme_paths = {item.path.resolve() for item in readme_rewrites}
+    rewrites = tuple(
+        item for item in rewrites if item.path.resolve() not in readme_paths
+    ) + readme_rewrites
     unresolved.extend(layout_unresolved)
     ordered_unresolved = tuple(
         sorted(unresolved, key=lambda item: (str(item.path), item.source_id))

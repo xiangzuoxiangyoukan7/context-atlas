@@ -315,8 +315,9 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         )
 
         self.assertEqual(0, propose_code)
-        self.assertEqual(0, apply_code)
-        self.assertEqual("migrated", report["status"])
+        self.assertEqual(1, apply_code)
+        self.assertEqual("validation_failed", report["status"])
+        self.assertGreater(report["validation_issue_count"], 0)
         migrated = target.read_text(encoding="utf-8")
         self.assertIn("sources:", migrated)
         self.assertIn("confirmation_status: \"confirmed\"", migrated)

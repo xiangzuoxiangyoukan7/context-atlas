@@ -150,6 +150,30 @@ status: approved
         )
         self.assertTrue(all(node.kind == "directory" for node in report.children))
 
+    def test_data_source_readme_identity_is_exposed_on_directory_node(self) -> None:
+        """数据源 README 的实体身份应由 children 暴露在目录节点上。"""
+
+        self._write(
+            "02-技术基线/数据库/DS-ORDER/README.md",
+            """---
+id: DS-ORDER
+type: data_source
+title: 订单数据源
+status: proposed
+---
+# 订单数据源
+
+保存订单表。
+""",
+        )
+
+        report = query_children(self.root, path="02-技术基线/数据库")
+        node = next(item for item in report.children if item.path.endswith("DS-ORDER"))
+
+        self.assertEqual("DS-ORDER", node.id)
+        self.assertEqual("data_source", node.type)
+        self.assertEqual("proposed", node.status)
+
     def test_root_children_include_archive_but_exclude_system_directories(self) -> None:
         """历史归档属于知识树，暂存箱和内部运行目录不属于。"""
 

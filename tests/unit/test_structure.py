@@ -77,6 +77,132 @@ class StructureTests(TempDirectoryTestCase):
 
         self.assertIn("KB_CLASSIFICATION_README", codes)
 
+    def test_data_source_readme_is_container_entity_for_tables(self) -> None:
+        """数据源 README 同时承担目录入口，表只需归属该数据源。"""
+
+        root = materialize_core_template(self.root, "example")
+        directory = root / "02-技术基线/数据库/DS-ORDER"
+        directory.mkdir()
+        (directory / "README.md").write_text(
+            """---
+id: DS-ORDER
+type: data_source
+title: 订单数据源
+status: proposed
+product: postgresql
+product_version: unknown
+owner: missing
+config_reference: APP_DATABASE_URL
+database: missing
+namespace: public
+environments: [development]
+sources: []
+last_updated: 2026-08-10
+rel_classified_under:
+  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
+---
+# 订单数据源
+""",
+            encoding="utf-8",
+        )
+        (directory / "TABLE-ORDER.md").write_text(
+            """---
+id: TABLE-ORDER
+type: database_table
+title: 订单表
+status: proposed
+rel_classified_under:
+  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
+rel_belongs_to:
+  - "[[02-技术基线/数据库/DS-ORDER/README|DS-ORDER]]"
+---
+# 订单表
+""",
+            encoding="utf-8",
+        )
+        records, _ = discover_records(root, frozenset({".project-kb", "90-历史归档"}))
+
+        self.assertEqual([], validate_structure(root, records))
+
+    def test_data_source_directory_rejects_separate_entity_and_wrong_table_parent(self) -> None:
+        """数据源不得重复建卡，目录内表必须归属当前 README。"""
+
+        root = materialize_core_template(self.root, "example")
+        directory = root / "02-技术基线/数据库/DS-ORDER"
+        directory.mkdir()
+        (directory / "README.md").write_text(
+            """---
+id: DS-ORDER
+type: data_source
+title: 订单数据源
+status: proposed
+rel_classified_under:
+  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
+---
+# 订单数据源
+""",
+            encoding="utf-8",
+        )
+        (directory / "DS-ORDER.md").write_text(
+            """---
+id: DS-ORDER-COPY
+type: data_source
+title: 重复数据源
+status: proposed
+rel_classified_under:
+  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
+---
+# 重复数据源
+""",
+            encoding="utf-8",
+        )
+        (directory / "TABLE-ORDER.md").write_text(
+            """---
+id: TABLE-ORDER
+type: database_table
+title: 订单表
+status: proposed
+rel_classified_under:
+  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
+rel_belongs_to:
+  - "[[02-技术基线/数据库/DS-OTHER/README|DS-OTHER]]"
+---
+# 订单表
+""",
+            encoding="utf-8",
+        )
+        records, _ = discover_records(root, frozenset({".project-kb", "90-历史归档"}))
+
+        codes = {issue.code for issue in validate_structure(root, records)}
+
+        self.assertIn("KB_DATABASE_DATASOURCE_README", codes)
+        self.assertIn("KB_DATABASE_TABLE_DATASOURCE", codes)
+
+    def test_data_source_directory_name_must_match_readme_identity(self) -> None:
+        """数据源容器目录必须与 README 的稳定身份一致。"""
+
+        root = materialize_core_template(self.root, "example")
+        directory = root / "02-技术基线/数据库/DS-WRONG"
+        directory.mkdir()
+        (directory / "README.md").write_text(
+            """---
+id: DS-ORDER
+type: data_source
+title: 订单数据源
+status: proposed
+rel_classified_under:
+  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
+---
+# 订单数据源
+""",
+            encoding="utf-8",
+        )
+        records, _ = discover_records(root, frozenset({".project-kb", "90-历史归档"}))
+
+        codes = {issue.code for issue in validate_structure(root, records)}
+
+        self.assertIn("KB_DATABASE_DATASOURCE_DIRECTORY", codes)
+
     def test_classification_cycle_fails(self) -> None:
         """分类关系即使同时跨级，也必须明确报告循环。"""
 

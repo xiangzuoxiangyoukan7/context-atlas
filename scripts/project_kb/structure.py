@@ -11,6 +11,7 @@ from .model import DocumentRecord, Issue
 
 
 CLASSIFICATION_TARGET = re.compile(r"\|(?P<id>IDX-[A-Z0-9_-]+)\]\]$")
+DATABASE_ROOT = "02-技术基线/数据库"
 
 
 REQUIRED_ENTRIES = (
@@ -135,6 +136,35 @@ def _format_version(path: Path) -> int:
     return 1
 
 
+def _relative_path(root: Path, record: DocumentRecord) -> str:
+    """返回知识库相对 POSIX 路径。"""
+
+    return record.path.resolve().relative_to(root.resolve()).as_posix()
+
+
+def _data_source_directory(relative: str) -> str | None:
+    """识别由数据源 README 充当实体入口的一级数据库子目录。"""
+
+    prefix = DATABASE_ROOT + "/"
+    if not relative.startswith(prefix):
+        return None
+    remainder = relative[len(prefix) :]
+    if "/" not in remainder:
+        return None
+    directory, _ = remainder.split("/", 1)
+    return f"{DATABASE_ROOT}/{directory}"
+
+
+def _relation_targets_identifier(value: object, identifier: str) -> bool:
+    """判断单值关系列表是否指向给定稳定身份。"""
+
+    return (
+        isinstance(value, list)
+        and len(value) == 1
+        and f"|{identifier}]]" in str(value[0])
+    )
+
+
 def validate_structure(root: Path, records: Iterable[DocumentRecord]) -> list[Issue]:
     """返回固定结构、权威路径及类型目录问题。"""
 
@@ -181,22 +211,31 @@ def validate_structure(root: Path, records: Iterable[DocumentRecord]) -> list[Is
 
     classification_ids: dict[str, DocumentRecord] = {}
     indexes_by_directory: dict[str, str] = {}
+    data_sources_by_directory: dict[str, str] = {}
     for record in record_list:
         identifier = record.metadata.get("id")
+        relative = _relative_path(root, record)
         if (
             record.metadata.get("type") == "knowledge_index"
             and record.path.name == "README.md"
             and isinstance(identifier, str)
         ):
-            relative = record.path.resolve().relative_to(root.resolve()).as_posix()
             directory = relative.rsplit("/", 1)[0] if "/" in relative else ""
             indexes_by_directory[directory] = identifier
+        if (
+            record.metadata.get("type") == "data_source"
+            and record.path.name == "README.md"
+            and isinstance(identifier, str)
+        ):
+            directory = _data_source_directory(relative)
+            if directory is not None and relative == f"{directory}/README.md":
+                data_sources_by_directory[directory] = identifier
     classification_parents: dict[str, str] = {}
     for record in record_list:
         kind = record.metadata.get("type")
         expected = TYPE_DIRECTORIES.get(str(kind))
         if expected:
-            relative = record.path.resolve().relative_to(root.resolve()).as_posix()
+            relative = _relative_path(root, record)
             identifier = record.metadata.get("id")
             legacy_feature = (
                 kind == "feature"
@@ -211,7 +250,7 @@ def validate_structure(root: Path, records: Iterable[DocumentRecord]) -> list[Is
         if format_version >= 4 and isinstance(sources, list) and any(not isinstance(item, dict) for item in sources):
             issues.append(Issue("KB_SOURCE_LEGACY", record.path, "format 4 requires embedded source objects"))
         if format_version >= 11:
-            relative = record.path.resolve().relative_to(root.resolve()).as_posix()
+            relative = _relative_path(root, record)
             if relative == "Clippings/README.md" or relative.startswith(
                 (".project-kb/", "Clippings/", "05-知识治理/来源资料/files/")
             ):
@@ -222,8 +261,51 @@ def validate_structure(root: Path, records: Iterable[DocumentRecord]) -> list[Is
                 if relations != []:
                     issues.append(Issue("KB_CLASSIFICATION_ROOT", record.path, "IDX-ROOT must not have a parent classification"))
                 continue
+            data_source_directory = _data_source_directory(relative)
+            is_data_source_readme = (
+                kind == "data_source"
+                and record.path.name == "README.md"
+                and data_source_directory is not None
+                and relative == f"{data_source_directory}/README.md"
+            )
+            if kind == "data_source" and not is_data_source_readme:
+                issues.append(
+                    Issue(
+                        "KB_DATABASE_DATASOURCE_README",
+                        record.path,
+                        "data_source must be stored as DS-*/README.md",
+                    )
+                )
             if not isinstance(relations, list) or len(relations) != 1:
                 issues.append(Issue("KB_CLASSIFICATION_REQUIRED", record.path, "format 11+ knowledge must have exactly one rel_classified_under"))
+                continue
+            if is_data_source_readme:
+                assert data_source_directory is not None
+                if data_source_directory.rsplit("/", 1)[-1] != identifier:
+                    issues.append(
+                        Issue(
+                            "KB_DATABASE_DATASOURCE_DIRECTORY",
+                            record.path,
+                            f"data source directory must match its id: {identifier}",
+                        )
+                    )
+                expected_index = indexes_by_directory.get(DATABASE_ROOT)
+                if expected_index is None:
+                    issues.append(
+                        Issue(
+                            "KB_CLASSIFICATION_README",
+                            record.path,
+                            "database directory must contain a README knowledge_index",
+                        )
+                    )
+                elif not _relation_targets_identifier(relations, expected_index):
+                    issues.append(
+                        Issue(
+                            "KB_CLASSIFICATION_DIRECTORY",
+                            record.path,
+                            f"data source README must be classified under {expected_index}",
+                        )
+                    )
                 continue
             if record.metadata.get("type") == "knowledge_index":
                 if record.path.name != "README.md":
@@ -247,6 +329,46 @@ def validate_structure(root: Path, records: Iterable[DocumentRecord]) -> list[Is
                         issues.append(Issue("KB_CLASSIFICATION_PARENT", record.path, f"classification must point to direct parent {expected_parent}"))
                 continue
             directory = relative.rsplit("/", 1)[0] if "/" in relative else ""
+            container = data_sources_by_directory.get(directory)
+            if container is not None:
+                data_source_id = container
+                expected_index = indexes_by_directory.get(DATABASE_ROOT)
+                if expected_index is None:
+                    issues.append(
+                        Issue(
+                            "KB_CLASSIFICATION_README",
+                            record.path,
+                            "database directory must contain a README knowledge_index",
+                        )
+                    )
+                elif not _relation_targets_identifier(relations, expected_index):
+                    issues.append(
+                        Issue(
+                            "KB_CLASSIFICATION_DIRECTORY",
+                            record.path,
+                            f"data source member must be classified under {expected_index}",
+                        )
+                    )
+                if kind == "database_table" and not _relation_targets_identifier(
+                    record.metadata.get("rel_belongs_to"), data_source_id
+                ):
+                    issues.append(
+                        Issue(
+                            "KB_DATABASE_TABLE_DATASOURCE",
+                            record.path,
+                            f"database table must belong to containing data source {data_source_id}",
+                        )
+                    )
+                continue
+            if data_source_directory is not None:
+                issues.append(
+                    Issue(
+                        "KB_DATABASE_DATASOURCE_README",
+                        record.path,
+                        "database data-source directory must contain a data_source README.md",
+                    )
+                )
+                continue
             expected_index = indexes_by_directory.get(directory)
             if expected_index is None:
                 issues.append(Issue("KB_CLASSIFICATION_README", record.path, "knowledge directory must contain a README knowledge_index"))

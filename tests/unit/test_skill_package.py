@@ -237,6 +237,7 @@ class SkillPackageTests(unittest.TestCase):
             "物理外键",
             "值域",
             "数据库作为基础知识",
+            "唯一 `data_source` 实体和目录入口",
         ):
             self.assertIn(phrase, reference)
         template_root = self.assets_root / "templates/core/doc-project/.project-kb/templates/knowledge"

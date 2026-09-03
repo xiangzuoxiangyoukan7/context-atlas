@@ -215,9 +215,9 @@ def _tree_node(root: Path, path: Path) -> TreeNode:
             path="." if path == root else path.relative_to(root).as_posix(),
             title=title,
             description=None if record is None else _summary(record.body),
-            id=None,
-            type=None,
-            status=None,
+            id=metadata.get("id") if isinstance(metadata.get("id"), str) else None,
+            type=metadata.get("type") if isinstance(metadata.get("type"), str) else None,
+            status=metadata.get("status") if isinstance(metadata.get("status"), str) else None,
             child_count=len(children),
         )
     record = parse_document(path)
