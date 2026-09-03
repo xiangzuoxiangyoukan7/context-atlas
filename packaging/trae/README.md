@@ -10,7 +10,7 @@
 irm https://raw.githubusercontent.com/xiangzuoxiangyoukan7/context-atlas/v0.11.0/packaging/trae/install.ps1 | iex
 ```
 
-安装器会下载完整 Trae 包，备份目标项目已有的受管 `.agents/` 目录，再安装 `skills/`、`assets/` 和 `references/`。安装后重启 Trae，在 Skill 管理面板确认九个 Context Atlas Skill 已加载。
+安装器会下载完整 Trae 包，备份目标项目已有的受管 `.agents/` 目录，再安装 `skills/`、`assets/` 和 `references/`。安装后重启 Trae，在 Skill 管理面板确认十个 Context Atlas Skill 已加载。
 
 ## 使用
 

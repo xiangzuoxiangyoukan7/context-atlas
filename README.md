@@ -2,7 +2,7 @@
 
 Context Atlas 是面向长期项目协作的知识治理插件，支持 Codex、Claude Code 和 Qoder。它把需求、架构、接口、数据库、决策、变更和验收证据整理为项目内唯一的 `doc-<项目名>/` 知识库，让不同 Agent 读取同一套可确认、可追溯的事实。
 
-当前源码清单版本为 `0.17.3`。源码版本不等于 Marketplace 实际安装版本；安装或升级后请以宿主显示的版本为准。
+当前源码清单版本为 `0.18.0`。源码版本不等于 Marketplace 实际安装版本；安装或升级后请以宿主显示的版本为准。
 
 ## 它解决什么问题
 
@@ -62,7 +62,7 @@ Context Atlas 是 Agent 插件，不是 Python 包，不使用 `pip install`。�
 
 Codex 不要把 `CODEX_HOME` 指向项目 `.codex/`，否则沙箱、缓存、会话和数据库会在每个项目中重复生成。插件实体应保存在用户级 `CODEX_HOME`，项目只保存启用配置和自己的知识库。
 
-安装或升级后请新建 Agent 会话，并确认九个 Skill 全部可见。
+安装或升级后请新建 Agent 会话，并确认十个 Skill 全部可见。
 
 ## Skill 职责
 
@@ -76,6 +76,7 @@ Codex 不要把 `CODEX_HOME` 指向项目 `.codex/`，否则沙箱、缓存、�
 | `context-atlas-add` | 新增此前不存在的稳定知识身份 | 必须显式调用；只处理 add-only Proposal |
 | `context-atlas-revise` | 修订现有知识或建立明确后继项 | 必须显式调用；只处理 revise-only Proposal |
 | `context-atlas-retire` | 无后继撤销当前权威，或归档已替代知识 | 必须显式调用；只处理 retire-only Proposal |
+| `context-atlas-delete` | 永久删除无审计价值的分类树叶子知识并清理关系 | 必须显式调用；只处理 delete-only Proposal |
 | `context-atlas-upgrade` | 升级知识库格式和物理结构 | 不得改变项目事实或批准状态 |
 
 `context-atlas-work` 被自动选择后，只有用户明确选择“先建立知识基线”路径，它才可以组织维护 Proposal；初始开发请求仍不构成写入确认。用户确认当前 Proposal 后，不需要再次逐个调用底层维护 Skill。
@@ -102,7 +103,7 @@ Codex 不要把 `CODEX_HOME` 指向项目 `.codex/`，否则沙箱、缓存、�
 → 开发与验证 → 核对实现差异 → 按需修订知识与验收证据
 ```
 
-新稳定身份归入 `add`；修改现有身份或创建后继项归入 `revise`；无后继撤销或归档归入 `retire`。一个任务同时包含多类维护时，由 `work` 生成一个原子 Proposal。
+新稳定身份归入 `add`；修改现有身份或创建后继项归入 `revise`；无后继撤销或归档归入 `retire`；确认无审计价值且位于分类树叶子的知识永久移除归入 `delete`。一个任务同时包含多类维护时，由 `work` 生成一个原子 Proposal。
 
 ### 排查问题
 
@@ -157,7 +158,7 @@ Codex 不要把 `CODEX_HOME` 指向项目 `.codex/`，否则沙箱、缓存、�
 
 | 目录 | 内容 |
 | --- | --- |
-| `skills/` | 九个用户入口 Skill |
+| `skills/` | 十个用户入口 Skill |
 | `references/` | 平台无关的治理和执行协议 |
 | `templates/` | 初始化知识库模板 |
 | `schemas/` | 知识类型和 Proposal 的机器契约 |
@@ -199,4 +200,4 @@ git diff --check
 
 ## 当前状态
 
-核心 Schema、模板、检查器、九个 Skill 和三平台构建链路已实现。Codex 真实执行链路已经验证；Claude Code 和 Qoder 仍应在目标版本上继续完成真实 Agent 黑盒验收。命令成功或静态检查通过不能单独证明插件在目标宿主中可用。
+核心 Schema、模板、检查器、十个 Skill 和三平台构建链路已实现。Codex 真实执行链路已经验证；Claude Code 和 Qoder 仍应在目标版本上继续完成真实 Agent 黑盒验收。命令成功或静态检查通过不能单独证明插件在目标宿主中可用。

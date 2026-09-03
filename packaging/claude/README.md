@@ -22,6 +22,7 @@ claude plugin install --scope project context-atlas@context-atlas
 /context-atlas:context-atlas-add
 /context-atlas:context-atlas-revise
 /context-atlas:context-atlas-retire
+/context-atlas:context-atlas-delete
 /context-atlas:context-atlas-upgrade
 ```
 
