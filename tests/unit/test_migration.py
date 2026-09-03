@@ -182,6 +182,113 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertEqual(2, len(proposal.agent_decisions))
         self.assertEqual((), proposal.preflight_validation_issues)
 
+    def test_current_database_model_requires_namespace_merge_and_rewrites_table_edge(self) -> None:
+        """同格式归一化应自动移除表根分类边，并要求 Agent 处理旧命名空间。"""
+
+        from scripts.project_kb.compatibility import CompatibilityPolicy
+        import json
+
+        from scripts.project_kb.migration import (
+            build_migration_proposal,
+            merge_agent_migration_plan,
+            preflight_migration,
+        )
+
+        root = materialize_core_template(self.root, "database-normalization")
+        directory = root / "02-技术基线/数据库/DS-NKGIS"
+        directory.mkdir()
+        (directory / "README.md").write_text(
+            "---\nid: DS-NKGIS\ntype: data_source\ntitle: NKGIS\nstatus: proposed\n"
+            "product: other\nproduct_version: unknown\nowner: missing\n"
+            "config_reference: APP_DATABASE_URL\ndatabase: missing\nnamespace: missing\n"
+            "environments: [development]\nsources: [missing]\nlast_updated: 2026-09-03\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "---\n# NKGIS\n\n## 目录契约\n\n使用 `children`、`neighbors` 和 `graph` 查询。\n",
+            encoding="utf-8",
+        )
+        namespace = directory / "NS-NKGIS.md"
+        namespace.write_text(
+            "---\nid: NS-NKGIS\ntype: database_namespace\ntitle: NKGIS\nstatus: proposed\n"
+            "namespace_kind: schema\nphysical_name: NKGIS\nowner: missing\nsources: [missing]\n"
+            "rel_belongs_to:\n  - \"[[02-技术基线/数据库/DS-NKGIS/README|DS-NKGIS]]\"\n"
+            "last_updated: 2026-09-03\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "---\n# NKGIS namespace\n",
+            encoding="utf-8",
+        )
+        table = directory / "TABLE-DIC.md"
+        table.write_text(
+            "---\nid: TABLE-DIC\ntype: database_table\ntitle: 字典表\nstatus: proposed\n"
+            "physical_name: DIC\nowner: missing\nsensitivity: missing\nsources: [missing]\n"
+            "ddl_sources: [missing]\nrel_belongs_to:\n"
+            "  - \"[[02-技术基线/数据库/DS-NKGIS/README|DS-NKGIS]]\"\n"
+            "last_updated: 2026-09-03\nrel_classified_under:\n"
+            "  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "---\n# DIC\n\n## 字段定义\n\n| 字段编号 | 字段名 | 数据类型 | 可空 | 默认值 | 中文含义 | 值域类型 | 允许值或最小值 | 最大值或格式 | 允许其他值 | 约束执行位置 | 来源 | 锚点 |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "## 主子表关系\n\n| 关系编号 | 子字段编号 | 主表与字段 | 物理约束 | 约束名称 |\n"
+            "| --- | --- | --- | --- | --- |\n",
+            encoding="utf-8",
+        )
+        records, issues = discover_records(root, frozenset())
+        self.assertEqual([], issues)
+
+        proposal = build_migration_proposal(
+            root, records, CompatibilityPolicy.load(ROOT / "compatibility.json")
+        )
+        table_rewrite = next(item for item in proposal.rewrites if item.path == table.resolve())
+        self.assertNotIn("rel_classified_under:", table_rewrite.content)
+        self.assertIn("rel_belongs_to:", table_rewrite.content)
+
+        preflight = preflight_migration(root, proposal, ROOT / "schemas")
+        self.assertEqual("failed", preflight.preflight_status)
+        self.assertTrue(any("KB_DATABASE_LEVEL_RETIRED" in issue for issue in preflight.preflight_validation_issues))
+        self.assertTrue(namespace.is_file())
+
+        readme = directory / "README.md"
+        normalized_readme = next(
+            item.content for item in proposal.rewrites if item.path == readme.resolve()
+        )
+        assert normalized_readme is not None
+        merged_readme = normalized_readme.replace(
+            "database: missing\nnamespace: missing",
+            "database: NKGIS\nnamespace: NKGIS",
+        ) + "\n## 迁入的命名空间说明\n\nNKGIS namespace\n"
+        plan = root.parent / "namespace-plan.json"
+        plan.write_text(json.dumps({"decisions": [
+            {
+                "action": "rewrite",
+                "path": "02-技术基线/数据库/DS-NKGIS/README.md",
+                "content": merged_readme,
+                "reason": "将旧命名空间元数据和正文等价合并到数据源入口",
+                "source_paths": [
+                    "02-技术基线/数据库/DS-NKGIS/README.md",
+                    "02-技术基线/数据库/DS-NKGIS/NS-NKGIS.md",
+                ],
+            },
+            {
+                "action": "remove",
+                "path": "02-技术基线/数据库/DS-NKGIS/NS-NKGIS.md",
+                "reason": "旧命名空间内容和来源已完整合并",
+                "source_paths": [
+                    "02-技术基线/数据库/DS-NKGIS/README.md",
+                    "02-技术基线/数据库/DS-NKGIS/NS-NKGIS.md",
+                ],
+            },
+        ]}, ensure_ascii=False), encoding="utf-8")
+        resolved = merge_agent_migration_plan(root, proposal, plan)
+        resolved = preflight_migration(root, resolved, ROOT / "schemas")
+
+        self.assertFalse(any(
+            "KB_DATABASE_LEVEL_RETIRED" in issue
+            for issue in resolved.preflight_validation_issues
+        ))
+        self.assertFalse(any(
+            "KB_DATABASE_TABLE_DIRECT_CLASSIFICATION" in issue
+            for issue in resolved.preflight_validation_issues
+        ))
+        self.assertEqual(2, len(resolved.agent_decisions))
+
     def test_format_twelve_moves_requirement_content_to_body(self) -> None:
         """格式十一需求应把重复业务元数据等价迁入正文。"""
 

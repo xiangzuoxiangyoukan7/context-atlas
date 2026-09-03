@@ -111,8 +111,6 @@ id: TABLE-ORDER
 type: database_table
 title: 订单表
 status: proposed
-rel_classified_under:
-  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
 rel_belongs_to:
   - "[[02-技术基线/数据库/DS-ORDER/README|DS-ORDER]]"
 ---
@@ -162,8 +160,6 @@ id: TABLE-ORDER
 type: database_table
 title: 订单表
 status: proposed
-rel_classified_under:
-  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
 rel_belongs_to:
   - "[[02-技术基线/数据库/DS-OTHER/README|DS-OTHER]]"
 ---
@@ -177,6 +173,59 @@ rel_belongs_to:
 
         self.assertIn("KB_DATABASE_DATASOURCE_README", codes)
         self.assertIn("KB_DATABASE_TABLE_DATASOURCE", codes)
+
+    def test_data_source_table_rejects_direct_database_root_classification(self) -> None:
+        """表只能归属数据源，不得同时直连数据库根索引。"""
+
+        root = materialize_core_template(self.root, "example")
+        directory = root / "02-技术基线/数据库/DS-ORDER"
+        directory.mkdir()
+        (directory / "README.md").write_text(
+            "---\nid: DS-ORDER\ntype: data_source\ntitle: 订单数据源\nstatus: proposed\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "---\n# 订单数据源\n",
+            encoding="utf-8",
+        )
+        table = directory / "TABLE-ORDER.md"
+        table.write_text(
+            "---\nid: TABLE-ORDER\ntype: database_table\ntitle: 订单表\nstatus: proposed\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "rel_belongs_to:\n  - \"[[02-技术基线/数据库/DS-ORDER/README|DS-ORDER]]\"\n"
+            "---\n# 订单表\n",
+            encoding="utf-8",
+        )
+        records, _ = discover_records(root, frozenset({".project-kb", "90-历史归档"}))
+
+        codes = {issue.code for issue in validate_structure(root, records)}
+
+        self.assertIn("KB_DATABASE_TABLE_DIRECT_CLASSIFICATION", codes)
+
+    def test_database_namespace_is_retired(self) -> None:
+        """独立命名空间必须迁入数据源 README，不能残留为当前实体。"""
+
+        root = materialize_core_template(self.root, "example")
+        directory = root / "02-技术基线/数据库/DS-ORDER"
+        directory.mkdir()
+        (directory / "README.md").write_text(
+            "---\nid: DS-ORDER\ntype: data_source\ntitle: 订单数据源\nstatus: proposed\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "---\n# 订单数据源\n",
+            encoding="utf-8",
+        )
+        (directory / "NS-ORDER.md").write_text(
+            "---\nid: NS-ORDER\ntype: database_namespace\ntitle: public\nstatus: proposed\n"
+            "namespace_kind: schema\nphysical_name: public\nowner: missing\nsources: [missing]\n"
+            "rel_belongs_to:\n  - \"[[02-技术基线/数据库/DS-ORDER/README|DS-ORDER]]\"\n"
+            "last_updated: 2026-09-03\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "---\n# public\n",
+            encoding="utf-8",
+        )
+        records, _ = discover_records(root, frozenset({".project-kb", "90-历史归档"}))
+
+        codes = {issue.code for issue in validate_structure(root, records)}
+
+        self.assertIn("KB_DATABASE_LEVEL_RETIRED", codes)
 
     def test_data_source_directory_name_must_match_readme_identity(self) -> None:
         """数据源容器目录必须与 README 的稳定身份一致。"""

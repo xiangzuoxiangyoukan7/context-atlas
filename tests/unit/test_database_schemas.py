@@ -45,6 +45,8 @@ class DatabaseSchemaTests(TempDirectoryTestCase):
             "product_version": "unknown",
             "owner": "example-owner",
             "config_reference": "APP_DB_URL",
+            "database": "orders",
+            "namespace": "public",
             "environments": ["development"],
             "sources": ["SRC-001"],
             "last_updated": "2026-08-13",
