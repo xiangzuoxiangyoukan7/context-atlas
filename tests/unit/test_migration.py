@@ -151,6 +151,7 @@ class MigrationTests(TempDirectoryTestCase):
                 "path": "02-技术基线/数据库/DS-NKGIS/README.md",
                 "content": target_content,
                 "reason": "合并旧数据源实体与目录入口，保留二者语义",
+                "resolves": [],
                 "source_paths": [
                     "02-技术基线/数据库/DS-NKGIS/DS-NKGIS.md",
                     "02-技术基线/数据库/DS-NKGIS/README.md",
@@ -160,6 +161,7 @@ class MigrationTests(TempDirectoryTestCase):
                 "action": "remove",
                 "path": "02-技术基线/数据库/DS-NKGIS/DS-NKGIS.md",
                 "reason": "实体内容已完整合并到数据源 README",
+                "resolves": [],
                 "source_paths": [
                     "02-技术基线/数据库/DS-NKGIS/DS-NKGIS.md",
                     "02-技术基线/数据库/DS-NKGIS/README.md",
@@ -181,6 +183,120 @@ class MigrationTests(TempDirectoryTestCase):
         )
         self.assertEqual(2, len(proposal.agent_decisions))
         self.assertEqual((), proposal.preflight_validation_issues)
+
+    def test_agent_remove_resolves_matching_target_collision(self) -> None:
+        """Agent 删除旧占位模板后，对应目标冲突不再阻断预检。"""
+
+        import json
+
+        from scripts.project_kb.compatibility import CompatibilityPolicy
+        from scripts.project_kb.migration import (
+            build_migration_proposal,
+            merge_agent_migration_plan,
+            preflight_migration,
+        )
+
+        root = materialize_core_template(self.root, "agent-template-collision")
+        manifest = root / "knowledge-base.yaml"
+        manifest.write_text(
+            manifest.read_text(encoding="utf-8").replace("format_version: 14", "format_version: 9"),
+            encoding="utf-8",
+        )
+        legacy_directory = root / "04-决策记录"
+        legacy_directory.mkdir()
+        legacy_template = legacy_directory / "TEMPLATE.md"
+        legacy_template.write_text(
+            "---\nid: ADR-001\ntype: adr\ntitle: 示例决策\n---\n# 示例决策\n",
+            encoding="utf-8",
+        )
+        target_template = root / "03-变更与证据/待确认知识/TEMPLATE.md"
+        target_template.write_text("# 待确认知识模板\n", encoding="utf-8")
+
+        records, issues = discover_records(root, frozenset())
+        self.assertEqual([], issues)
+        proposal = build_migration_proposal(
+            root, records, CompatibilityPolicy.load(ROOT / "compatibility.json")
+        )
+        self.assertEqual([legacy_template.resolve()], [item.path for item in proposal.unresolved])
+        self.assertRegex(proposal.unresolved[0].issue_id, r"^upgrade-unresolved-[0-9a-f]{12}$")
+        repeated = build_migration_proposal(
+            root, records, CompatibilityPolicy.load(ROOT / "compatibility.json")
+        )
+        self.assertEqual(proposal.unresolved[0].issue_id, repeated.unresolved[0].issue_id)
+
+        plan = root.parent / "template-plan.json"
+        issue_id = proposal.unresolved[0].issue_id
+        decision = {
+            "action": "remove",
+            "path": "04-决策记录/TEMPLATE.md",
+            "reason": "旧文件是未实例化的 ADR 占位模板，保留新版待确认知识模板",
+            "resolves": [issue_id],
+            "source_paths": [
+                "04-决策记录/TEMPLATE.md",
+                "03-变更与证据/待确认知识/TEMPLATE.md",
+            ],
+        }
+        plan.write_text(json.dumps({"decisions": [{**decision, "resolves": []}]}, ensure_ascii=False), encoding="utf-8")
+        unresolved = merge_agent_migration_plan(root, proposal, plan)
+        self.assertEqual([issue_id], [item.issue_id for item in unresolved.unresolved])
+
+        plan.write_text(json.dumps({"decisions": [decision]}, ensure_ascii=False), encoding="utf-8")
+
+        resolved = merge_agent_migration_plan(root, proposal, plan)
+        self.assertEqual((), resolved.unresolved)
+        self.assertNotEqual(proposal.proposal_revision, resolved.proposal_revision)
+
+        preflight = preflight_migration(root, resolved, ROOT / "schemas")
+        self.assertEqual(
+            "passed",
+            preflight.preflight_status,
+            (preflight.preflight_validation_issues, preflight.preflight_health_findings),
+        )
+
+    def test_agent_plan_cannot_claim_unknown_or_undeclared_diagnostic(self) -> None:
+        """Agent 只能消解当前 Proposal 且已声明来源文件的诊断项。"""
+
+        import json
+
+        from scripts.project_kb.compatibility import CompatibilityPolicy
+        from scripts.project_kb.migration import build_migration_proposal, merge_agent_migration_plan
+
+        root = materialize_core_template(self.root, "agent-resolution-gate")
+        manifest = root / "knowledge-base.yaml"
+        manifest.write_text(
+            manifest.read_text(encoding="utf-8").replace("format_version: 14", "format_version: 9"),
+            encoding="utf-8",
+        )
+        legacy_directory = root / "04-决策记录"
+        legacy_directory.mkdir()
+        legacy = legacy_directory / "ADR-001.md"
+        legacy.write_text("---\nid: ADR-001\ntype: adr\ntitle: 旧决策\n---\n# 旧决策\n", encoding="utf-8")
+        target = root / "03-变更与证据/待确认知识/ADR-001.md"
+        target.write_text("# 已有目标\n", encoding="utf-8")
+        records, issues = discover_records(root, frozenset())
+        self.assertEqual([], issues)
+        proposal = build_migration_proposal(
+            root, records, CompatibilityPolicy.load(ROOT / "compatibility.json")
+        )
+        issue_id = proposal.unresolved[0].issue_id
+
+        plan = root.parent / "invalid-resolution-plan.json"
+        decision = {
+            "action": "remove",
+            "path": "04-决策记录/ADR-001.md",
+            "reason": "测试诊断项绑定门禁",
+            "resolves": ["upgrade-unresolved-ffffffffffff"],
+            "source_paths": ["04-决策记录/ADR-001.md"],
+        }
+        plan.write_text(json.dumps({"decisions": [decision]}, ensure_ascii=False), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "unknown issue"):
+            merge_agent_migration_plan(root, proposal, plan)
+
+        decision["resolves"] = [issue_id]
+        decision["source_paths"] = ["03-变更与证据/待确认知识/ADR-001.md"]
+        plan.write_text(json.dumps({"decisions": [decision]}, ensure_ascii=False), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "source is not declared"):
+            merge_agent_migration_plan(root, proposal, plan)
 
     def test_current_database_model_requires_namespace_merge_and_rewrites_table_edge(self) -> None:
         """同格式归一化应自动移除表根分类边，并要求 Agent 处理旧命名空间。"""
@@ -261,6 +377,7 @@ class MigrationTests(TempDirectoryTestCase):
                 "path": "02-技术基线/数据库/DS-NKGIS/README.md",
                 "content": merged_readme,
                 "reason": "将旧命名空间元数据和正文等价合并到数据源入口",
+                "resolves": [],
                 "source_paths": [
                     "02-技术基线/数据库/DS-NKGIS/README.md",
                     "02-技术基线/数据库/DS-NKGIS/NS-NKGIS.md",
@@ -270,6 +387,7 @@ class MigrationTests(TempDirectoryTestCase):
                 "action": "remove",
                 "path": "02-技术基线/数据库/DS-NKGIS/NS-NKGIS.md",
                 "reason": "旧命名空间内容和来源已完整合并",
+                "resolves": [],
                 "source_paths": [
                     "02-技术基线/数据库/DS-NKGIS/README.md",
                     "02-技术基线/数据库/DS-NKGIS/NS-NKGIS.md",
@@ -530,10 +648,10 @@ rel_classified_under:
         self.assertIn("format_version: 14", manifest.read_text(encoding="utf-8"))
         self.assertIn("05-知识治理/README.md", root_readme.read_text(encoding="utf-8"))
         self.assertNotIn("05-开发指南", root_readme.read_text(encoding="utf-8"))
-        self.assertEqual(
-            "# 知识治理\n",
-            (self.root / "05-知识治理/README.md").read_text(encoding="utf-8"),
-        )
+        governance = (self.root / "05-知识治理/README.md").read_text(encoding="utf-8")
+        self.assertIn("id: IDX-GOVERNANCE", governance)
+        self.assertIn("## 目录契约", governance)
+        self.assertIn("children", governance)
 
     def test_format_four_rewrites_legacy_requirement_relation(self) -> None:
         """格式四迁移只执行可证明等价的关系改名。"""
@@ -718,6 +836,7 @@ rel_classified_under:
         apply_migration(self.root, first, first.proposal_revision)
         self.assertFalse(template.exists())
         self.assertTrue((self.root / "02-技术基线/接口/API-001.md").exists())
+        self.assertFalse(legacy.exists())
         self.assertFalse(old_relation.exists())
         self.assertFalse(independent.exists())
         self.assertFalse(acceptance.exists())
