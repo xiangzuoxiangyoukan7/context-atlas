@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class DatabaseSchemaTests(TempDirectoryTestCase):
-    """验证四类数据库实体具有确定的必填字段、枚举和编号。"""
+    """验证当前数据库实体具有确定的必填字段、枚举和编号。"""
 
     def setUp(self) -> None:
         """加载仓库权威 Schema 和关系目录。"""
@@ -21,17 +21,17 @@ class DatabaseSchemaTests(TempDirectoryTestCase):
         super().setUp()
         self.catalog = SchemaCatalog.load(ROOT / "schemas")
 
-    def test_catalog_registers_four_database_entity_types(self) -> None:
-        """Schema 目录必须显式登记数据源、数据库单元、命名空间和表。"""
+    def test_catalog_registers_only_current_database_entity_types(self) -> None:
+        """当前 Schema 只登记数据源与表，不暴露已退役中间类型。"""
 
         expected = {
             "data_source",
-            "database_unit",
-            "database_namespace",
             "database_table",
         }
 
         self.assertTrue(expected.issubset(self.catalog.schemas))
+        self.assertNotIn("database_unit", self.catalog.schemas)
+        self.assertNotIn("database_namespace", self.catalog.schemas)
 
     def test_database_products_use_controlled_names(self) -> None:
         """数据源产品支持已批准的四种数据库和明确的其他类型。"""
@@ -90,5 +90,5 @@ class DatabaseSchemaTests(TempDirectoryTestCase):
 
         self.assertIsNotNone(definition)
         assert definition is not None
-        self.assertEqual(frozenset({"DB", "NS", "TABLE"}), definition.source_prefixes)
-        self.assertEqual(frozenset({"DS", "DB", "NS"}), definition.target_prefixes)
+        self.assertEqual(frozenset({"TABLE"}), definition.source_prefixes)
+        self.assertEqual(frozenset({"DS"}), definition.target_prefixes)

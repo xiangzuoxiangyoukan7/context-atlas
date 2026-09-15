@@ -88,17 +88,17 @@ class RelationIndexTests(TempDirectoryTestCase):
                 "rel_unknown:\n  - \"[[01-需求/需求|REQ-001]]\"\n",
                 "KB_REL_FIELD_UNKNOWN",
             ),
-            "format": ("rel_implements: [REQ-001]\n", "KB_REL_LINK_FORMAT"),
+            "format": ("rel_satisfies: [REQ-001]\n", "KB_REL_LINK_FORMAT"),
             "file": (
-                "rel_implements:\n  - \"[[01-需求/缺失|REQ-001]]\"\n",
+                "rel_satisfies:\n  - \"[[01-需求/缺失|REQ-001]]\"\n",
                 "KB_REL_TARGET_FILE",
             ),
             "id": (
-                "rel_implements:\n  - \"[[01-需求/需求|REQ-999]]\"\n",
+                "rel_satisfies:\n  - \"[[01-需求/需求|REQ-999]]\"\n",
                 "KB_REL_TARGET_ID",
             ),
             "anchor": (
-                "rel_implements:\n  - \"[[01-需求/需求#REQ-001 错误标题|REQ-001]]\"\n",
+                "rel_satisfies:\n  - \"[[01-需求/需求#REQ-001 错误标题|REQ-001]]\"\n",
                 "KB_REL_TARGET_ANCHOR",
             ),
             "direction": (
@@ -106,7 +106,7 @@ class RelationIndexTests(TempDirectoryTestCase):
                 "KB_REL_DIRECTION",
             ),
             "duplicate": (
-                "rel_implements:\n"
+                "rel_satisfies:\n"
                 "  - \"[[01-需求/需求|REQ-001]]\"\n"
                 "  - \"[[01-需求/需求|REQ-001]]\"\n",
                 "KB_REL_DUPLICATE",

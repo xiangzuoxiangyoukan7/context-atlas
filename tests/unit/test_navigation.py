@@ -10,7 +10,7 @@ import shutil
 import tempfile
 import unittest
 
-from scripts.project_kb.navigation import query_children, query_graph, query_neighbors
+from scripts.project_kb.navigation import query_children, query_graph, query_neighbors, query_search
 from scripts.agent_kb_operation import main
 
 
@@ -199,6 +199,60 @@ status: proposed
         self.assertEqual("interface", node.type)
         self.assertEqual("approved", node.status)
 
+    def test_search_ranks_exact_id_and_explains_match(self) -> None:
+        """精确稳定编号应优先返回并说明匹配字段。"""
+
+        report = query_search(self.root, query="API-ORDER-001")
+
+        self.assertEqual("API-ORDER-001", report.results[0].id)
+        self.assertIn("id", report.results[0].matched_fields)
+
+    def test_search_finds_chinese_title_and_filters_type(self) -> None:
+        """中文自然语言可以定位标题并按知识类型收窄。"""
+
+        report = query_search(self.root, query="创建订单", node_types=("feature",))
+
+        self.assertEqual(["F-ORDER-001"], [item.id for item in report.results])
+        self.assertIn("title", report.results[0].matched_fields)
+
+    def test_summary_prefers_goal_and_skips_rule_comment(self) -> None:
+        """摘要应跳过规则注释并优先读取稳定目标章节。"""
+
+        self._write(
+            "01-功能基线/功能/F-SUMMARY-001.md",
+            """---
+id: F-SUMMARY-001
+type: feature
+title: 摘要示例
+status: proposed
+---
+# 摘要示例
+<!-- context-atlas-rules: ignored -->
+
+## 目标
+
+快速定位对应的项目知识。
+""",
+        )
+
+        report = query_search(self.root, query="快速定位", node_types=("feature",))
+
+        self.assertEqual("快速定位对应的项目知识。", report.results[0].summary)
+
+    def test_search_is_bounded_and_archive_is_opt_in(self) -> None:
+        """检索必须报告截断，历史正文默认不参与匹配。"""
+
+        self._write(
+            "90-历史归档/F-OLD-001.md",
+            "---\nid: F-OLD-001\ntype: feature\ntitle: 创建订单旧版\nstatus: archived\n---\n# 创建订单旧版\n",
+        )
+        report = query_search(self.root, query="订单", limit=1)
+        archived = query_search(self.root, query="旧版", include_archive=True)
+
+        self.assertTrue(report.truncated)
+        self.assertNotIn("F-OLD-001", [item.id for item in report.results])
+        self.assertEqual(["F-OLD-001"], [item.id for item in archived.results])
+
     def test_graph_expands_both_directions_to_requested_depth(self) -> None:
         """多跳子图应从起点沿正反向关系展开，但不超过指定深度。"""
 
@@ -317,13 +371,16 @@ rel_classified_under: []
         self.assertTrue(report.truncated)
         self.assertEqual(2, len(report.nodes))
 
-    def test_cli_exposes_children_and_graph_as_json(self) -> None:
-        """统一 Agent 命令应公开树导航和关系图查询。"""
+    def test_cli_exposes_search_children_and_graph_as_json(self) -> None:
+        """统一 Agent 命令应公开检索、树导航和关系图查询。"""
 
         children_output = StringIO()
         with redirect_stdout(children_output):
             children_code = main(["children", str(self.root), "--path", "."])
         graph_output = StringIO()
+        search_output = StringIO()
+        with redirect_stdout(search_output):
+            search_code = main(["search", str(self.root), "--query", "创建订单"])
         with redirect_stdout(graph_output):
             graph_code = main(
                 ["graph", str(self.root), "--start", "F-ORDER-001", "--depth", "1"]
@@ -331,9 +388,13 @@ rel_classified_under: []
 
         children_payload = json.loads(children_output.getvalue())
         graph_payload = json.loads(graph_output.getvalue())
+        search_payload = json.loads(search_output.getvalue())
         self.assertEqual(0, children_code)
         self.assertEqual("children", children_payload["operation"])
         self.assertTrue(children_payload["ok"])
+        self.assertEqual(0, search_code)
+        self.assertEqual("search", search_payload["operation"])
+        self.assertTrue(search_payload["ok"])
         self.assertEqual(0, graph_code)
         self.assertEqual("graph", graph_payload["operation"])
         self.assertEqual("subgraph", graph_payload["mode"])

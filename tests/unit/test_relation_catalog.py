@@ -13,7 +13,6 @@ CORE_RELATIONS = {
     "rel_classified_under",
     "rel_supported_by",
     "rel_conforms_to",
-    "rel_implements",
     "rel_satisfies",
     "rel_primary_module",
     "rel_participating_modules",
@@ -46,8 +45,7 @@ class RelationCatalogTests(TempDirectoryTestCase):
         catalog = RelationCatalog.load(ROOT / "schemas" / "relation-catalog.json")
 
         self.assertEqual(CORE_RELATIONS, set(catalog.relations))
-        self.assertEqual("实现该需求", catalog.get("rel_implements").name_zh)
-        self.assertEqual("deprecated", catalog.get("rel_implements").status)
+        self.assertIsNone(catalog.get("rel_implements"))
         self.assertEqual("满足该需求", catalog.get("rel_satisfies").name_zh)
 
     def test_catalog_returns_specific_and_default_impact_levels(self) -> None:

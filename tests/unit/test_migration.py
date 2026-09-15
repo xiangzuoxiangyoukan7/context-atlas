@@ -199,7 +199,7 @@ class MigrationTests(TempDirectoryTestCase):
         root = materialize_core_template(self.root, "agent-template-collision")
         manifest = root / "knowledge-base.yaml"
         manifest.write_text(
-            manifest.read_text(encoding="utf-8").replace("format_version: 14", "format_version: 9"),
+            manifest.read_text(encoding="utf-8").replace("format_version: 0.18.2", "format_version: 9"),
             encoding="utf-8",
         )
         legacy_directory = root / "04-决策记录"
@@ -264,7 +264,7 @@ class MigrationTests(TempDirectoryTestCase):
         root = materialize_core_template(self.root, "agent-resolution-gate")
         manifest = root / "knowledge-base.yaml"
         manifest.write_text(
-            manifest.read_text(encoding="utf-8").replace("format_version: 14", "format_version: 9"),
+            manifest.read_text(encoding="utf-8").replace("format_version: 0.18.2", "format_version: 9"),
             encoding="utf-8",
         )
         legacy_directory = root / "04-决策记录"
@@ -298,17 +298,13 @@ class MigrationTests(TempDirectoryTestCase):
         with self.assertRaisesRegex(ValueError, "source is not declared"):
             merge_agent_migration_plan(root, proposal, plan)
 
-    def test_current_database_model_requires_namespace_merge_and_rewrites_table_edge(self) -> None:
-        """同格式归一化应自动移除表根分类边，并要求 Agent 处理旧命名空间。"""
+    def test_current_database_model_converts_namespace_and_rewrites_table_edge(self) -> None:
+        """当前格式自动转换旧命名空间，并移除表的根分类边。"""
 
         from scripts.project_kb.compatibility import CompatibilityPolicy
         import json
 
-        from scripts.project_kb.migration import (
-            build_migration_proposal,
-            merge_agent_migration_plan,
-            preflight_migration,
-        )
+        from scripts.project_kb.migration import build_migration_proposal, preflight_migration
 
         root = materialize_core_template(self.root, "database-normalization")
         directory = root / "02-技术基线/数据库/DS-NKGIS"
@@ -357,55 +353,16 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertIn("rel_belongs_to:", table_rewrite.content)
 
         preflight = preflight_migration(root, proposal, ROOT / "schemas")
-        self.assertEqual("failed", preflight.preflight_status)
-        self.assertTrue(any("KB_DATABASE_LEVEL_RETIRED" in issue for issue in preflight.preflight_validation_issues))
-        self.assertTrue(namespace.is_file())
-
-        readme = directory / "README.md"
-        normalized_readme = next(
-            item.content for item in proposal.rewrites if item.path == readme.resolve()
+        namespace_rewrite = next(
+            item.content for item in proposal.rewrites if item.path == namespace.resolve()
         )
-        assert normalized_readme is not None
-        merged_readme = normalized_readme.replace(
-            "database: missing\nnamespace: missing",
-            "database: NKGIS\nnamespace: NKGIS",
-        ) + "\n## 迁入的命名空间说明\n\nNKGIS namespace\n"
-        plan = root.parent / "namespace-plan.json"
-        plan.write_text(json.dumps({"decisions": [
-            {
-                "action": "rewrite",
-                "path": "02-技术基线/数据库/DS-NKGIS/README.md",
-                "content": merged_readme,
-                "reason": "将旧命名空间元数据和正文等价合并到数据源入口",
-                "resolves": [],
-                "source_paths": [
-                    "02-技术基线/数据库/DS-NKGIS/README.md",
-                    "02-技术基线/数据库/DS-NKGIS/NS-NKGIS.md",
-                ],
-            },
-            {
-                "action": "remove",
-                "path": "02-技术基线/数据库/DS-NKGIS/NS-NKGIS.md",
-                "reason": "旧命名空间内容和来源已完整合并",
-                "resolves": [],
-                "source_paths": [
-                    "02-技术基线/数据库/DS-NKGIS/README.md",
-                    "02-技术基线/数据库/DS-NKGIS/NS-NKGIS.md",
-                ],
-            },
-        ]}, ensure_ascii=False), encoding="utf-8")
-        resolved = merge_agent_migration_plan(root, proposal, plan)
-        resolved = preflight_migration(root, resolved, ROOT / "schemas")
-
-        self.assertFalse(any(
-            "KB_DATABASE_LEVEL_RETIRED" in issue
-            for issue in resolved.preflight_validation_issues
-        ))
+        self.assertIn("type: knowledge_item", namespace_rewrite)
+        self.assertFalse(any("KB_DATABASE_LEVEL_RETIRED" in issue for issue in preflight.preflight_validation_issues))
+        self.assertTrue(namespace.is_file())
         self.assertFalse(any(
             "KB_DATABASE_TABLE_DIRECT_CLASSIFICATION" in issue
-            for issue in resolved.preflight_validation_issues
+            for issue in preflight.preflight_validation_issues
         ))
-        self.assertEqual(2, len(resolved.agent_decisions))
 
     def test_format_twelve_moves_requirement_content_to_body(self) -> None:
         """格式十一需求应把重复业务元数据等价迁入正文。"""
@@ -490,7 +447,7 @@ rel_classified_under:
         self.assertFalse(proposal.unresolved)
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
         converted = requirement.read_text(encoding="utf-8")
-        self.assertEqual(14, report.format_version)
+        self.assertEqual("0.18.2", report.format_version)
         self.assertIn("readiness: ready", converted)
         self.assertNotIn("business_rules:", converted)
         self.assertIn("## 来源与确认", converted)
@@ -506,7 +463,7 @@ rel_classified_under:
         proposal = self._proposal()
 
         self.assertEqual(1, proposal.source_version)
-        self.assertEqual(14, proposal.target_version)
+        self.assertEqual("0.18.2", proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
         self.assertIn(
             '"reference": "fixture"',
@@ -545,7 +502,7 @@ rel_classified_under:
 
         proposal = self._proposal()
 
-        self.assertEqual(14, proposal.target_version)
+        self.assertEqual("0.18.2", proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
 
         from scripts.project_kb.migration import apply_migration
@@ -579,13 +536,13 @@ rel_classified_under:
         self.assertIn("    reference: \"fixture\"", content)
         self.assertIn("    confirmation_status: \"confirmed\"", content)
         self.assertNotIn("SRC-001", content)
-        self.assertFalse((self.root / "00-项目总览/SRC-001.md").exists())
-        self.assertTrue((self.root / "05-知识治理/公共来源/SRC-001.md").exists())
-        self.assertIn("format_version: 14", manifest_content)
+        source_content = (self.root / "00-项目总览/SRC-001.md").read_text(encoding="utf-8")
+        self.assertIn("type: knowledge_item", source_content)
+        self.assertIn("format_version: 0.18.2", manifest_content)
         self.assertIn("knowledge_revision: 1", manifest_content)
         self.assertIn("created_by:", manifest_content)
         self.assertNotIn("revision:", manifest_content.replace("knowledge_revision:", ""))
-        self.assertIn("project_version: 3.4.0", manifest_content)
+        self.assertNotIn("project_version:", manifest_content)
         self.assertEqual("migrated", report.status)
 
     def test_unresolved_proposal_cannot_be_applied(self) -> None:
@@ -634,7 +591,7 @@ rel_classified_under:
         )
 
         self.assertEqual(2, proposal.source_version)
-        self.assertEqual(14, proposal.target_version)
+        self.assertEqual("0.18.2", proposal.target_version)
         self.assertEqual(2, len(proposal.moves))
         self.assertEqual(2, len(proposal.removals))
         self.assertEqual([], list(proposal.unresolved))
@@ -645,7 +602,7 @@ rel_classified_under:
         self.assertTrue((self.root / "05-知识治理/AI知识采集协议.md").is_file())
         self.assertFalse((legacy / "本地开发.md").exists())
         self.assertFalse((legacy / "测试规则.md").exists())
-        self.assertIn("format_version: 14", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 0.18.2", manifest.read_text(encoding="utf-8"))
         self.assertIn("05-知识治理/README.md", root_readme.read_text(encoding="utf-8"))
         self.assertNotIn("05-开发指南", root_readme.read_text(encoding="utf-8"))
         governance = (self.root / "05-知识治理/README.md").read_text(encoding="utf-8")
@@ -672,11 +629,11 @@ rel_classified_under:
 
         proposal = self._proposal()
         self.assertEqual([], list(proposal.unresolved))
-        self.assertEqual(14, proposal.target_version)
+        self.assertEqual("0.18.2", proposal.target_version)
         apply_migration(self.root, proposal, proposal.proposal_revision)
 
         self.assertIn("rel_satisfies: []", feature.read_text(encoding="utf-8"))
-        self.assertIn("format_version: 14", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 0.18.2", manifest.read_text(encoding="utf-8"))
 
     def test_format_six_creates_complete_specification_workspaces_atomically(self) -> None:
         """格式六升级应创建目录说明及其模板，并拒绝提案后的目标冲突。"""
@@ -700,7 +657,7 @@ rel_classified_under:
 
         proposal = self._proposal()
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
-        self.assertEqual(14, report.format_version)
+        self.assertEqual("0.18.2", report.format_version)
         self.assertTrue((self.root / "03-变更与证据/变更/README.md").is_file())
         self.assertFalse((self.root / "03-变更与证据/变更/TEMPLATE.md").exists())
         self.assertFalse((self.root / "03-变更与证据/变更/Delta/TEMPLATE.md").exists())

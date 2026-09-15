@@ -7,7 +7,7 @@ title: 知识库 README 层级导航
 status: approved
 readiness: ready
 priority: P1
-last_updated: 2026-09-02
+last_updated: 2026-09-14
 ---
 
 # REQ-ATLAS-001：知识库 README 层级导航
@@ -16,7 +16,7 @@ last_updated: 2026-09-02
 
 Context Atlas 生成的知识库需要让 Agent 稳定判断知识文件的类型、直接分类和查询边界，同时避免 README 人工维护成员清单。当前插件主要依赖文件布局和知识关系，尚未完整约束 README 的目录职责、分类关系、反向成员发现和图遍历停止规则。
 
-本需求面向 Context Atlas 项目维护者，期望在知识项持续新增、移动和归档时保持分类关系可验证、查询范围有边界，并避免因重复维护 README 成员列表产生不一致。
+本需求面向 Context Atlas 项目维护者，期望在知识项持续新增、移动和归档时保持分类关系可验证、查询范围有边界，并能从用户自然语言、稳定 ID、接口路径、表名、字段或代码符号快速定位首个候选文档，避免因重复维护 README 成员列表产生不一致。
 
 ## 范围
 
@@ -41,6 +41,7 @@ Context Atlas 生成的知识库需要让 Agent 稳定判断知识文件的类�
 
 - 根 README 是唯一没有父分类的分类节点。
 - `children` 用于发现真实目录内容。
+- `search` 用于在未知稳定 ID 或路径时返回有界、可解释的候选节点。
 - `neighbors` 用于读取直接关系和分类反向成员。
 - bounded `graph` 用于有限范围的关系分析。
 - 分类成员反向展开继续受查询深度和最大节点数限制。
@@ -82,6 +83,8 @@ Context Atlas 生成的知识库需要让 Agent 稳定判断知识文件的类�
 | BR-ATLAS-008 | 无 Front Matter 的未知 Markdown 不自动纳入，应报告为待处理项。 | 用户确认 |
 | BR-ATLAS-009 | 新增或修订普通知识项不修改 README；移动或归档时由知识项更新自己的路径与分类关系。 | 用户确认 |
 | BR-ATLAS-010 | 只有目录契约或分类节点本身变化时才修订 README；移动 README 时修复全部入向路径。 | 用户确认 |
+| BR-ATLAS-011 | 未提供稳定 ID 或路径时先执行有界 `search`；结果必须返回匹配字段、匹配词、评分、状态、摘要和路径。 | 用户确认 |
+| BR-ATLAS-012 | 默认检索当前知识，历史归档只有在用户明确请求历史时才参与；Markdown 链接不得作为分类完整性的权威。 | 用户确认 |
 
 ## 成功标准
 
@@ -93,11 +96,13 @@ Context Atlas 生成的知识库需要让 Agent 稳定判断知识文件的类�
 | SC-ATLAS-004 | 检查器能报告缺失、重复、跨级、断裂、循环及物理目录不一致的分类。 | 结构反例测试 | 用户确认 |
 | SC-ATLAS-005 | `.project-kb`、`.obsidian` 和 `Clippings` 不被误判为正式分类成员。 | 范围反例测试 | 用户确认 |
 | SC-ATLAS-006 | 重复执行检查和查询不会修改正式知识。 | 执行前后摘要对比 | 用户确认 |
+| SC-ATLAS-007 | 中文需求、稳定 ID、接口路径、表名和字段可以定位有限候选，并支持类型、状态、目录和数量过滤。 | `search` 回归测试 | 用户确认 |
+| SC-ATLAS-008 | 摘要提取跳过规则注释、表格、模板文字和无信息段落，优先使用摘要、目标、问题与价值等稳定章节。 | 摘要回归测试 | 用户确认 |
 
 ## 约束与依赖
 
 - 目录物理归属必须与 `rel_classified_under` 指向的直接分类保持一致。
-- 静态结构检查不能替代 `children`、`neighbors` 和 bounded `graph` 的运行时验证。
+- 静态结构检查不能替代 `search`、`children`、`neighbors` 和 bounded `graph` 的运行时验证。
 
 ## 假设
 
@@ -117,12 +122,13 @@ Context Atlas 生成的知识库需要让 Agent 稳定判断知识文件的类�
 | user_statement | 当前会话对 `BQ-README-NAV-001` 至 `008` 的逐项回答 | 2026-09-01T23:02:05+08:00 | confirmed | 2026-09-01T23:02:05+08:00 |
 | user_statement | Proposal `CA-REQUIREMENT-SIMPLIFICATION-20260901-R1` | 2026-09-01 | confirmed | 2026-09-01 |
 | command_output | `py -m unittest discover -s tests -p 'test_*.py'`、知识库导航冒烟与三平台构建 | 2026-09-02 | observed | — |
+| user_statement | Proposal `CA-SEARCH-NAVIGATION-CURRENT-ONLY-20260914-R5` | 2026-09-14 | confirmed | 2026-09-14 |
 
 ## 校验与运行时验证
 
 静态检查必须报告缺少 README、缺少或重复分类关系、跨级分类、路径或目标 ID 断裂、重复 `IDX-*`、分类循环以及物理目录与直接分类不一致。
 
-查询冒烟或自动化测试必须分别证明：`children` 能发现真实目录成员，`neighbors` 能通过反向索引获得分类成员，普通图查询到达 README 后按边界规则停止，显式分类查询可以在深度和节点数量限制内展开成员。静态结构检查不能替代运行时查询验证。
+查询冒烟或自动化测试必须分别证明：`search` 能从自然语言和技术标识返回有界、可解释候选，`children` 能发现真实目录成员，`neighbors` 能通过反向索引获得分类成员，普通图查询到达 README 后按边界规则停止，显式分类查询可以在深度和节点数量限制内展开成员。静态结构检查不能替代运行时查询验证。
 
 ## 非目标
 

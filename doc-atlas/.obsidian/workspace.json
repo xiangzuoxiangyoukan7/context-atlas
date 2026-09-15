@@ -11,10 +11,22 @@
             "id": "532bea24fb30cf8f",
             "type": "leaf",
             "state": {
+              "type": "image",
+              "state": {
+                "file": "Clippings/Context-Atlas系统架构图.svg"
+              },
+              "icon": "lucide-image",
+              "title": "Context-Atlas系统架构图"
+            }
+          },
+          {
+            "id": "862d621f725de815",
+            "type": "leaf",
+            "state": {
               "type": "markdown",
               "state": {
                 "file": "Clippings/Context-Atlas开发手册.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false,
                 "backlinks": true,
                 "backlinkOpts": {
@@ -31,7 +43,8 @@
               "title": "Context-Atlas开发手册"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -93,8 +106,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "959da53ba2d9ae2f",
@@ -186,8 +198,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -200,9 +211,14 @@
       "bases:新建数据库": false
     }
   },
-  "active": "532bea24fb30cf8f",
+  "active": "862d621f725de815",
   "lastOpenFiles": [
+    "03-变更与证据/验收证据/格式14模板数据资产与Obsidian颜色.md",
+    "Clippings/Context-Atlas开发协作位置图.svg",
     "Clippings/Context-Atlas开发手册.md",
+    "Clippings/Context-Atlas系统架构图.svg",
+    "Clippings/Context-Atlas知识库图状结构图.svg",
+    "Clippings/Context-Atlas知识库树状结构图.svg",
     "未命名 1.base",
     "未命名.md",
     "README.md",
@@ -229,7 +245,6 @@
     "02-技术基线/独立契约/CONTRACT-INGEST-002-批量外部来源与历史契约.md",
     "04-决策记录/ADR-007-增强摄取与知识健康治理.md",
     "00-项目总览/README.md",
-    "00-项目总览/项目概述.md",
-    "00-项目总览/术语表.md"
+    "00-项目总览/项目概述.md"
   ]
 }

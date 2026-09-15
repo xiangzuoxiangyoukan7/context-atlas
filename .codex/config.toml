@@ -18,5 +18,8 @@ enabled = true
 [projects.'d:\loong-workspace-python\context-atlas']
 trust_level = "trusted"
 
+[projects.'d:\loong-workspace-nankang\context-atlas']
+trust_level = "trusted"
+
 [windows]
 sandbox = "elevated"
