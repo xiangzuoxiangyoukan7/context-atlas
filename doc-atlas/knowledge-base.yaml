@@ -1,7 +1,7 @@
 project_id: context-atlas
 project_name: context-atlas
 knowledge_base_name: 脉络地图
-format_version: 0.19.0
+format_version: 0.19.2
 knowledge_revision: 10
 initialized_at: 2026-08-17
 created_by:
