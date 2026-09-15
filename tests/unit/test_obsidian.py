@@ -12,6 +12,7 @@ from scripts.project_kb.obsidian import (
     default_graph_settings,
     managed_color_groups,
     merge_graph_settings,
+    type_query,
 )
 
 
@@ -24,6 +25,7 @@ class ObsidianColorTests(unittest.TestCase):
         queries = [group["query"] for group in managed_color_groups()]
         self.assertEqual(len(TYPE_COLORS) + len(README_LEVEL_COLORS), len(queries))
         self.assertEqual(len(queries), len(set(queries)))
+        self.assertEqual('["type":feature]', type_query("feature"))
 
     def test_readme_colors_are_one_hue_and_lighten_by_depth(self) -> None:
         """README 从知识库根节点向下逐级变浅，并优先于通用类型颜色。"""
@@ -71,7 +73,8 @@ class ObsidianColorTests(unittest.TestCase):
         self.assertEqual("custom", merged["search"])
         queries = [group["query"] for group in merged["colorGroups"]]
         self.assertEqual(1, queries.count(README_LEVEL_COLORS[0][0]))
-        self.assertEqual(1, queries.count("[type:feature]"))
+        self.assertEqual(1, queries.count('["type":feature]'))
+        self.assertNotIn("[type:feature]", queries)
         self.assertIn("path:私有笔记", queries)
 
 

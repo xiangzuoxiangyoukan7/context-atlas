@@ -149,7 +149,7 @@ class ScriptedClaudeRunner:
                 settings.mkdir()
                 (settings / "app.json").write_text("{}\n", encoding="utf-8")
                 (settings / "graph.json").write_text(
-                    '{"search":"-path:\\"90-历史归档\\"","colorGroups":[{"query":"[type:feature]"}]}\n',
+                    '{"search":"-path:\\"90-历史归档\\"","colorGroups":[{"query":"[\\\"type\\\":feature]"}]}\n',
                     encoding="utf-8",
                 )
         ingest_results = {

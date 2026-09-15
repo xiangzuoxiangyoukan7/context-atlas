@@ -68,6 +68,10 @@ class HealthTests(unittest.TestCase):
             graph.write_text(graph_text(), encoding="utf-8")
             self.assertNotIn("KB_OBSIDIAN_COLOR_COVERAGE", {item.code for item in inspect_health(root).findings})
 
+            legacy_graph = graph_text().replace('[\\"type\\":feature]', "[type:feature]")
+            graph.write_text(legacy_graph, encoding="utf-8")
+            self.assertIn("KB_OBSIDIAN_COLOR_COVERAGE", {item.code for item in inspect_health(root).findings})
+
     def test_approved_requirement_body_source_is_not_reported_as_unverified(self) -> None:
         """格式十二需求正文已有来源表时不得误报为无来源。"""
 
