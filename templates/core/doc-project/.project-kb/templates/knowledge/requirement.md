@@ -1,5 +1,5 @@
 ---
-id: REQ-DOMAIN-001
+id: REQ-DOMAIN-{{INITIALIZED_AT_COMPACT}}-需求名称
 type: requirement
 title: 需求名称
 status: proposed
@@ -10,7 +10,7 @@ rel_classified_under:
   - "[[01-功能基线/需求/README|IDX-REQUIREMENTS]]"
 ---
 <!-- context-atlas-rules: [[rules/知识治理规则#RULE-SPEC-001|RULE-SPEC-001]] -->
-# REQ-DOMAIN-001：需求名称
+# REQ-DOMAIN-{{INITIALIZED_AT_COMPACT}}-需求名称：需求名称
 
 ## 问题与价值
 

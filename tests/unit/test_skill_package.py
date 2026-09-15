@@ -458,7 +458,7 @@ class SkillPackageTests(unittest.TestCase):
             target = root / "target"
             (source / "assets").mkdir(parents=True)
             (source / "assets/manifest.json").write_text(
-                json.dumps({"files": ["../outside.txt"]}), encoding="utf-8"
+                json.dumps({"version": 1, "title": "test", "description": "test", "inclusion_rule": "test", "exclusion_rule": "test", "ordering_rule": "test", "missing_file_policy": "reject", "files": ["../outside.txt"]}), encoding="utf-8"
             )
             with self.assertRaises(ValueError):
                 materialize_plugin_assets(source, target)
@@ -475,7 +475,7 @@ class SkillPackageTests(unittest.TestCase):
             target = root / "target"
             (source / "assets").mkdir(parents=True)
             (source / "assets/manifest.json").write_text(
-                json.dumps({"files": ["declared.txt"]}), encoding="utf-8"
+                json.dumps({"version": 1, "title": "test", "description": "test", "inclusion_rule": "test", "exclusion_rule": "test", "ordering_rule": "test", "missing_file_policy": "reject", "files": ["declared.txt"]}), encoding="utf-8"
             )
             (source / "declared.txt").write_text("declared\n", encoding="utf-8")
             (source / "not-declared.txt").write_text("extra\n", encoding="utf-8")
@@ -497,7 +497,7 @@ class SkillPackageTests(unittest.TestCase):
             target = root / "target"
             (source / "assets").mkdir(parents=True)
             (source / "assets/manifest.json").write_text(
-                json.dumps({"files": ["missing.txt"]}), encoding="utf-8"
+                json.dumps({"version": 1, "title": "test", "description": "test", "inclusion_rule": "test", "exclusion_rule": "test", "ordering_rule": "test", "missing_file_policy": "reject", "files": ["missing.txt"]}), encoding="utf-8"
             )
             with self.assertRaises(FileNotFoundError):
                 materialize_plugin_assets(source, target)

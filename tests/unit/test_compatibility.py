@@ -27,7 +27,7 @@ class CompatibilityTests(InstalledPluginTestCase):
 
         from scripts.project_kb.compatibility import CompatibilityPolicy
 
-        self._manifest("format_version: 0.18.2\n")
+        self._manifest("format_version: 0.19.0\n")
         policy = CompatibilityPolicy.load(ROOT / "compatibility.json")
 
         result = policy.diagnose(self.root)
@@ -103,7 +103,7 @@ class CompatibilityTests(InstalledPluginTestCase):
         self.assertTrue((target / ".project-kb/compatibility.json").is_file())
         manifest = (target / "knowledge-base.yaml").read_text(encoding="utf-8")
         self.assertNotIn("project_version:", manifest)
-        self.assertIn("format_version: 0.18.2", manifest)
+        self.assertIn("format_version: 0.19.0", manifest)
         self.assertIn("knowledge_revision: 1", manifest)
         self.assertNotIn("protocol_version:", manifest)
         self.assertNotIn("schema_version:", manifest)
@@ -117,7 +117,7 @@ class CompatibilityTests(InstalledPluginTestCase):
         result = CompatibilityPolicy.load(ROOT / "compatibility.json").diagnose(self.root)
 
         self.assertEqual("conversion_available", result.status)
-        self.assertEqual("0.18.2", result.created_format_version)
+        self.assertEqual("0.19.0", result.created_format_version)
 
     def test_format_fourteen_converts_to_release_semver(self) -> None:
         """最后一个整数格式应完整路由到与发布版本一致的 SemVer。"""
@@ -129,7 +129,7 @@ class CompatibilityTests(InstalledPluginTestCase):
         result = CompatibilityPolicy.load(ROOT / "compatibility.json").diagnose(self.root)
 
         self.assertEqual(14, result.format_version)
-        self.assertEqual("0.18.2", result.created_format_version)
+        self.assertEqual("0.19.0", result.created_format_version)
         self.assertEqual("conversion_available", result.status)
         self.assertTrue(result.conversion_available)
 

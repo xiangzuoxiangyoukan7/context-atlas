@@ -71,6 +71,7 @@ def materialize_core_template(
         "{{KNOWLEDGE_BASE_NAME}}": f"doc-{project_name}",
         "{{WORKSPACE_PROFILE}}": "standard",
         "{{INITIALIZED_AT}}": "2026-08-10",
+        "{{INITIALIZED_AT_COMPACT}}": "20260810",
     }
     for path in knowledge_base.rglob("*"):
         if not path.is_file():

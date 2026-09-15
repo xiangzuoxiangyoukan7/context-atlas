@@ -14,7 +14,7 @@ from typing import Iterable, Sequence
 
 EXCLUDED_PARTS = frozenset(
     {
-        ".git", ".worktrees", ".codex", ".agents", ".claude", ".qoder",
+        ".git", ".worktrees", ".venv", ".codex", ".agents", ".claude", ".qoder",
         "assets", "examples", "build", "__pycache__", ".test-probe", ".test-run", ".test-tmp",
     }
 )

@@ -63,9 +63,8 @@ class IngestContractTests(unittest.TestCase):
         path = ROOT / "schemas/ingest-report.schema.json"
         schema = json.loads(path.read_text(encoding="utf-8"))
 
-        self.assertNotIn("ingest_report", json.loads(
-            (ROOT / "schemas/catalog.json").read_text(encoding="utf-8")
-        ))
+        catalog = json.loads((ROOT / "schemas/catalog.json").read_text(encoding="utf-8"))
+        self.assertNotIn("ingest_report", catalog["entries"])
         self.assertEqual(False, schema["properties"]["writes_performed"]["const"])
         self.assertEqual(
             "not_applicable",

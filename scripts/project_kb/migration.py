@@ -413,6 +413,7 @@ def _current_format_creations(root: Path) -> tuple[MigrationCreation, ...]:
         Path("03-变更与证据/变更/README.md"),
         Path("03-变更与证据/验收证据/README.md"),
         Path("03-变更与证据/待确认知识/README.md"),
+        Path("05-知识治理/使用场景.md"),
     )
     creations: list[MigrationCreation] = []
     for relative in relatives:
@@ -1143,6 +1144,68 @@ def _format14_document(content: str) -> str:
     return content[:match.start()] + "independence_basis: [missing]\n" + content[match.start():]
 
 
+def _format16_requirement_identities(
+    root: Path,
+    records: Iterable[DocumentRecord],
+    moves: tuple[MigrationMove, ...],
+    rewrites: tuple[MigrationRewrite, ...],
+) -> tuple[tuple[MigrationMove, ...], tuple[MigrationRewrite, ...], tuple[MigrationUnresolved, ...]]:
+    """把旧需求编号确定性迁移为领域、日期和语义名称组成的可读身份。"""
+
+    replacements: dict[str, str] = {}
+    filename_replacements: dict[str, str] = {}
+    added_moves: list[MigrationMove] = []
+    unresolved: list[MigrationUnresolved] = []
+    for record in records:
+        if record.metadata.get("type") != "requirement":
+            continue
+        identifier = record.metadata.get("id")
+        if not isinstance(identifier, str) or not re.fullmatch(r"REQ-[A-Z0-9]+-[0-9]{3}", identifier):
+            continue
+        title = record.metadata.get("title")
+        last_updated = record.metadata.get("last_updated")
+        if not isinstance(title, str) or not isinstance(last_updated, str):
+            unresolved.append(MigrationUnresolved(record.path, identifier, "需求缺少标题或最后更新时间，无法构造新身份"))
+            continue
+        domain = identifier.split("-")[1]
+        semantic_name = re.sub(r"[^0-9A-Za-z\u4e00-\u9fff-]+", "", title)
+        date_text = last_updated.replace("-", "")
+        if not semantic_name or re.fullmatch(r"[0-9]{8}", date_text) is None:
+            unresolved.append(MigrationUnresolved(record.path, identifier, "需求标题或日期不能安全转换为新身份"))
+            continue
+        new_identifier = f"REQ-{domain}-{date_text}-{semantic_name}"
+        target = record.path.with_name(new_identifier + ".md")
+        if target.exists() and target.resolve() != record.path.resolve():
+            unresolved.append(MigrationUnresolved(record.path, identifier, "新需求身份目标文件已经存在"))
+            continue
+        replacements[identifier] = new_identifier
+        filename_replacements[record.path.name] = target.name
+        filename_replacements[record.path.stem] = target.stem
+        added_moves.append(MigrationMove(record.path.resolve(), target.resolve(), _digest(record.path.read_bytes())))
+
+    rewrite_map = {item.path.resolve(): item for item in rewrites}
+    for path in sorted(root.rglob("*.md")):
+        current = rewrite_map.get(path.resolve())
+        content = current.content if current is not None and current.content is not None else path.read_text(encoding="utf-8")
+        updated = content
+        for old, new in filename_replacements.items():
+            updated = updated.replace(old, new)
+        for old, new in replacements.items():
+            updated = updated.replace(old, new)
+        if updated != content:
+            rewrite_map[path.resolve()] = MigrationRewrite(path.resolve(), _digest(path.read_bytes()), updated)
+    return moves + tuple(added_moves), tuple(rewrite_map.values()), tuple(unresolved)
+
+
+def _format16_document(content: str) -> str:
+    """移除知识库对插件源码目录的外部链接，保持治理说明可独立读取。"""
+
+    return content.replace(
+        "[知识采集与确认](../../references/知识采集与确认.md)",
+        "已安装插件随附的 `references/知识采集与确认.md`",
+    )
+
+
 def build_migration_proposal(
     root: Path,
     records: Iterable[DocumentRecord],
@@ -1260,6 +1323,8 @@ def build_migration_proposal(
                 normalized = _format13_document(normalized)
             if format_generation(result.creates_format_version) >= 14:
                 normalized = _format14_document(normalized)
+            if format_generation(result.creates_format_version) >= 16:
+                normalized = _format16_document(normalized)
             if normalized == original:
                 continue
             rewrites = tuple(
@@ -1274,6 +1339,11 @@ def build_migration_proposal(
         resolved_root, record_list, rewrites
     )
     rewrites = _current_template_frontmatter_rewrites(resolved_root, rewrites)
+    if format_generation(result.creates_format_version) >= 16:
+        moves, rewrites, identity_unresolved = _format16_requirement_identities(
+            resolved_root, record_list, moves, rewrites
+        )
+        layout_unresolved += identity_unresolved
     removal_paths = {item.path.resolve() for item in removals}
     for relative in CURRENT_ONLY_RUNTIME_REMOVALS:
         stale = (resolved_root / relative).resolve()
@@ -1325,6 +1395,12 @@ def build_migration_proposal(
         )
         creations += (MigrationCreation(readme.resolve(), content, _digest(content.encode("utf-8"))),)
     assets = _current_format_assets(resolved_root)
+    asset_paths = {item.path.resolve() for item in assets}
+    # 当前运行资产以发布清单为唯一权威；旧知识库内同名 Markdown 不得在资产更新后
+    # 再作为普通文档 rewrite 覆盖新版本（例如自动生成的 Schema 字段说明）。
+    rewrites = tuple(
+        item for item in rewrites if item.path.resolve() not in asset_paths
+    )
     return MigrationProposal(
         proposal_revision=_revision(
             result.format_version,

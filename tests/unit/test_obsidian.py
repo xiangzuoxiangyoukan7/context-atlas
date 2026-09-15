@@ -22,7 +22,7 @@ class ObsidianColorTests(unittest.TestCase):
     def test_schema_catalog_types_are_all_colored(self) -> None:
         """Schema Catalog 新增正式类型时必须同步颜色映射。"""
 
-        catalog = json.loads(Path("schemas/catalog.json").read_text(encoding="utf-8"))
+        catalog = json.loads(Path("schemas/catalog.json").read_text(encoding="utf-8"))["entries"]
         governed_types = set(catalog) - {"project_manifest"}
         self.assertEqual(set(), governed_types - set(TYPE_COLORS))
 

@@ -13,6 +13,7 @@ TEMPLATE_MARKERS = frozenset(
         "{{KNOWLEDGE_BASE_NAME}}",
         "{{WORKSPACE_PROFILE}}",
         "{{INITIALIZED_AT}}",
+        "{{INITIALIZED_AT_COMPACT}}",
     }
 )
 

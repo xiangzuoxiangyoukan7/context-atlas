@@ -312,6 +312,7 @@ def initialize_from_assets(
                     "{{KNOWLEDGE_BASE_NAME}}": target.name,
                     "{{WORKSPACE_PROFILE}}": workspace_profile,
                     "{{INITIALIZED_AT}}": initialized_at or date.today().isoformat(),
+                    "{{INITIALIZED_AT_COMPACT}}": (initialized_at or date.today().isoformat()).replace("-", ""),
                 },
             )
             if proposal is not None:
