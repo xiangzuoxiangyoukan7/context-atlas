@@ -22,7 +22,7 @@
     ]
   },
   "patterns": {
-    "id": "TASK-KB-\\d{3}",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"
   },
   "non_empty_lists": [
@@ -194,12 +194,13 @@
     "do_not_use_when": [
       "普通功能实施工作"
     ],
-    "canonical_location": "90-历史归档/实施任务包/TASK-KB-<三位序号>-<名称>.md",
+    "canonical_location": "90-历史归档/实施任务包/TASK-知识治理-<名称>.md",
     "identity_contract": {
       "id_field": "id",
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 160,
       "rename_policy": "稳定身份变化必须通过受控事务迁移全部引用。",
@@ -230,7 +231,7 @@
     },
     "rules": [
       {
-        "id": "GOVERNANCE_TASK-STRUCTURE-001",
+        "id": "RULE-SCHEMA-治理任务-结构必须完整",
         "enforcement": "json_schema",
         "description": "所有必填字段、枚举和模式必须满足当前 Schema。",
         "remediation": "按字段说明修正输入。"
@@ -247,29 +248,29 @@
         "value": {
           "invalid": true
         },
-        "expected_rule": "GOVERNANCE_TASK-STRUCTURE-001",
+        "expected_rule": "RULE-SCHEMA-治理任务-结构必须完整",
         "reason": "无法形成完整且可执行的契约。"
       }
     ]
   },
   "examples": [
     {
-      "id": "example",
+      "id": "TASK-知识治理-执行规则覆盖检查",
       "type": "governance_task",
-      "title": "example",
-      "plan": "example",
+      "title": "执行规则覆盖检查",
+      "plan": "运行规则覆盖检查并保存结果",
       "status": "draft",
-      "acceptance": "example",
-      "last_updated": "example"
+      "acceptance": "AC-知识治理-规则覆盖-全部规则可追溯",
+      "last_updated": "2026-09-15"
     },
     {
-      "id": "recommended",
+      "id": "TASK-知识治理-验证语义身份迁移",
       "type": "governance_task",
-      "title": "recommended",
-      "plan": "recommended",
+      "title": "验证语义身份迁移",
+      "plan": "迁移 ID、文件名和引用后执行全量校验",
       "status": "completed",
-      "acceptance": "recommended",
-      "last_updated": "recommended"
+      "acceptance": "AC-知识治理-语义身份迁移-全量校验通过",
+      "last_updated": "2026-09-15"
     }
   ]
 }

@@ -214,7 +214,7 @@ class SkillPackageTests(unittest.TestCase):
 
         guide = (
             self.assets_root
-            / "templates/core/doc-project/05-知识治理/使用场景.md"
+            / "templates/core/doc-project/05-知识治理/GOV-知识治理-使用场景.md"
         )
 
         self.assertTrue(guide.is_file())

@@ -140,8 +140,8 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
         )
         content_file = self.root / "replacement.md"
         content_file.write_text(
-            "---\nid: OVERVIEW-PROJECT\ntype: overview_document\ntitle: 已确认更新\n"
-            "rel_classified_under:\n  - \"[[00-项目总览/README|IDX-OVERVIEW]]\"\n---\n# 已确认更新\n",
+            "---\nid: 项目概述\ntype: overview_document\ntitle: 已确认更新\n"
+            "rel_classified_under:\n  - \"[[00-项目总览/README|IDX-项目总览]]\"\n---\n# 已确认更新\n",
             encoding="utf-8",
         )
 
@@ -153,14 +153,14 @@ class AgentKnowledgeCliTests(InstalledPluginTestCase):
             "--confirmed-revision",
             "proposal-update-1",
             "--file",
-            "00-项目总览/项目概述.md",
+            "00-项目总览/OVERVIEW-项目总览-项目概述.md",
             "--content-file",
             str(content_file),
         )
 
         self.assertEqual(0, exit_code)
         self.assertEqual("updated", payload["operation"])
-        self.assertIn("# 已确认更新", (target / "00-项目总览/项目概述.md").read_text(encoding="utf-8"))
+        self.assertIn("# 已确认更新", (target / "00-项目总览/OVERVIEW-项目总览-项目概述.md").read_text(encoding="utf-8"))
         self.assertIn("knowledge_revision: 2", (target / "knowledge-base.yaml").read_text(encoding="utf-8"))
         self.assertIn("knowledge-base.yaml", payload["changed_files"])
 

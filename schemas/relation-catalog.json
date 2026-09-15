@@ -196,6 +196,7 @@
         "MODULE"
       ],
       "target_prefixes": [
+        "INTERFACE",
         "API",
         "RPC",
         "EVENT",
@@ -228,6 +229,7 @@
         "FEATURE",
         "MOD",
         "MODULE",
+        "INTERFACE",
         "API",
         "RPC",
         "EVENT",
@@ -235,6 +237,7 @@
         "TASK"
       ],
       "target_prefixes": [
+        "INTERFACE",
         "API",
         "RPC",
         "EVENT",
@@ -269,6 +272,7 @@
         "MODULE"
       ],
       "target_prefixes": [
+        "INTERFACE",
         "API",
         "RPC",
         "EVENT",
@@ -301,6 +305,7 @@
         "FEATURE",
         "MOD",
         "MODULE",
+        "INTERFACE",
         "API",
         "RPC",
         "EVENT",
@@ -340,6 +345,7 @@
         "FEATURE",
         "MOD",
         "MODULE",
+        "INTERFACE",
         "API",
         "RPC",
         "EVENT",
@@ -378,6 +384,7 @@
         "FEATURE",
         "MOD",
         "MODULE",
+        "INTERFACE",
         "API",
         "RPC",
         "EVENT",
@@ -416,6 +423,7 @@
         "F",
         "FEATURE",
         "RULE",
+        "INTERFACE",
         "API",
         "RPC",
         "EVENT",
@@ -656,6 +664,7 @@
       "filename_stem_equals_id": false,
       "semantic_name_field": "name_zh",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 96,
       "rename_policy": "关系字段重命名必须提供迁移映射并更新全部引用。",
@@ -696,14 +705,14 @@
     },
     "rules": [
       {
-        "id": "RELATION-UNIQUE-001",
+        "id": "RULE-SCHEMA-关系目录-关系字段必须唯一",
         "enforcement": "deterministic",
         "description": "每个关系 field 必须唯一。",
         "diagnostic_code": "KB_REL_DUPLICATE",
         "remediation": "删除重复项或分配不同语义字段。"
       },
       {
-        "id": "RELATION-DIRECTION-001",
+        "id": "RULE-SCHEMA-关系目录-关系方向必须使用受控事实方向",
         "enforcement": "deterministic",
         "description": "当前关系只维护 forward_only 正向事实。",
         "diagnostic_code": "KB_REL_DIRECTION",
@@ -720,7 +729,7 @@
         "value": {
           "field": "rel_reads"
         },
-        "expected_rule": "RELATION-UNIQUE-001",
+        "expected_rule": "RULE-SCHEMA-关系目录-关系字段必须唯一",
         "reason": "会产生竞争规则。"
       }
     ]

@@ -1,0 +1,73 @@
+---
+id: FEATURE-功能基线-功能-知识存储版本与追溯
+type: feature
+rel_classified_under:
+  - "[[01-功能基线/功能/README|IDX-功能基线-功能]]"
+title: 知识存储版本与追溯
+status: baselined
+phase: mvp
+priority: P0
+current_slice: included
+depends_on: [FEATURE-功能基线-功能-AI-知识采集与确认]
+acceptance: [FEATURE-功能基线-功能-知识存储版本与追溯-AC-01, FEATURE-功能基线-功能-知识存储版本与追溯-AC-02]
+last_updated: 2026-09-14
+---
+
+# FEATURE-功能基线-功能-知识存储版本与追溯：知识存储、版本与追溯
+
+## 目标
+
+使用 Markdown、受控 YAML 元数据和 Git 保存可阅读、可版本化、可追溯的项目知识，并让每一类版本或修订只有一个明确语义和权威来源。
+
+## 版本模型
+
+| 概念 | 字段 | 权威来源 | 规则 |
+| --- | --- | --- | --- |
+| Context Atlas 产品版本 | `product_version` | 当前宿主插件清单 | 使用 SemVer；不得由模板或兼容清单复制维护 |
+| 知识格式版本 | `format_version` | `knowledge-base.yaml` | 使用正整数；是唯一参与知识库兼容判断的版本 |
+| 知识库修订 | `knowledge_revision` | `knowledge-base.yaml` | 每次正式知识事务成功后单调递增，不称为发布版本 |
+| 知识项修订 | `content_revision` | 单项知识元数据 | 表示同一稳定身份的内容修订，不表达 API 或业务对象版本 |
+| 领域对象版本 | 类型专用字段或 `subject_version` | 对应知识项 | 仅在被描述对象确实具有版本语义时使用 |
+
+## 规则
+
+- 每个正式知识项具有唯一 ID、状态、内容修订、来源和更新时间。
+- 批准内容必须记录确认信息。
+- 只有 `format_version` 参与知识库可读、可写和可转换判断；其他版本不得成为升级门禁。
+- 格式 `0.18.2` 起 `format_version` 与 Context Atlas 发布版本使用同一 SemVer；新知识库与升级输出都不再包含全局 `project_version`。需要定位软件发布的版本、提交和环境记录在对应变更、技术对象或验收证据中。
+- 新知识使用 `content_revision`。旧 `version` 在一个兼容周期内继续读取；能安全映射时转换，不能确定性映射时保留为 `legacy_version`，不得猜测。
+- API、协议、文件格式等真实领域版本使用类型专用字段或 `subject_version`，不得与知识内容修订混用。
+- 新版本替代旧身份时，旧内容进入 `superseded` 或历史归档，不被静默删除。
+- 知识退役不等于直接删除：存在后继项时先建立双向替代关系；仍有审计价值时进入历史归档；只有无审计价值的内容才可在同一修订 Proposal 获得明确确认后物理删除。
+- 功能、设计、任务、验收和证据形成可检查的引用链。
+
+## 功能设计
+
+### 设计概述
+
+正式知识由 Markdown 正文、受控 YAML Front Matter、稳定 ID、内嵌来源和正向 `rel_*` 关系组成。Git 保存文件历史，`knowledge_revision` 标识成功的正式知识事务，`content_revision` 标识同一知识身份的内容修订。
+
+### 输入、输出与状态变化
+
+知识从 `proposed` 经精确确认进入 `approved`；出现竞争事实时进入 `conflicted`；被新身份替代时建立替代关系并进入 `superseded`；有审计价值的退役内容迁入历史归档。任何状态变化都必须保留来源、时间和当前权威关系。
+
+### 异常、边界与降级
+
+无法确定旧 `version` 的实际语义时保留为 `legacy_version` 并要求人工复核。归档前先迁移当前引用，事务失败时回滚，历史归档不得反向成为当前事实来源。
+
+### 技术对象与影响
+
+根清单、知识项 Schema、关系目录、更新器和 Git 共同提供追溯能力。系统只维护正向关系，由导航器计算反向关系，避免人工双向列表漂移。
+
+### 设计取舍
+
+文件内容保持人类可读，机器约束集中在 Schema 和确定性检查器；Git 历史提供物理版本记录，但不能替代知识项中的当前状态、来源和替代关系。
+
+## 验收场景
+
+- `FEATURE-功能基线-功能-知识存储版本与追溯-AC-01`：批准知识能够追溯到来源、确认信息、知识项修订和必要的领域对象版本；各版本概念语义无歧义且具有唯一权威。
+- `FEATURE-功能基线-功能-知识存储版本与追溯-AC-02`：更新不会静默覆盖历史，当前基线与历史修订能够明确区分；兼容判断只依赖 `format_version`。
+
+## 关键决策与依据
+
+- 根清单采用发布 SemVer `format_version` 与事务计数 `knowledge_revision`：前者和插件版本一致，后者不是发布版本。来源与确认：Proposal `CA-SEARCH-NAVIGATION-CURRENT-ONLY-20260914-R5`，由项目责任人于 2026-09-14 确认。

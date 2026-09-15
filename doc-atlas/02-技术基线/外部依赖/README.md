@@ -1,8 +1,8 @@
 ---
-id: IDX-DEPENDENCIES
+id: IDX-技术基线-外部依赖
 type: knowledge_index
 rel_classified_under:
-  - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
+  - "[[02-技术基线/README|IDX-技术基线]]"
 title: 外部依赖
 ---
 # 外部依赖

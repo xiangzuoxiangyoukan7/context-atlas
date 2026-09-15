@@ -1,0 +1,129 @@
+---
+id: CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造
+type: specification_change
+rel_classified_under:
+  - "[[03-变更与证据/变更/CHG-20260915-001-Schema自描述与需求身份改造/README|IDX-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造]]"
+title: Schema 自描述与需求身份改造
+status: approved
+intent: 完成全部 Schema 自描述化、规则执行化以及 0.19.0 需求身份迁移
+source_system: context_atlas
+external_reference: ""
+affected_ids: [FEATURE-功能基线-功能-完整核心模板与知识模型, FEATURE-功能基线-功能-Schema-驱动的确定性检查器]
+delta_paths: []
+acceptance: [CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造-AC-01, CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造-AC-02, CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造-AC-03, CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造-AC-04, CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造-AC-05]
+sources:
+  - type: user_statement
+    reference: 当前会话中用户确认 CA-SCHEMA-SELF-DESCRIBING-PLAN-20260915-R1
+    observed_at: 2026-09-15T00:00:00+08:00
+    confirmation_status: confirmed
+    confirmed_at: 2026-09-15T00:00:00+08:00
+last_updated: 2026-09-15
+---
+# CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造：Schema 自描述与需求身份改造
+
+## Why
+
+当前多数 Schema 主要规定字段结构，缺少知识类型的适用场景、字段取值依据、枚举判定条件、生命周期、规则执行层、正反例和兼容策略。Schema、字段说明与 Python 检查器之间还存在重复维护和隐藏规则风险。
+
+需求身份同时需要从不可读的顺序编号演进为与文件名主体一致、见名知意的 `REQ-<领域>-<YYYYMMDD>-<名称>` 格式，并通过正式升级保持引用和历史可追溯。
+
+## What Changes
+
+### 1. 自描述规范定稿
+
+- 完善 `self_describing/v1` 元模型。
+- 定义类型、字段、枚举、正文、生命周期、规则、示例、弃用和兼容要求。
+- 明确 `json_schema`、`deterministic`、`human_review` 和 `advisory` 的执行边界。
+
+### 2. Meta-Schema 完整性门禁
+
+- 校验顶层身份、用途、字段说明和示例。
+- 校验每个枚举值的使用条件及生命周期转换。
+- 校验弃用与迁移信息、反例规则引用、标准层与轻量兼容层的一致性。
+
+### 3. 需求身份规范
+
+- 新需求 ID 与文件名主体完全一致，格式为 `REQ-<领域>-<YYYYMMDD>-<名称>`。
+- 定义领域、真实日期、语义名称、长度、非法路径字符和冲突规则。
+- 明确标题变化时的 ID 迁移策略。
+- 旧编号仅作为升级输入兼容，新格式禁止继续写入。
+
+### 4. 全部知识类型 Schema 自描述化
+
+按以下批次实施：
+
+1. `requirement`、`feature`、`module`、`interface`。
+2. `data-source`、`database-table`、`data-asset`、`acceptance`。
+3. `knowledge-item`、`knowledge-index`、`managed-source`、`embedded-source`。
+4. `specification-change`、`specification-delta`、`knowledge-proposal`。
+5. `task`、`governance-task`。
+6. initialization proposal/report、ingest report、batch ingest report。
+7. `relation-catalog`。
+
+### 5. 标准 JSON Schema 执行层
+
+- 选择并固定 Draft 2020-12 的确定性实现。
+- 校验 Schema 自身、合法示例及预期失败反例。
+- 对比标准层与轻量兼容层的合法数据集合。
+
+### 6. Schema 与检查器规则覆盖
+
+- 枚举 Python 诊断代码并为规则建立稳定 ID。
+- 建立规则 ID、执行层和诊断代码映射。
+- 检测隐藏规则和声明后未实现的规则。
+
+### 7. 自动文档生成
+
+- 从 Schema 生成字段、枚举、生命周期、正例和反例说明。
+- 检查生成文档是否过期，移除手工重复维护的规则正文。
+
+### 8. `0.19.0` 升级器
+
+- 迁移需求 ID、文件名、关系、Markdown 链接和证据引用。
+- 更新 `.project-kb` 自包含资产并补齐治理导航。
+- 验证重复升级幂等、确认后漂移拒绝和失败回滚。
+
+### 9. 测试与兼容验证
+
+- 覆盖多需求迁移、同日同名、合法字符、非法字符、缺失日期和目标冲突。
+- 覆盖当前格式初始化、所有旧格式升级、黄金样例和结构快照。
+- 完成三个宿主插件构建及 Windows 非 UTF-8 环境验证。
+
+### 10. 当前知识库升级
+
+- 依次运行 `upgrade-diagnose`、`upgrade-propose`、确认、`upgrade-apply`。
+- 应用后运行结构验证、健康检查以及 `children`、`neighbors`、bounded `graph` 冒烟检查。
+
+### 11. 知识基线对账
+
+- 修订 FEATURE-功能基线-功能-完整核心模板与知识模型 的自描述 Schema 设计与验收场景。
+- 修订 FEATURE-功能基线-功能-Schema-驱动的确定性检查器 的标准 Schema、Meta-Schema 和规则覆盖设计。
+- 登记实际测试证据，保持实现验证与业务确认分离。
+
+## Non-Goals
+
+- 不通过格式升级新增、批准或改变业务事实。
+- 不把 Schema 校验通过解释为业务内容正确或已验收。
+- 不在本变更中恢复已退役的实施任务包体系。
+
+## Dependencies and Order
+
+执行顺序固定为 `1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11`。前一步未通过对应门禁时不得把后一步标记完成；源码发生变化后必须重新生成当前知识库升级 Proposal，旧升级修订失效。
+
+## Acceptance Scenarios
+
+- `CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造-AC-01`：任意现行 Schema 可独立说明类型何时使用、字段如何填写以及每个枚举值如何选择。
+- `CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造-AC-02`：所有确定性规则都有稳定规则 ID，并可追溯到实际诊断代码；不存在未登记的隐藏规则或未实现声明。
+- `CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造-AC-03`：字段说明可由 Schema 生成，生成物过期会被确定性测试发现。
+- `CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造-AC-04`：新需求 ID 与文件名主体符合 `REQ-<领域>-<YYYYMMDD>-<名称>`，旧格式升级保持引用、事实、批准状态和历史。
+- `CHG-变更与证据-变更-CHG-20260915-001-Schema自描述与需求身份改造-AC-05`：`0.18.2 → 0.19.0` 升级通过预演、应用、幂等和回滚验证；当前知识库升级后结构问题与非警告健康问题均为零，三个导航冒烟查询成功。
+
+## Current State
+
+- 已完成：自描述规范初稿、Meta-Schema 初稿、`requirement.schema.json` 样板、部分完整性门禁、需求身份迁移原型和 `0.19.0` 只读升级预演。
+- 未完成：上述 1～11 步的完整实现、全量验证、当前知识库正式升级以及 FEATURE-功能基线-功能-完整核心模板与知识模型/FEATURE-功能基线-功能-Schema-驱动的确定性检查器 基线对账。
+- 已失效升级修订：`migration-33281de46962`；后续必须基于最终源码重新生成。
+
+## Blocking Questions
+
+- 标准 Draft 2020-12 校验采用外部依赖还是项目内实现，需在第 5 步根据离线分发和维护成本确定。

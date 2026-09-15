@@ -26,6 +26,7 @@
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 96,
       "rename_policy": "语义未发生身份级变化时保持稳定 ID；身份级变化建立后继项并迁移引用。",
@@ -85,14 +86,14 @@
     },
     "rules": [
       {
-        "id": "ITEM-SOURCE-001",
+        "id": "RULE-SCHEMA-通用知识项-必须包含来源",
         "enforcement": "deterministic",
         "description": "通用知识项必须有至少一个来源。",
         "remediation": "登记内嵌来源对象。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "ITEM-FALLBACK-001",
+        "id": "RULE-SCHEMA-通用知识项-仅用于无法安全分类的知识",
         "enforcement": "human_review",
         "description": "仅在不能安全映射到具体类型时使用通用知识项。",
         "remediation": "优先选择具体类型；无法判断时保留原因和待确认项。"
@@ -110,7 +111,7 @@
           "id": "LEGACY-NOTE",
           "sources": []
         },
-        "expected_rule": "ITEM-SOURCE-001",
+        "expected_rule": "RULE-SCHEMA-通用知识项-必须包含来源",
         "reason": "无法追溯原始语义。"
       },
       {
@@ -119,7 +120,7 @@
           "id": "MOD-QUERY",
           "type": "knowledge_item"
         },
-        "expected_rule": "ITEM-FALLBACK-001",
+        "expected_rule": "RULE-SCHEMA-通用知识项-仅用于无法安全分类的知识",
         "reason": "会丢失模块专属约束。"
       }
     ]
@@ -129,9 +130,9 @@
       "title": "稳定知识编号",
       "description": "全库唯一的稳定身份；迁移时优先保留旧 ID。",
       "type": "string",
-      "pattern": "^[A-Z][A-Z0-9_-]*$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "LEGACY-DESIGN-NOTE"
+        "ITEM-技术基线-旧版设计说明"
       ]
     },
     "type": {
@@ -292,7 +293,7 @@
   ],
   "examples": [
     {
-      "id": "LEGACY-DESIGN-NOTE",
+      "id": "ITEM-技术基线-旧版设计说明",
       "type": "knowledge_item",
       "title": "旧版设计说明",
       "status": "missing",
@@ -307,7 +308,7 @@
       "last_updated": "2026-09-15"
     },
     {
-      "id": "OPS-DEPLOYMENT-CONSTRAINT",
+      "id": "ITEM-技术基线-部署约束",
       "type": "knowledge_item",
       "title": "部署约束",
       "status": "proposed",
@@ -338,7 +339,7 @@
     ]
   },
   "patterns": {
-    "id": "[A-Z][A-Z0-9_-]*",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "version": "\\d+\\.\\d+\\.\\d+",
     "content_revision": "\\d+",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"

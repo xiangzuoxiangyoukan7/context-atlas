@@ -13,9 +13,9 @@ class DataAssetSchemaTests(unittest.TestCase):
         """初始化当前测试所需的隔离环境。"""
 
         self.catalog = SchemaCatalog.load(Path("schemas"))
-        self.path = Path("DATA-001.md")
+        self.path = Path("DATA-客户信息.md")
         self.metadata = {
-            "id": "DATA-001",
+            "id": "DATA-客户信息",
             "type": "data_asset",
             "title": "客户信息",
             "status": "proposed",

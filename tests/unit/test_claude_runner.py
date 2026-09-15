@@ -140,7 +140,7 @@ class ScriptedClaudeRunner:
             )
             (schemas / "catalog.json").write_text("{}\n", encoding="utf-8")
             (target / "item.md").write_text(
-                "---\nid: REQ-TEST-001\ntype: requirement\ntitle: 测试需求\n"
+                "---\nid: REQ-TEST-20260915-测试需求\ntype: requirement\ntitle: 测试需求\n"
                 "status: proposed\nrelations: []\n---\n",
                 encoding="utf-8",
             )

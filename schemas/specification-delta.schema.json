@@ -20,12 +20,13 @@
       "没有所属 specification_change",
       "把 applied 当作业务 accepted"
     ],
-    "canonical_location": "03-变更与证据/变更/CHG-*/DELTA-*.md",
+    "canonical_location": "03-变更与证据/变更/CHG-<领域>-<YYYYMMDD>-<名称>/DELTA-规格变更-<变更名称>-<增量名称>.md",
     "identity_contract": {
       "id_field": "id",
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 128,
       "rename_policy": "标题变化不改变稳定 ID；身份级变化建立后继项并迁移引用。",
@@ -87,20 +88,20 @@
     },
     "rules": [
       {
-        "id": "DELTA-TARGET-001",
+        "id": "RULE-SCHEMA-规格增量-必须只作用于一个目标和一种操作",
         "enforcement": "human_review",
         "description": "一个 Delta 只能描述一个 target_id 的一种操作。",
         "remediation": "拆分多目标或多操作变化。"
       },
       {
-        "id": "DELTA-SOURCE-001",
+        "id": "RULE-SCHEMA-规格增量-必须包含来源",
         "enforcement": "deterministic",
         "description": "Delta 必须具有至少一个来源。",
         "remediation": "登记变更依据。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "DELTA-BASE-001",
+        "id": "RULE-SCHEMA-规格增量-应用前必须校验目标基线",
         "enforcement": "human_review",
         "description": "应用前必须核对目标基线版本和内容未漂移。",
         "remediation": "重新生成 Proposal 修订并重新确认。"
@@ -117,7 +118,7 @@
         "value": {
           "sources": []
         },
-        "expected_rule": "DELTA-SOURCE-001",
+        "expected_rule": "RULE-SCHEMA-规格增量-必须包含来源",
         "reason": "无法解释为何变化。"
       },
       {
@@ -126,7 +127,7 @@
           "status": "applied",
           "base_version": "0.1.0"
         },
-        "expected_rule": "DELTA-BASE-001",
+        "expected_rule": "RULE-SCHEMA-规格增量-应用前必须校验目标基线",
         "reason": "可能覆盖确认后的新变化。"
       }
     ]
@@ -134,11 +135,11 @@
   "properties": {
     "id": {
       "title": "Delta 稳定编号",
-      "description": "以 DELTA-CHG- 开头并在所属变更内唯一。",
+      "description": "使用 DELTA-、规格变更作用域、所属变更语义和增量名称组成身份，并与文件名主体一致。",
       "type": "string",
-      "pattern": "^DELTA-CHG-[A-Z0-9_-]+$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "DELTA-CHG-20260915-001-F04"
+        "DELTA-规格变更-Schema语义身份-修订功能F04"
       ]
     },
     "type": {
@@ -236,9 +237,9 @@
       "title": "所属变更",
       "description": "承载该 Delta 的 specification_change 稳定 ID。",
       "type": "string",
-      "pattern": "^CHG-[0-9]{8}-[0-9]{3}$",
+      "pattern": "^CHG-[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "CHG-20260915-001"
+        "CHG-知识治理-20260915-Schema语义身份"
       ]
     },
     "target_id": {
@@ -247,7 +248,7 @@
       "type": "string",
       "minLength": 1,
       "examples": [
-        "F04"
+        "FEATURE-功能基线-功能-从数据库模型生成知识模板"
       ]
     },
     "operation": {
@@ -379,12 +380,12 @@
   ],
   "examples": [
     {
-      "id": "DELTA-CHG-20260915-001-F04",
+      "id": "DELTA-规格变更-Schema语义身份-修订功能F04",
       "type": "specification_delta",
       "title": "修订 F04",
       "status": "proposed",
-      "change_id": "CHG-20260915-001",
-      "target_id": "F04",
+      "change_id": "CHG-知识治理-20260915-Schema语义身份",
+      "target_id": "FEATURE-功能基线-功能-从数据库模型生成知识模板",
       "operation": "modified",
       "base_version": "1.0.0",
       "sources": [
@@ -398,12 +399,12 @@
       "last_updated": "2026-09-15"
     },
     {
-      "id": "DELTA-CHG-20260915-001-REQ",
+      "id": "DELTA-规格变更-Schema语义身份-迁移需求命名",
       "type": "specification_delta",
       "title": "迁移需求身份",
       "status": "approved",
-      "change_id": "CHG-20260915-001",
-      "target_id": "REQ-ATLAS-001",
+      "change_id": "CHG-知识治理-20260915-Schema语义身份",
+      "target_id": "REQ-ATLAS-20260915-知识库README层级导航",
       "operation": "renamed",
       "base_version": "1.0.0",
       "sources": [
@@ -438,7 +439,7 @@
     ]
   },
   "patterns": {
-    "id": "DELTA-CHG-[A-Z0-9_-]+",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "base_version": "\\d+\\.\\d+\\.\\d+",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"
   },

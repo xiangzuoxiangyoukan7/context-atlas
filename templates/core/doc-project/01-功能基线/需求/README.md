@@ -1,9 +1,9 @@
 ---
-id: IDX-REQUIREMENTS
+id: IDX-功能基线-需求
 type: knowledge_index
 title: 需求
 rel_classified_under:
-  - "[[01-功能基线/README|IDX-FUNCTIONAL-BASELINE]]"
+  - "[[01-功能基线/README|IDX-功能基线]]"
 ---
 # 需求
 

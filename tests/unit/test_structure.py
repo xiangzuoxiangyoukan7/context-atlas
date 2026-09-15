@@ -36,17 +36,17 @@ class StructureTests(TempDirectoryTestCase):
         """格式五要求需求和功能分别进入其受控子目录。"""
 
         root = materialize_core_template(self.root, "example")
-        (root / "01-功能基线/需求/REQ-ORDER-001.md").write_text(
-            "---\nid: REQ-ORDER-001\ntype: requirement\n---\n# requirement\n", encoding="utf-8"
+        (root / "01-功能基线/需求/REQ-ORDER-20260915-创建订单.md").write_text(
+            "---\nid: REQ-ORDER-20260915-创建订单\ntype: requirement\n---\n# requirement\n", encoding="utf-8"
         )
-        (root / "01-功能基线/F-ORDER-001.md").write_text(
-            "---\nid: F-ORDER-001\ntype: feature\n---\n# legacy location\n", encoding="utf-8"
+        (root / "01-功能基线/FEATURE-功能基线-功能-创建订单.md").write_text(
+            "---\nid: FEATURE-功能基线-功能-创建订单\ntype: feature\n---\n# legacy location\n", encoding="utf-8"
         )
         records, _ = discover_records(root, frozenset({".project-kb", "90-历史归档"}))
         issues = validate_structure(root, records)
         wrong_paths = {issue.path.name for issue in issues if issue.code == "KB_TYPE_DIRECTORY"}
-        self.assertNotIn("REQ-ORDER-001.md", wrong_paths)
-        self.assertIn("F-ORDER-001.md", wrong_paths)
+        self.assertNotIn("REQ-ORDER-20260915-创建订单.md", wrong_paths)
+        self.assertIn("FEATURE-功能基线-功能-创建订单.md", wrong_paths)
 
     def test_classification_readme_must_point_to_direct_parent(self) -> None:
         """分类 README 跨级指向根节点时必须失败。"""
@@ -55,8 +55,8 @@ class StructureTests(TempDirectoryTestCase):
         readme = root / "01-功能基线/需求/README.md"
         readme.write_text(
             readme.read_text(encoding="utf-8").replace(
-                "[[01-功能基线/README|IDX-FUNCTIONAL-BASELINE]]",
-                "[[README|IDX-ROOT]]",
+                "[[01-功能基线/README|IDX-功能基线]]",
+                "[[README|IDX-知识库]]",
             ),
             encoding="utf-8",
         )
@@ -99,7 +99,7 @@ environments: [development]
 sources: []
 last_updated: 2026-08-10
 rel_classified_under:
-  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
+  - "[[02-技术基线/数据库/README|IDX-技术基线-数据库]]"
 ---
 # 订单数据源
 """,
@@ -135,7 +135,7 @@ type: data_source
 title: 订单数据源
 status: proposed
 rel_classified_under:
-  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
+  - "[[02-技术基线/数据库/README|IDX-技术基线-数据库]]"
 ---
 # 订单数据源
 """,
@@ -148,7 +148,7 @@ type: data_source
 title: 重复数据源
 status: proposed
 rel_classified_under:
-  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
+  - "[[02-技术基线/数据库/README|IDX-技术基线-数据库]]"
 ---
 # 重复数据源
 """,
@@ -182,14 +182,14 @@ rel_belongs_to:
         directory.mkdir()
         (directory / "README.md").write_text(
             "---\nid: DS-ORDER\ntype: data_source\ntitle: 订单数据源\nstatus: proposed\n"
-            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-技术基线-数据库]]\"\n"
             "---\n# 订单数据源\n",
             encoding="utf-8",
         )
         table = directory / "TABLE-ORDER.md"
         table.write_text(
             "---\nid: TABLE-ORDER\ntype: database_table\ntitle: 订单表\nstatus: proposed\n"
-            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-技术基线-数据库]]\"\n"
             "rel_belongs_to:\n  - \"[[02-技术基线/数据库/DS-ORDER/README|DS-ORDER]]\"\n"
             "---\n# 订单表\n",
             encoding="utf-8",
@@ -208,7 +208,7 @@ rel_belongs_to:
         directory.mkdir()
         (directory / "README.md").write_text(
             "---\nid: DS-ORDER\ntype: data_source\ntitle: 订单数据源\nstatus: proposed\n"
-            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-技术基线-数据库]]\"\n"
             "---\n# 订单数据源\n",
             encoding="utf-8",
         )
@@ -217,7 +217,7 @@ rel_belongs_to:
             "namespace_kind: schema\nphysical_name: public\nowner: missing\nsources: [missing]\n"
             "rel_belongs_to:\n  - \"[[02-技术基线/数据库/DS-ORDER/README|DS-ORDER]]\"\n"
             "last_updated: 2026-09-03\n"
-            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-技术基线-数据库]]\"\n"
             "---\n# public\n",
             encoding="utf-8",
         )
@@ -240,7 +240,7 @@ type: data_source
 title: 订单数据源
 status: proposed
 rel_classified_under:
-  - "[[02-技术基线/数据库/README|IDX-DATABASE]]"
+  - "[[02-技术基线/数据库/README|IDX-技术基线-数据库]]"
 ---
 # 订单数据源
 """,
@@ -260,8 +260,8 @@ rel_classified_under:
         requirements = root / "01-功能基线/需求/README.md"
         functional.write_text(
             functional.read_text(encoding="utf-8").replace(
-                "[[README|IDX-ROOT]]",
-                "[[01-功能基线/需求/README|IDX-REQUIREMENTS]]",
+                "[[README|IDX-知识库]]",
+                "[[01-功能基线/需求/README|IDX-功能基线-需求]]",
             ),
             encoding="utf-8",
         )

@@ -20,12 +20,13 @@
       "只描述单个接口契约",
       "仅记录临时目录"
     ],
-    "canonical_location": "02-技术基线/模块/MOD-<语义名称>.md",
+    "canonical_location": "02-技术基线/模块/MOD-技术基线-模块-<名称>.md",
     "identity_contract": {
       "id_field": "id",
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 96,
       "rename_policy": "职责或兼容性不变时保持 ID；身份级变化建立后继项并迁移关系。",
@@ -86,21 +87,21 @@
     },
     "rules": [
       {
-        "id": "MODULE-PATH-001",
+        "id": "RULE-SCHEMA-模块-必须登记实现路径",
         "enforcement": "deterministic",
         "description": "必须登记至少一个项目相对实现路径。",
         "remediation": "在 paths 中登记文件或目录。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "MODULE-SOURCE-001",
+        "id": "RULE-SCHEMA-模块-必须包含来源",
         "enforcement": "deterministic",
         "description": "必须具有至少一个来源。",
         "remediation": "登记受支持来源。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "MODULE-BOUNDARY-001",
+        "id": "RULE-SCHEMA-模块-正文必须说明职责边界",
         "enforcement": "human_review",
         "description": "正文必须说明负责和不负责的边界。",
         "remediation": "补充职责、非职责和依赖边界。"
@@ -115,19 +116,19 @@
       {
         "case": "没有路径",
         "value": {
-          "id": "MOD-SCHEMA",
+          "id": "MOD-技术基线-模块-Schema模块",
           "paths": []
         },
-        "expected_rule": "MODULE-PATH-001",
+        "expected_rule": "RULE-SCHEMA-模块-必须登记实现路径",
         "reason": "无法定位实现。"
       },
       {
         "case": "没有来源",
         "value": {
-          "id": "MOD-SCHEMA",
+          "id": "MOD-技术基线-模块-Schema模块",
           "sources": []
         },
-        "expected_rule": "MODULE-SOURCE-001",
+        "expected_rule": "RULE-SCHEMA-模块-必须包含来源",
         "reason": "无法判断事实来源。"
       }
     ]
@@ -137,9 +138,9 @@
       "title": "模块知识稳定编号",
       "description": "全库稳定机器身份。",
       "type": "string",
-      "pattern": "^MOD-[A-Z0-9]+(?:-[A-Z0-9]+)*$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "MOD-SCHEMA-CATALOG"
+        "MOD-技术基线-模块-Schema目录"
       ]
     },
     "type": {
@@ -314,7 +315,7 @@
   ],
   "examples": [
     {
-      "id": "MOD-SCHEMA-CATALOG",
+      "id": "MOD-技术基线-模块-Schema目录",
       "type": "module",
       "title": "Schema 目录",
       "status": "proposed",
@@ -330,7 +331,7 @@
       "last_updated": "2026-09-15"
     },
     {
-      "id": "MOD-MIGRATION",
+      "id": "MOD-技术基线-模块-迁移模块",
       "type": "module",
       "title": "迁移模块",
       "status": "approved",
@@ -361,7 +362,7 @@
     ]
   },
   "patterns": {
-    "id": "MOD-[A-Z0-9]+(?:-[A-Z0-9]+)*",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"
   },
   "non_empty_lists": [

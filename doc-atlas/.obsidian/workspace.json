@@ -23,24 +23,10 @@
             "id": "862d621f725de815",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Clippings/Context-Atlas开发手册.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "Context-Atlas开发手册"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "关系图谱"
             }
           }
         ],
@@ -184,7 +170,6 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Clippings/Context-Atlas开发手册.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -198,7 +183,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -213,38 +199,39 @@
   },
   "active": "862d621f725de815",
   "lastOpenFiles": [
+    "05-知识治理/GOV-知识治理-使用场景.md",
+    "05-知识治理/GOV-知识治理-文档元数据规范.md",
+    "05-知识治理/GOV-知识治理-AI-知识采集协议.md",
+    "05-知识治理/GOV-知识治理-AI-协作规则.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-非Claude剩余验收与渐进导航.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-需求契约与数据库结构重构.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-跨Agent执行一致性与Claude验收.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-规格驱动改造阶段验证.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-统一关系与影响分析.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-格式兼容身份与主动采集.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-格式14模板数据资产与Obsidian颜色验证.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-数据资产治理阶段验证.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-可选Obsidian初始化.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-单来源摄取与维护路由阶段验证.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-TASK-KB-012-非渐进读取工作验收.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-TASK-F05-001-阶段验证.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-REQ-ATLAS-001-README-层级导航实现验收.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-KB-AC-19-22-实现计划验收报告.md",
+    "03-变更与证据/验收证据/EVID-变更与证据-验收证据-KB-AC-11-18-新基线验收报告.md",
+    "00-项目总览/OVERVIEW-项目总览-术语表.md",
+    "03-变更与证据/验收证据/README.md",
+    "Clippings/Context-Atlas开发手册.md",
+    "01-功能基线/需求/REQ-ATLAS-001-知识库README层级导航.md",
+    "03-变更与证据/变更/CHG-20260915-001-Schema自描述与需求身份改造/变更.md",
+    "03-变更与证据/变更/CHG-20260915-001-Schema自描述与需求身份改造/README.md",
+    "03-变更与证据/变更/CHG-20260915-001-Schema自描述与需求身份改造",
     "03-变更与证据/验收证据/格式14模板数据资产与Obsidian颜色.md",
     "Clippings/Context-Atlas开发协作位置图.svg",
-    "Clippings/Context-Atlas开发手册.md",
     "Clippings/Context-Atlas系统架构图.svg",
     "Clippings/Context-Atlas知识库图状结构图.svg",
     "Clippings/Context-Atlas知识库树状结构图.svg",
     "未命名 1.base",
-    "未命名.md",
-    "README.md",
     "未命名.base",
-    "05-知识治理/文档元数据规范.md",
-    "90-历史归档/README.md",
-    "90-历史归档/实施任务包/TASK-KB-013-需求契约与数据库结构重构.md",
-    "90-历史归档/实施任务包/TASK-F01-001-Agent知识库Skill.md",
-    "Clippings/搜索.md",
-    "03-变更与证据/验收证据/外部来源文件受管保存.md",
-    "03-变更与证据/验收契约/F02-AC-07-外部来源文件受管保存.md",
-    "02-技术基线/独立契约/CONTRACT-SOURCE-001-受管来源文件契约.md",
-    "04-决策记录/ADR-009-外部来源文件受管保存.md",
-    "03-变更与证据/验收证据/可选Obsidian初始化.md",
-    "03-变更与证据/验收契约/F01-AC-03-可选Obsidian初始化.md",
-    "04-决策记录/ADR-008-可选Obsidian初始化配置.md",
-    "Clippings",
-    "02-技术基线/系统架构.md",
-    "03-变更与证据/README.md",
-    "03-变更与证据/验收证据/增强摄取与知识健康治理.md",
-    "03-变更与证据/验收契约/F05-AC-05-知识库健康检查.md",
-    "03-变更与证据/验收契约/F02-AC-06-查询候选与摄取历史.md",
-    "03-变更与证据/验收契约/F02-AC-05-批量与网页来源摄取.md",
-    "02-技术基线/独立契约/CONTRACT-INGEST-002-批量外部来源与历史契约.md",
-    "04-决策记录/ADR-007-增强摄取与知识健康治理.md",
-    "00-项目总览/README.md",
-    "00-项目总览/项目概述.md"
+    "Clippings"
   ]
 }

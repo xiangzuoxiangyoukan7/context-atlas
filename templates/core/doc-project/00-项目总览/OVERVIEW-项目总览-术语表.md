@@ -1,0 +1,14 @@
+---
+id: OVERVIEW-项目总览-术语表
+type: overview_document
+title: 术语表
+rel_classified_under:
+  - "[[00-项目总览/README|IDX-项目总览]]"
+---
+# 术语表
+
+| 术语 | 定义 | 同义词/禁用词 | 来源 | 状态 |
+| --- | --- | --- | --- | --- |
+| 示例术语 | 待责任人确认的清晰定义 | — | SRC-001 | proposed |
+
+同一术语存在冲突定义时并列保留来源，标记 `conflicted`，由责任人裁决。

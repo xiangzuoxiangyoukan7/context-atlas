@@ -20,12 +20,13 @@
       "没有任何独立治理依据",
       "只记录一次性导出文件"
     ],
-    "canonical_location": "02-技术基线/数据资产/DATA-<三位序号>-<名称>.md",
+    "canonical_location": "02-技术基线/数据资产/DATA-技术基线-数据资产-<名称>.md",
     "identity_contract": {
       "id_field": "id",
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 96,
       "rename_policy": "语义未发生身份级变化时保持稳定 ID；身份级变化建立后继项并迁移引用。",
@@ -89,21 +90,21 @@
     },
     "rules": [
       {
-        "id": "ASSET-INDEPENDENCE-001",
+        "id": "RULE-SCHEMA-数据资产-必须声明独立建模依据",
         "enforcement": "deterministic",
         "description": "至少登记一个受控独立建模依据。",
         "remediation": "在 independence_basis 中登记真实依据。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "ASSET-SOURCE-TYPE-001",
+        "id": "RULE-SCHEMA-数据资产-必须声明受控来源类型",
         "enforcement": "deterministic",
         "description": "至少登记一个受控来源类型。",
         "remediation": "在 source_types 中选择真实来源机制。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "ASSET-GOVERNANCE-001",
+        "id": "RULE-SCHEMA-数据资产-治理责任与敏感级别及保留策略必须明确",
         "enforcement": "human_review",
         "description": "owner、sensitivity 和 retention 必须足以指导治理。",
         "remediation": "补充责任方、敏感分类和保存规则。"
@@ -120,7 +121,7 @@
         "value": {
           "independence_basis": []
         },
-        "expected_rule": "ASSET-INDEPENDENCE-001",
+        "expected_rule": "RULE-SCHEMA-数据资产-必须声明独立建模依据",
         "reason": "可能只是重复建模技术对象。"
       },
       {
@@ -128,7 +129,7 @@
         "value": {
           "source_types": []
         },
-        "expected_rule": "ASSET-SOURCE-TYPE-001",
+        "expected_rule": "RULE-SCHEMA-数据资产-必须声明受控来源类型",
         "reason": "无法定位数据形成方式。"
       }
     ]
@@ -136,11 +137,11 @@
   "properties": {
     "id": {
       "title": "数据资产稳定编号",
-      "description": "使用 DATA- 加三位序号的全库稳定身份。",
+      "description": "使用 DATA- 加完整领域层级和名称的全库语义身份，并与文件名主体一致。",
       "type": "string",
-      "pattern": "^DATA-\\d{3}$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "DATA-001"
+        "DATA-技术基线-数据资产-知识图谱指标"
       ]
     },
     "type": {
@@ -568,7 +569,7 @@
   ],
   "examples": [
     {
-      "id": "DATA-001",
+      "id": "DATA-技术基线-数据资产-知识图谱指标",
       "type": "data_asset",
       "title": "知识质量指标",
       "status": "proposed",
@@ -590,7 +591,7 @@
       "last_updated": "2026-09-15"
     },
     {
-      "id": "DATA-002",
+      "id": "DATA-技术基线-数据资产-知识审计轨迹",
       "type": "data_asset",
       "title": "知识审计轨迹",
       "status": "approved",
@@ -636,7 +637,7 @@
     ]
   },
   "patterns": {
-    "id": "DATA-\\d{3}",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "version": "\\d+\\.\\d+\\.\\d+",
     "content_revision": "\\d+",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"

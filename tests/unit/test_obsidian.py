@@ -6,7 +6,13 @@ import json
 from pathlib import Path
 import unittest
 
-from scripts.project_kb.obsidian import TYPE_COLORS, managed_color_groups, merge_graph_settings
+from scripts.project_kb.obsidian import (
+    README_LEVEL_COLORS,
+    TYPE_COLORS,
+    default_graph_settings,
+    managed_color_groups,
+    merge_graph_settings,
+)
 
 
 class ObsidianColorTests(unittest.TestCase):
@@ -16,8 +22,32 @@ class ObsidianColorTests(unittest.TestCase):
         """每个正式类型只能生成一个稳定主查询。"""
 
         queries = [group["query"] for group in managed_color_groups()]
-        self.assertEqual(len(TYPE_COLORS), len(queries))
+        self.assertEqual(len(TYPE_COLORS) + len(README_LEVEL_COLORS), len(queries))
         self.assertEqual(len(queries), len(set(queries)))
+
+    def test_readme_colors_are_one_hue_and_lighten_by_depth(self) -> None:
+        """README 从知识库根节点向下逐级变浅，并优先于通用类型颜色。"""
+
+        groups = managed_color_groups()
+        self.assertEqual(
+            [query for query, _ in README_LEVEL_COLORS],
+            [group["query"] for group in groups[:len(README_LEVEL_COLORS)]],
+        )
+        colors = [rgb for _, rgb in README_LEVEL_COLORS]
+        channels = [((rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255) for rgb in colors]
+        self.assertTrue(all(left < right for left, right in zip(channels, channels[1:])))
+
+    def test_default_graph_enables_reference_switches(self) -> None:
+        """新建 Obsidian 知识库默认开启参考图谱中的显示开关。"""
+
+        settings = default_graph_settings()
+        for key in (
+            "showTags", "showAttachments", "hideUnresolved", "showOrphans",
+            "collapse-color-groups", "collapse-display", "showArrow",
+            "collapse-forces", "close",
+        ):
+            self.assertIs(settings[key], True, key)
+        self.assertEqual("", settings["search"])
 
     def test_schema_catalog_types_are_all_colored(self) -> None:
         """Schema Catalog 新增正式类型时必须同步颜色映射。"""
@@ -32,6 +62,7 @@ class ObsidianColorTests(unittest.TestCase):
         current = {
             "search": "custom",
             "colorGroups": [
+                {"query": README_LEVEL_COLORS[0][0], "color": {"rgb": 0}},
                 {"query": "[type:feature]", "color": {"rgb": 1}},
                 {"query": "path:私有笔记", "color": {"rgb": 2}},
             ],
@@ -39,6 +70,7 @@ class ObsidianColorTests(unittest.TestCase):
         merged = merge_graph_settings(current)
         self.assertEqual("custom", merged["search"])
         queries = [group["query"] for group in merged["colorGroups"]]
+        self.assertEqual(1, queries.count(README_LEVEL_COLORS[0][0]))
         self.assertEqual(1, queries.count("[type:feature]"))
         self.assertIn("path:私有笔记", queries)
 

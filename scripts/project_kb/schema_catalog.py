@@ -11,6 +11,7 @@ from typing import Mapping
 
 from .model import Issue
 from .json_schema import LocalSchemaRegistry, validate_instance
+from .semantic_identity import semantic_id_matches
 
 
 SELF_DESCRIBING_PROFILE = "self_describing/v1"
@@ -20,6 +21,18 @@ SELF_DESCRIBING_ENFORCEMENT = {
     "human_review",
     "advisory",
 }
+
+
+def _knowledge_root(path: Path) -> Path:
+    """从知识文件向上定位清单；测试夹具没有清单时使用文件所在目录。"""
+
+    current = path.resolve().parent
+    for candidate in (current, *current.parents):
+        if (candidate / "knowledge-base.yaml").is_file():
+            return candidate
+        if re.match(r"^\d+-", candidate.name):
+            return candidate.parent
+    return current
 
 
 def _non_empty_strings(value: object) -> bool:
@@ -69,7 +82,7 @@ def _validate_self_describing_schema(kind: str, schema: dict[str, object], path:
     identity = extension.get("identity_contract")
     identity_fields = (
         "id_field", "filename_stem_equals_id", "semantic_name_field",
-        "semantic_name_normalization", "date_capture_pattern", "maximum_length",
+        "semantic_name_normalization", "semantic_identity", "date_capture_pattern", "maximum_length",
         "rename_policy", "collision_policy",
     )
     if not isinstance(identity, dict) or any(field not in identity for field in identity_fields):
@@ -265,10 +278,16 @@ class SchemaCatalog:
                         datetime.strptime(match.group(1), "%Y%m%d")
                     except (ValueError, IndexError):
                         issues.append(Issue("KB_SCHEMA_ID_DATE", path, "identifier contains an invalid calendar date"))
-                if isinstance(title, str) and match is not None:
-                    semantic_name = re.sub(r"[^0-9A-Za-z\u4e00-\u9fff-]+", "", title)
-                    if not identifier.endswith("-" + semantic_name):
-                        issues.append(Issue("KB_SCHEMA_ID_TITLE", path, "identifier semantic name must match normalized title"))
+                if identity.get("semantic_identity") == "type_and_file_or_scope" and isinstance(title, str):
+                    knowledge_type = metadata.get("type")
+                    if isinstance(knowledge_type, str):
+                        root = _knowledge_root(path)
+                        last_updated = metadata.get("last_updated")
+                        if not semantic_id_matches(
+                            identifier, knowledge_type, title, path, root,
+                            last_updated=last_updated if isinstance(last_updated, str) else None,
+                        ):
+                            issues.append(Issue("KB_SCHEMA_ID_SEMANTIC", path, "identifier must express its type and file or README scope"))
         for field in schema.get("forbidden", []):
             if field in metadata:
                 issues.append(

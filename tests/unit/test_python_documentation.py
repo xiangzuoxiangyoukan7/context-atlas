@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-# context-atlas-rules: [[rules/知识治理规则#RULE-CODE-001|RULE-CODE-001]] [[rules/知识治理规则#RULE-CODE-002|RULE-CODE-002]]
+# context-atlas-rules: [[rules/知识治理规则#RULE-知识治理规则-Python-代码必须具有说明和类型标注|RULE-知识治理规则-Python-代码必须具有说明和类型标注]] [[rules/知识治理规则#RULE-知识治理规则-Python-说明必须覆盖用途-场景和关键逻辑|RULE-知识治理规则-Python-说明必须覆盖用途-场景和关键逻辑]]
 
 import tempfile
 import unittest

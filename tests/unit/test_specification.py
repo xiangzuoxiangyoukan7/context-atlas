@@ -32,7 +32,7 @@ class SpecificationValidationTests(TempDirectoryTestCase):
 
         record = self.record(
             "requirement.md",
-            "id: REQ-DEMO-001\ntype: requirement\nreadiness: ready",
+            "id: REQ-DEMO-20260915-示例需求\ntype: requirement\nreadiness: ready",
             """# 需求
 
 ## 问题与价值
@@ -77,7 +77,7 @@ class SpecificationValidationTests(TempDirectoryTestCase):
 
         record = self.record(
             "requirement.md",
-            "id: REQ-DEMO-001\ntype: requirement\nreadiness: ready",
+            "id: REQ-DEMO-20260915-示例需求\ntype: requirement\nreadiness: ready",
             "## 待澄清问题\n\n| ID | 问题 | 影响范围 | 状态 |\n| --- | --- | --- | --- |\n| BQ-DEMO-001 | 待确认 | 范围 | open |\n",
         )
 
@@ -129,7 +129,7 @@ class SpecificationValidationTests(TempDirectoryTestCase):
 
         task = self.record(
             "task.md",
-            "id: TASK-F01-001\ntype: task\nfeature: F01\nacceptance: [F01-AC-01]",
+            "id: TASK-变更与证据-任务包-实现功能F01\ntype: task\nfeature: F01\nacceptance: [F01-AC-01]",
             "# Task\n",
         )
 

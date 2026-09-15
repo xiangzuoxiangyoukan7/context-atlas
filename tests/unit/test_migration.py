@@ -127,14 +127,14 @@ class MigrationTests(TempDirectoryTestCase):
             "  - type: user_statement\n    reference: 测试迁移输入\n"
             "    observed_at: 2026-09-03T00:00:00+08:00\n"
             "    confirmation_status: observed\nlast_updated: 2026-09-03\n"
-            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-技术基线-数据库]]\"\n"
             "---\n# NKGIS\n\n旧数据源说明。\n",
             encoding="utf-8",
         )
         readme = directory / "README.md"
         readme.write_text(
-            "---\nid: IDX-DATABASE-DS-NKGIS\ntype: knowledge_index\ntitle: NKGIS 目录\n"
-            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "---\nid: IDX-技术基线-数据库-DS-NKGIS\ntype: knowledge_index\ntitle: NKGIS 目录\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-技术基线-数据库]]\"\n"
             "---\n# NKGIS 目录\n\n旧目录说明。\n",
             encoding="utf-8",
         )
@@ -314,7 +314,7 @@ class MigrationTests(TempDirectoryTestCase):
             "product: other\nproduct_version: unknown\nowner: missing\n"
             "config_reference: APP_DATABASE_URL\ndatabase: missing\nnamespace: missing\n"
             "environments: [development]\nsources: [missing]\nlast_updated: 2026-09-03\n"
-            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-技术基线-数据库]]\"\n"
             "---\n# NKGIS\n\n## 目录契约\n\n使用 `children`、`neighbors` 和 `graph` 查询。\n",
             encoding="utf-8",
         )
@@ -324,7 +324,7 @@ class MigrationTests(TempDirectoryTestCase):
             "namespace_kind: schema\nphysical_name: NKGIS\nowner: missing\nsources: [missing]\n"
             "rel_belongs_to:\n  - \"[[02-技术基线/数据库/DS-NKGIS/README|DS-NKGIS]]\"\n"
             "last_updated: 2026-09-03\n"
-            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "rel_classified_under:\n  - \"[[02-技术基线/数据库/README|IDX-技术基线-数据库]]\"\n"
             "---\n# NKGIS namespace\n",
             encoding="utf-8",
         )
@@ -335,7 +335,7 @@ class MigrationTests(TempDirectoryTestCase):
             "ddl_sources: [missing]\nrel_belongs_to:\n"
             "  - \"[[02-技术基线/数据库/DS-NKGIS/README|DS-NKGIS]]\"\n"
             "last_updated: 2026-09-03\nrel_classified_under:\n"
-            "  - \"[[02-技术基线/数据库/README|IDX-DATABASE]]\"\n"
+            "  - \"[[02-技术基线/数据库/README|IDX-技术基线-数据库]]\"\n"
             "---\n# DIC\n\n## 字段定义\n\n| 字段编号 | 字段名 | 数据类型 | 可空 | 默认值 | 中文含义 | 值域类型 | 允许值或最小值 | 最大值或格式 | 允许其他值 | 约束执行位置 | 来源 | 锚点 |\n"
             "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
             "## 主子表关系\n\n| 关系编号 | 子字段编号 | 主表与字段 | 物理约束 | 约束名称 |\n"
@@ -362,7 +362,7 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertFalse(any(
             "KB_DATABASE_TABLE_DIRECT_CLASSIFICATION" in issue
             for issue in preflight.preflight_validation_issues
-        ))
+        ), preflight.preflight_validation_issues)
 
     def test_format_twelve_moves_requirement_content_to_body(self) -> None:
         """格式十一需求应把重复业务元数据等价迁入正文。"""
@@ -388,7 +388,7 @@ sources:
     confirmed_at: 2026-09-01T00:00:00+08:00
 last_updated: 2026-09-01
 rel_classified_under:
-  - "[[01-功能基线/需求/README|IDX-REQUIREMENTS]]"
+  - "[[01-功能基线/需求/README|IDX-功能基线-需求]]"
 ---
 # 示例需求
 
@@ -436,7 +436,7 @@ rel_classified_under:
             "    confirmed_at: 2026-09-01T00:00:00+08:00\n"
             "last_updated: 2026-09-01\n"
             "rel_classified_under:\n"
-            "  - \"[[01-功能基线/需求/README|IDX-REQUIREMENTS]]\"\n"
+            "  - \"[[01-功能基线/需求/README|IDX-功能基线-需求]]\"\n"
             "---\n# 示例需求\n\n## 问题与价值\n\n解决问题。\n\n"
             "## 范围\n\n包含示例。\n",
             encoding="utf-8",
@@ -446,7 +446,7 @@ rel_classified_under:
 
         self.assertFalse(proposal.unresolved)
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
-        converted_path = next(requirement.parent.glob("REQ-DEMO-*-示例需求.md"))
+        converted_path = requirement.parent / "REQ-DEMO-20260901-示例需求.md"
         converted = converted_path.read_text(encoding="utf-8")
         self.assertEqual("0.19.0", report.format_version)
         self.assertIn("readiness: ready", converted)
@@ -530,7 +530,8 @@ rel_classified_under:
 
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
 
-        content = knowledge.read_text(encoding="utf-8")
+        migrated_knowledge = knowledge.with_name("ITEM-功能基线-示例需求.md")
+        content = migrated_knowledge.read_text(encoding="utf-8")
         manifest_content = manifest.read_text(encoding="utf-8")
         self.assertIn("sources:", content)
         self.assertIn("  - type: \"user_statement\"", content)
@@ -600,14 +601,14 @@ rel_classified_under:
         apply_migration(self.root, proposal, proposal.proposal_revision)
 
         self.assertTrue((self.root / "05-知识治理/README.md").is_file())
-        self.assertTrue((self.root / "05-知识治理/AI知识采集协议.md").is_file())
+        self.assertTrue((self.root / "05-知识治理/GOV-知识治理-AI-知识采集协议.md").is_file())
         self.assertFalse((legacy / "本地开发.md").exists())
         self.assertFalse((legacy / "测试规则.md").exists())
         self.assertIn("format_version: 0.19.0", manifest.read_text(encoding="utf-8"))
         self.assertIn("05-知识治理/README.md", root_readme.read_text(encoding="utf-8"))
         self.assertNotIn("05-开发指南", root_readme.read_text(encoding="utf-8"))
         governance = (self.root / "05-知识治理/README.md").read_text(encoding="utf-8")
-        self.assertIn("id: IDX-GOVERNANCE", governance)
+        self.assertIn("id: IDX-知识治理", governance)
         self.assertIn("## 目录契约", governance)
         self.assertIn("children", governance)
 

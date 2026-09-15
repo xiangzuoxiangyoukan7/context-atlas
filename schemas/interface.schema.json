@@ -20,12 +20,13 @@
       "只描述用户层完整行为",
       "没有稳定调用方的临时函数"
     ],
-    "canonical_location": "02-技术基线/接口/<接口ID>-<名称>.md",
+    "canonical_location": "02-技术基线/接口/INTERFACE-技术基线-接口-<名称>.md",
     "identity_contract": {
       "id_field": "id",
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 96,
       "rename_policy": "职责或兼容性不变时保持 ID；身份级变化建立后继项并迁移关系。",
@@ -88,20 +89,20 @@
     },
     "rules": [
       {
-        "id": "INTERFACE-KIND-001",
+        "id": "RULE-SCHEMA-接口-交换机制必须准确",
         "enforcement": "json_schema",
         "description": "interface_kind 必须准确表达交换机制。",
         "remediation": "根据实际边界选择已登记类别。"
       },
       {
-        "id": "INTERFACE-SOURCE-001",
+        "id": "RULE-SCHEMA-接口-必须包含可定位来源",
         "enforcement": "deterministic",
         "description": "必须具有至少一个可定位来源。",
         "remediation": "登记实现、协议或已确认陈述。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "INTERFACE-CONTRACT-001",
+        "id": "RULE-SCHEMA-接口-正文必须覆盖完整契约边界",
         "enforcement": "human_review",
         "description": "正文应覆盖输入、输出、失败、兼容和权限边界。",
         "remediation": "补齐影响调用方实现和验收的信息。"
@@ -116,19 +117,19 @@
       {
         "case": "未知类别",
         "value": {
-          "id": "API-001",
+          "id": "INTERFACE-技术基线-接口-待确认业务用途",
           "interface_kind": "socket"
         },
-        "expected_rule": "INTERFACE-KIND-001",
+        "expected_rule": "RULE-SCHEMA-接口-交换机制必须准确",
         "reason": "类别未登记。"
       },
       {
         "case": "没有来源",
         "value": {
-          "id": "API-001",
+          "id": "INTERFACE-技术基线-接口-待确认业务用途",
           "sources": []
         },
-        "expected_rule": "INTERFACE-SOURCE-001",
+        "expected_rule": "RULE-SCHEMA-接口-必须包含可定位来源",
         "reason": "无法定位契约来源。"
       }
     ]
@@ -138,9 +139,9 @@
       "title": "接口知识稳定编号",
       "description": "全库稳定机器身份。",
       "type": "string",
-      "pattern": "^(?:API|RPC|EVENT|WEBHOOK|FILE|CLI|AGENT)(?:-[A-Z0-9]+)?-[0-9]{3}$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "CLI-KB-001"
+        "INTERFACE-技术基线-接口-知识库验证命令"
       ]
     },
     "type": {
@@ -463,7 +464,7 @@
   ],
   "examples": [
     {
-      "id": "CLI-KB-001",
+      "id": "INTERFACE-技术基线-接口-知识库验证命令",
       "type": "interface",
       "title": "知识库验证命令",
       "status": "proposed",
@@ -478,7 +479,7 @@
       "last_updated": "2026-09-15"
     },
     {
-      "id": "AGENT-KB-001",
+      "id": "INTERFACE-技术基线-接口-知识库查询命令",
       "type": "interface",
       "title": "知识库查询操作",
       "status": "approved",
@@ -523,7 +524,7 @@
     ]
   },
   "patterns": {
-    "id": "(?:API|RPC|EVENT|WEBHOOK|FILE|CLI|AGENT)(?:-[A-Z0-9]+)?-[0-9]{3}",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"
   },
   "non_empty_lists": [

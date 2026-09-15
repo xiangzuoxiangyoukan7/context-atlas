@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-# context-atlas-rules: [[rules/知识治理规则#RULE-GOV-001|RULE-GOV-001]] [[rules/知识治理规则#RULE-GOV-002|RULE-GOV-002]]
+# context-atlas-rules: [[rules/知识治理规则#RULE-知识治理规则-每条正式规则只有一个中文权威来源|RULE-知识治理规则-每条正式规则只有一个中文权威来源]] [[rules/知识治理规则#RULE-知识治理规则-规则使用方主动引用并接受覆盖检查|RULE-知识治理规则-规则使用方主动引用并接受覆盖检查]]
 
 import json
 import re
@@ -26,7 +26,7 @@ EXPECTED_OPERATION_IDS = frozenset(
     }
 )
 RULE_LINK_RE = re.compile(
-    r"\[\[(?P<path>rules/[^#\]|]+)(?:\.md)?#(?P<id>RULE-[A-Z0-9-]+)\|(?P=id)\]\]"
+    r"\[\[(?P<path>rules/[^#\]|]+)(?:\.md)?#(?P<id>RULE-[0-9A-Za-z\u4e00-\u9fff-]+)\|(?P=id)\]\]"
 )
 
 

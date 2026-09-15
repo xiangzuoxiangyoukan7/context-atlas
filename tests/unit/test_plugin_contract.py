@@ -280,13 +280,13 @@ class PluginContractTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         guide_path = (
             ROOT
-            / "templates/core/doc-project/05-知识治理/使用场景.md"
+            / "templates/core/doc-project/05-知识治理/GOV-知识治理-使用场景.md"
         )
 
         self.assertTrue(guide_path.is_file(), "缺少场景化使用指南")
         self.assertFalse((ROOT / "docs/context-atlas-usage-scenarios.md").exists())
         self.assertIn(
-            "./templates/core/doc-project/05-知识治理/使用场景.md",
+            "./templates/core/doc-project/05-知识治理/GOV-知识治理-使用场景.md",
             readme,
         )
 

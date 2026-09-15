@@ -26,6 +26,7 @@
       "filename_stem_equals_id": false,
       "semantic_name_field": "reference",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 96,
       "rename_policy": "语义未发生身份级变化时保持稳定 ID；身份级变化建立后继项并迁移引用。",
@@ -65,19 +66,19 @@
     },
     "rules": [
       {
-        "id": "SOURCE-CONFIRM-001",
+        "id": "RULE-SCHEMA-内嵌来源-确认状态必须包含确认时间",
         "enforcement": "json_schema",
         "description": "confirmation_status=confirmed 时必须具有 confirmed_at。",
         "remediation": "补充真实确认时间或保持 observed。"
       },
       {
-        "id": "SOURCE-TYPE-001",
+        "id": "RULE-SCHEMA-内嵌来源-来源类型必须受控",
         "enforcement": "json_schema",
         "description": "来源类型必须使用受控枚举。",
         "remediation": "根据证据产生方式选择类型。"
       },
       {
-        "id": "SOURCE-INFERENCE-001",
+        "id": "RULE-SCHEMA-内嵌来源-AI推断必须保持可识别",
         "enforcement": "human_review",
         "description": "AI 推测必须保持可辨识且不得伪装成已观察事实。",
         "remediation": "使用 ai_inference，并让承载知识保持 proposed。"
@@ -97,7 +98,7 @@
           "observed_at": "2026-09-15T00:00:00+08:00",
           "confirmation_status": "confirmed"
         },
-        "expected_rule": "SOURCE-CONFIRM-001",
+        "expected_rule": "RULE-SCHEMA-内嵌来源-确认状态必须包含确认时间",
         "reason": "来源确认不可审计。"
       },
       {
@@ -106,7 +107,7 @@
           "type": "memory",
           "reference": "印象"
         },
-        "expected_rule": "SOURCE-TYPE-001",
+        "expected_rule": "RULE-SCHEMA-内嵌来源-来源类型必须受控",
         "reason": "无法区分事实层级。"
       }
     ]
@@ -318,6 +319,6 @@
     }
   ],
   "x-context-atlas-rules": [
-    "[[rules/知识治理规则#RULE-SRC-001|RULE-SRC-001]]"
+    "[[rules/知识治理规则#RULE-知识治理规则-正式知识和质检结果必须引用来源与目标|RULE-知识治理规则-正式知识和质检结果必须引用来源与目标]]"
   ]
 }

@@ -26,6 +26,7 @@
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 96,
       "rename_policy": "语义未发生身份级变化时保持稳定 ID；身份级变化建立后继项并迁移引用。",
@@ -89,20 +90,20 @@
     },
     "rules": [
       {
-        "id": "DATASOURCE-ENV-001",
+        "id": "RULE-SCHEMA-数据源-必须声明运行环境",
         "enforcement": "deterministic",
         "description": "必须登记至少一个环境。",
         "remediation": "在 environments 中登记受治理环境名。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "DATASOURCE-SECRET-001",
+        "id": "RULE-SCHEMA-数据源-只能引用外部密钥位置",
         "enforcement": "human_review",
         "description": "只能引用外部配置位置，不得保存真实连接秘密。",
         "remediation": "删除秘密并改用安全配置键或文档引用。"
       },
       {
-        "id": "DATASOURCE-PRODUCT-001",
+        "id": "RULE-SCHEMA-数据源-产品类型必须受控",
         "enforcement": "json_schema",
         "description": "product 必须使用受控产品枚举。",
         "remediation": "选择匹配产品；未登记产品使用 other 并在正文说明。"
@@ -117,10 +118,10 @@
       {
         "case": "没有环境",
         "value": {
-          "id": "DS-KNOWLEDGE",
+          "id": "DS-知识库-核心数据",
           "environments": []
         },
-        "expected_rule": "DATASOURCE-ENV-001",
+        "expected_rule": "RULE-SCHEMA-数据源-必须声明运行环境",
         "reason": "无法判断配置适用范围。"
       },
       {
@@ -128,7 +129,7 @@
         "value": {
           "product": "sqlite"
         },
-        "expected_rule": "DATASOURCE-PRODUCT-001",
+        "expected_rule": "RULE-SCHEMA-数据源-产品类型必须受控",
         "reason": "应使用 other 并说明实际产品。"
       }
     ]
@@ -138,7 +139,7 @@
       "title": "数据源稳定编号",
       "description": "以 DS- 开头的语义身份；同一连接与治理边界只建立一个数据源。",
       "type": "string",
-      "pattern": "^DS-[A-Z0-9-]+$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
         "DS-ATLAS-METADATA"
       ]
@@ -507,7 +508,7 @@
     ]
   },
   "patterns": {
-    "id": "DS-[A-Z0-9-]+",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"
   },
   "non_empty_lists": [

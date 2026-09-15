@@ -399,6 +399,7 @@
       "filename_stem_equals_id": false,
       "semantic_name_field": "operation",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 160,
       "rename_policy": "稳定身份变化必须通过受控事务迁移全部引用。",
@@ -429,7 +430,7 @@
     },
     "rules": [
       {
-        "id": "INITIALIZATION_REPORT-STRUCTURE-001",
+        "id": "RULE-SCHEMA-初始化报告-结构必须完整",
         "enforcement": "json_schema",
         "description": "所有必填字段、枚举和模式必须满足当前 Schema。",
         "remediation": "按字段说明修正输入。"
@@ -446,7 +447,7 @@
         "value": {
           "invalid": true
         },
-        "expected_rule": "INITIALIZATION_REPORT-STRUCTURE-001",
+        "expected_rule": "RULE-SCHEMA-初始化报告-结构必须完整",
         "reason": "无法形成完整且可执行的契约。"
       }
     ]

@@ -4,7 +4,7 @@ type: governance_task
 title: 黄金样例与 Agent 一致性测试
 plan: docs/superpowers/plans/2026-08-10-single-knowledge-base-multi-stack.md
 status: acceptance
-acceptance: [F01-AC-01, F01-AC-02, F02-AC-01, F02-AC-02, F03-AC-01, F03-AC-02, F05-AC-02]
+acceptance: [FEATURE-功能基线-功能-Agent-驱动的知识库初始化-AC-01, FEATURE-功能基线-功能-Agent-驱动的知识库初始化-AC-02, FEATURE-功能基线-功能-AI-知识采集与确认-AC-01, FEATURE-功能基线-功能-AI-知识采集与确认-AC-02, FEATURE-功能基线-功能-知识存储版本与追溯-AC-01, FEATURE-功能基线-功能-知识存储版本与追溯-AC-02, FEATURE-功能基线-功能-Schema-驱动的确定性检查器-AC-02]
 last_updated: 2026-08-19
 ---
 
@@ -16,7 +16,7 @@ last_updated: 2026-08-19
 
 ## 关联依据
 
-- 功能：F01、F02、F03、F05 的产品验收项。
+- 功能：FEATURE-功能基线-功能-Agent-驱动的知识库初始化、FEATURE-功能基线-功能-AI-知识采集与确认、FEATURE-功能基线-功能-知识存储版本与追溯、FEATURE-功能基线-功能-Schema-驱动的确定性检查器 的产品验收项。
 - 历史契约：[初始化产物契约](../旧契约/初始化产物契约.md)、[知识项与 Proposal 契约](../旧契约/知识项与Proposal契约.md)
 - Skill：[初始化 Skill](../../../skills/context-atlas-init/SKILL.md)、[更新 Skill](../../../skills/context-atlas-update/SKILL.md)
 

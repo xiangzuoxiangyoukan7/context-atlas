@@ -20,12 +20,13 @@
       "把多个无关意图捆绑在同一变更",
       "用变更状态代替执行许可或业务验收"
     ],
-    "canonical_location": "03-变更与证据/变更/CHG-<YYYYMMDD>-<三位序号>-<名称>/变更.md",
+    "canonical_location": "03-变更与证据/变更/CHG-<领域>-<YYYYMMDD>-<名称>/README.md",
     "identity_contract": {
       "id_field": "id",
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 128,
       "rename_policy": "标题变化不改变稳定 ID；身份级变化建立后继项并迁移引用。",
@@ -112,20 +113,20 @@
     },
     "rules": [
       {
-        "id": "CHANGE-INTENT-001",
+        "id": "RULE-SCHEMA-规格变更-必须只表达一个主意图",
         "enforcement": "human_review",
         "description": "一个变更必须只有一个可清楚概括的意图。",
         "remediation": "拆分无依赖的变化。"
       },
       {
-        "id": "CHANGE-SOURCE-001",
+        "id": "RULE-SCHEMA-规格变更-必须包含来源",
         "enforcement": "deterministic",
         "description": "变更必须具有至少一个来源。",
         "remediation": "登记内嵌来源。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "CHANGE-ACCEPTANCE-001",
+        "id": "RULE-SCHEMA-规格变更-接受状态必须具有版本证据与业务确认",
         "enforcement": "human_review",
         "description": "accepted 必须具有对应版本的可定位证据和业务确认。",
         "remediation": "补齐证据或保持 verifying。"
@@ -140,10 +141,10 @@
       {
         "case": "没有来源",
         "value": {
-          "id": "CHG-20260915-001",
+          "id": "CHG-知识治理-20260915-Schema语义身份",
           "sources": []
         },
-        "expected_rule": "CHANGE-SOURCE-001",
+        "expected_rule": "RULE-SCHEMA-规格变更-必须包含来源",
         "reason": "变化意图不可追溯。"
       },
       {
@@ -151,7 +152,7 @@
         "value": {
           "intent": "改身份并新增无关功能"
         },
-        "expected_rule": "CHANGE-INTENT-001",
+        "expected_rule": "RULE-SCHEMA-规格变更-必须只表达一个主意图",
         "reason": "无法原子审阅影响。"
       }
     ]
@@ -159,11 +160,11 @@
   "properties": {
     "id": {
       "title": "变更稳定编号",
-      "description": "使用创建日期和当日三位序号。",
+      "description": "使用 CHG-、领域、创建日期和语义名称组成的目录作用域身份。",
       "type": "string",
-      "pattern": "^CHG-[0-9]{8}-[0-9]{3}$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "CHG-20260915-001"
+        "CHG-知识治理-20260915-Schema语义身份"
       ]
     },
     "type": {
@@ -441,8 +442,8 @@
       },
       "examples": [
         [
-          "F04",
-          "F05"
+          "FEATURE-功能基线-功能-从数据库模型生成知识模板",
+          "FEATURE-功能基线-功能-知识校验"
         ]
       ]
     },
@@ -456,7 +457,7 @@
       },
       "examples": [
         [
-          "03-变更与证据/变更/CHG-20260915-001/DELTA-01.md"
+          "03-变更与证据/变更/CHG-知识治理-20260915-Schema语义身份/DELTA-01.md"
         ]
       ]
     },
@@ -470,7 +471,7 @@
       },
       "examples": [
         [
-          "CHG-20260915-001-AC-01"
+          "AC-规格变更-Schema语义身份-验证迁移结果"
         ]
       ]
     },
@@ -521,18 +522,18 @@
   ],
   "examples": [
     {
-      "id": "CHG-20260915-001",
+      "id": "CHG-知识治理-20260915-Schema语义身份",
       "type": "specification_change",
       "title": "Schema 自描述改造",
       "status": "approved",
       "intent": "完善 Schema 语义",
       "source_system": "context_atlas",
       "affected_ids": [
-        "F04"
+        "FEATURE-功能基线-功能-从数据库模型生成知识模板"
       ],
       "delta_paths": [],
       "acceptance": [
-        "CHG-20260915-001-AC-01"
+        "AC-规格变更-Schema语义身份-验证迁移结果"
       ],
       "sources": [
         {
@@ -546,14 +547,14 @@
       "last_updated": "2026-09-15"
     },
     {
-      "id": "CHG-20260915-002",
+      "id": "CHG-接口-20260915-兼容调整",
       "type": "specification_change",
       "title": "接口兼容调整",
       "status": "proposed",
       "intent": "增加接口版本兼容策略",
       "source_system": "issue",
       "affected_ids": [
-        "API-KB-001"
+        "INTERFACE-技术基线-接口-知识库API"
       ],
       "delta_paths": [
         "changes/delta.md"
@@ -597,7 +598,7 @@
     ]
   },
   "patterns": {
-    "id": "CHG-[0-9]{8}-[0-9]{3}",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"
   },
   "non_empty_lists": [

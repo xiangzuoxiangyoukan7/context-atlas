@@ -14,13 +14,13 @@ from tests.helpers import materialize_core_template
 
 
 OLD = """---
-id: KB-OLD
+id: ITEM-技术基线-无审计价值的旧知识
 type: knowledge_item
 title: 无审计价值的旧知识
 status: superseded
 version: 1.0.0
 last_updated: 2026-09-03
-superseded_by: KB-NEW
+superseded_by: ITEM-技术基线-新知识
 sources:
   - type: user_statement
     reference: owner deletion decision
@@ -28,13 +28,13 @@ sources:
     confirmation_status: confirmed
     confirmed_at: 2026-09-03
 rel_classified_under:
-  - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
+  - "[[02-技术基线/README|IDX-技术基线]]"
 ---
 # 旧知识
 """
 
 NEW = """---
-id: KB-NEW
+id: ITEM-技术基线-新知识
 type: knowledge_item
 title: 新知识
 status: approved
@@ -42,7 +42,7 @@ version: 2.0.0
 last_updated: 2026-09-03
 approved_by: owner
 approved_at: 2026-09-03
-supersedes: [KB-OLD]
+supersedes: [ITEM-技术基线-无审计价值的旧知识]
 sources:
   - type: user_statement
     reference: owner deletion decision
@@ -50,7 +50,7 @@ sources:
     confirmation_status: confirmed
     confirmed_at: 2026-09-03
 rel_classified_under:
-  - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
+  - "[[02-技术基线/README|IDX-技术基线]]"
 ---
 # 新知识
 """
@@ -65,26 +65,26 @@ class DeletionTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = materialize_core_template(Path(self.temporary.name), "delete")
         shutil.copytree(Path("schemas"), self.root / ".project-kb" / "schemas")
-        self.old = self.root / "02-技术基线" / "旧知识.md"
-        self.new = self.root / "02-技术基线" / "新知识.md"
+        self.old = self.root / "02-技术基线" / "ITEM-技术基线-无审计价值的旧知识.md"
+        self.new = self.root / "02-技术基线" / "ITEM-技术基线-新知识.md"
         self.old.write_text(OLD, encoding="utf-8")
         self.new.write_text(NEW, encoding="utf-8")
         self.plan = Path(self.temporary.name) / "delete-plan.json"
-        self.write_plan(NEW.replace("supersedes: [KB-OLD]\n", ""))
+        self.write_plan(NEW.replace("supersedes: [ITEM-技术基线-无审计价值的旧知识]\n", ""))
 
-    def write_plan(self, replacement: str, deletion_path: str = "02-技术基线/旧知识.md") -> None:
+    def write_plan(self, replacement: str, deletion_path: str = "02-技术基线/ITEM-技术基线-无审计价值的旧知识.md") -> None:
         """写入一份可调整删除路径与关系清理内容的候选计划。"""
         self.plan.write_text(json.dumps({
             "source_reference": "项目责任人确认无审计价值",
             "deletions": [{"path": deletion_path, "reason": "内容已完整承接且无需历史保留"}],
-            "replacements": [{"path": "02-技术基线/新知识.md", "content": replacement}],
+            "replacements": [{"path": "02-技术基线/ITEM-技术基线-新知识.md", "content": replacement}],
         }, ensure_ascii=False), encoding="utf-8")
 
     def test_propose_is_read_only_and_apply_requires_exact_confirmation(self) -> None:
         """提案保持零写入，错误确认修订不能进入正式删除。"""
         proposal = build_delete_proposal(self.root, self.plan)
         self.assertEqual("passed", proposal.preflight_status)
-        self.assertIn("KB-NEW:supersedes->KB-OLD", proposal.affected_relations)
+        self.assertIn("ITEM-技术基线-新知识:supersedes->ITEM-技术基线-无审计价值的旧知识", proposal.affected_relations)
         self.assertTrue(self.old.exists())
         with self.assertRaises(PermissionError):
             apply_delete(self.root, self.plan, proposal.proposal_revision, "wrong")
@@ -96,18 +96,18 @@ class DeletionTests(unittest.TestCase):
         report = apply_delete(self.root, self.plan, proposal.proposal_revision, proposal.proposal_revision)
         self.assertEqual("deleted", report.operation)
         self.assertFalse(self.old.exists())
-        self.assertNotIn("KB-OLD", self.new.read_text(encoding="utf-8"))
+        self.assertNotIn("ITEM-技术基线-无审计价值的旧知识", self.new.read_text(encoding="utf-8"))
 
     def test_readme_and_classification_parent_are_not_deletable(self) -> None:
         """结构 README 与存在分类子节点的知识均被确定性拒绝。"""
         self.write_plan(NEW, "02-技术基线/README.md")
         with self.assertRaises(ValueError):
             build_delete_proposal(self.root, self.plan)
-        child = self.root / "02-技术基线" / "子知识.md"
-        child.write_text(NEW.replace("supersedes: [KB-OLD]\n", "").replace("KB-NEW", "KB-CHILD").replace(
-            '[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]',
-            '[[02-技术基线/旧知识|KB-OLD]]'), encoding="utf-8")
-        self.write_plan(NEW.replace("supersedes: [KB-OLD]\n", ""))
+        child = self.root / "02-技术基线" / "ITEM-技术基线-子知识.md"
+        child.write_text(NEW.replace("supersedes: [ITEM-技术基线-无审计价值的旧知识]\n", "").replace("ITEM-技术基线-新知识", "ITEM-技术基线-子知识").replace("title: 新知识", "title: 子知识").replace(
+            '[[02-技术基线/README|IDX-技术基线]]',
+            '[[02-技术基线/ITEM-技术基线-无审计价值的旧知识|ITEM-技术基线-无审计价值的旧知识]]'), encoding="utf-8")
+        self.write_plan(NEW.replace("supersedes: [ITEM-技术基线-无审计价值的旧知识]\n", ""))
         with self.assertRaisesRegex(ValueError, "不是分类树叶子"):
             build_delete_proposal(self.root, self.plan)
 
@@ -115,7 +115,7 @@ class DeletionTests(unittest.TestCase):
         """存活文件的任一入向关系未纳入替换计划时拒绝提案。"""
         self.plan.write_text(json.dumps({
             "source_reference": "owner",
-            "deletions": [{"path": "02-技术基线/旧知识.md", "reason": "no audit value"}],
+            "deletions": [{"path": "02-技术基线/ITEM-技术基线-无审计价值的旧知识.md", "reason": "no audit value"}],
             "replacements": [],
         }), encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "未改写入向关系"):

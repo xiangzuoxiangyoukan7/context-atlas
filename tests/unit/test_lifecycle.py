@@ -27,7 +27,7 @@ class TechnologyStackModelTests(TempDirectoryTestCase):
                 from tests.helpers import materialize_core_template
 
                 root = materialize_core_template(root.parent, name)
-                technology = root / "02-技术基线" / "系统架构.md"
+                technology = root / "02-技术基线" / "ARCH-技术基线-系统架构.md"
                 content = technology.read_text(encoding="utf-8").replace(
                     "| 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | 待确认 | SRC-001 | missing |",
                     rows,
@@ -49,7 +49,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
 
     def write_data_asset(
         self,
-        identifier: str = "DATA-001",
+        identifier: str = "DATA-技术基线-数据资产-客户信息",
         **overrides: object,
     ) -> Path:
         """提供 write_data_asset 测试辅助行为。"""
@@ -270,22 +270,22 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         """验证 superseded_item_rejects_successor_without_reverse_reference 场景。"""
 
         old_path = write_record(
-            self.knowledge_base / "02-技术基线/old-one-way.md",
+            self.knowledge_base / "02-技术基线/ITEM-技术基线-Old-one-way-decision.md",
             {
-                "id": "KNOWLEDGE-OLD-ONE-WAY",
+                "id": "ITEM-技术基线-Old-one-way-decision",
                 "type": "knowledge_item",
                 "title": "Old one-way decision",
                 "status": "superseded",
                 "version": "1.0.0",
                 "sources": ["SRC-001"],
-                "superseded_by": "KNOWLEDGE-NEW-ONE-WAY",
+                "superseded_by": "ITEM-技术基线-New-one-way-decision",
                 "last_updated": "2026-08-10",
             },
         )
         write_record(
-            self.knowledge_base / "02-技术基线/new-one-way.md",
+            self.knowledge_base / "02-技术基线/ITEM-技术基线-New-one-way-decision.md",
             {
-                "id": "KNOWLEDGE-NEW-ONE-WAY",
+                "id": "ITEM-技术基线-New-one-way-decision",
                 "type": "knowledge_item",
                 "title": "New one-way decision",
                 "status": "approved",
@@ -311,12 +311,14 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         """验证 superseded_data_asset_rejects_successor_without_reverse_reference 场景。"""
 
         old_path = self.write_data_asset(
-            "DATA-001",
+            "DATA-技术基线-数据资产-旧客户信息",
             status="superseded",
-            superseded_by="DATA-002",
+            superseded_by="DATA-技术基线-数据资产-新客户信息",
+            title="旧客户信息",
         )
         self.write_data_asset(
-            "DATA-002",
+            "DATA-技术基线-数据资产-新客户信息",
+            title="新客户信息",
             approved_by="project-owner",
             approved_at="2026-08-10",
         )
@@ -363,7 +365,7 @@ class LifecycleValidationTests(TempDirectoryTestCase):
         """验证 data_asset_rejects_broken_local_contract_link 场景。"""
 
         self.write_data_asset(status="proposed")
-        path = self.knowledge_base / "02-技术基线/数据资产/DATA-001.md"
+        path = self.knowledge_base / "02-技术基线/数据资产/DATA-技术基线-数据资产-客户信息.md"
         path.write_text(
             path.read_text(encoding="utf-8") + "\n[缺失数据库契约](../数据库/DB-999.md)\n",
             encoding="utf-8",

@@ -10,13 +10,13 @@ from tests.helpers import materialize_core_template
 
 
 OLD = """---
-id: KB-OLD
+id: ITEM-技术基线-旧知识
 type: knowledge_item
 title: 旧知识
 status: superseded
 version: 1.0.0
 last_updated: 2026-08-20
-superseded_by: KB-NEW
+superseded_by: ITEM-技术基线-新知识
 sources:
   - type: user_statement
     reference: test
@@ -24,13 +24,13 @@ sources:
     confirmation_status: confirmed
     confirmed_at: 2026-08-20
 rel_classified_under:
-  - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
+  - "[[02-技术基线/README|IDX-技术基线]]"
 ---
 # 旧知识
 """
 
 NEW = """---
-id: KB-NEW
+id: ITEM-技术基线-新知识
 type: knowledge_item
 title: 新知识
 status: approved
@@ -38,7 +38,7 @@ version: 2.0.0
 last_updated: 2026-08-20
 approved_by: owner
 approved_at: 2026-08-20
-supersedes: [KB-OLD]
+supersedes: [ITEM-技术基线-旧知识]
 sources:
   - type: user_statement
     reference: test
@@ -46,7 +46,7 @@ sources:
     confirmation_status: confirmed
     confirmed_at: 2026-08-20
 rel_classified_under:
-  - "[[02-技术基线/README|IDX-TECHNICAL-BASELINE]]"
+  - "[[02-技术基线/README|IDX-技术基线]]"
 ---
 # 新知识
 """
@@ -62,8 +62,8 @@ class ArchiveTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = materialize_core_template(Path(self.temporary.name), "archive")
         shutil.copytree(Path("schemas"), self.root / ".project-kb" / "schemas")
-        self.old = self.root / "02-技术基线" / "旧知识.md"
-        self.new = self.root / "02-技术基线" / "新知识.md"
+        self.old = self.root / "02-技术基线" / "ITEM-技术基线-旧知识.md"
+        self.new = self.root / "02-技术基线" / "ITEM-技术基线-新知识.md"
         self.old.write_text(OLD, encoding="utf-8")
         self.new.write_text(NEW, encoding="utf-8")
 
@@ -71,8 +71,8 @@ class ArchiveTests(unittest.TestCase):
         """返回当前隔离知识库对应的归档提案。"""
 
         return build_archive_proposal(
-            self.root, "02-技术基线/旧知识.md", "90-历史归档/正式知识/旧知识.md",
-            "KB-NEW", "2026-08-20", "已被新知识替代", "用户确认",
+            self.root, "02-技术基线/ITEM-技术基线-旧知识.md", "90-历史归档/正式知识/ITEM-技术基线-旧知识.md",
+            "ITEM-技术基线-新知识", "2026-08-20", "已被新知识替代", "用户确认",
         )
 
     def test_proposal_is_read_only_and_confirmation_is_exact(self) -> None:
@@ -92,7 +92,7 @@ class ArchiveTests(unittest.TestCase):
         target = self.root / proposal.target_path
         self.assertFalse(self.old.exists())
         self.assertIn("status: archived", target.read_text(encoding="utf-8"))
-        self.assertIn("KB-OLD", (self.root / "90-历史归档" / "README.md").read_text(encoding="utf-8"))
+        self.assertIn("ITEM-技术基线-旧知识", (self.root / "90-历史归档" / "README.md").read_text(encoding="utf-8"))
         self.assertEqual(report.validator_exit_code, 0)
 
     def test_changed_source_rejects_stale_proposal(self) -> None:
@@ -106,7 +106,7 @@ class ArchiveTests(unittest.TestCase):
     def test_other_current_reference_blocks_proposal(self) -> None:
         """验证除后继替代关系外的当前引用会阻止归档。"""
 
-        self.new.write_text(NEW.replace("supersedes: [KB-OLD]", "supersedes: [KB-OLD]\ndepends_on: [KB-OLD]"), encoding="utf-8")
+        self.new.write_text(NEW.replace("supersedes: [ITEM-技术基线-旧知识]", "supersedes: [ITEM-技术基线-旧知识]\ndepends_on: [ITEM-技术基线-旧知识]"), encoding="utf-8")
         with self.assertRaises(ValueError):
             self.proposal()
 

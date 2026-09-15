@@ -26,6 +26,7 @@
       "filename_stem_equals_id": false,
       "semantic_name_field": "condition",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 96,
       "rename_policy": "语义未发生身份级变化时保持稳定 ID；身份级变化建立后继项并迁移引用。",
@@ -76,19 +77,19 @@
     },
     "rules": [
       {
-        "id": "AC-EVIDENCE-001",
+        "id": "RULE-SCHEMA-验收-通过结果必须关联版本与证据",
         "enforcement": "human_review",
         "description": "passed 必须关联对应版本和可定位证据。",
         "remediation": "补充证据位置，或将结果保持 not_started/partial。"
       },
       {
-        "id": "AC-RESULT-001",
+        "id": "RULE-SCHEMA-验收-结果状态必须受控",
         "enforcement": "json_schema",
         "description": "result 必须使用受控结果状态。",
         "remediation": "选择 not_started、partial、passed 或 not_applicable。"
       },
       {
-        "id": "AC-VERSION-001",
+        "id": "RULE-SCHEMA-验收-版本必须精确定位",
         "enforcement": "human_review",
         "description": "version 必须精确定位被验收实现或知识版本。",
         "remediation": "登记发布版本、提交或等价稳定版本标识。"
@@ -106,7 +107,7 @@
           "result": "passed",
           "evidence": []
         },
-        "expected_rule": "AC-EVIDENCE-001",
+        "expected_rule": "RULE-SCHEMA-验收-通过结果必须关联版本与证据",
         "reason": "无法复核验收结论。"
       },
       {
@@ -114,7 +115,7 @@
         "value": {
           "result": "failed"
         },
-        "expected_rule": "AC-RESULT-001",
+        "expected_rule": "RULE-SCHEMA-验收-结果状态必须受控",
         "reason": "失败应保留为未满足证据并按现行状态语义记录。"
       }
     ]
@@ -124,9 +125,9 @@
       "title": "验收场景编号",
       "description": "关联功能或知识库治理场景的稳定编号。",
       "type": "string",
-      "pattern": "^(?:F\\d{2}|KB)-AC-\\d{2}$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "F04-AC-01"
+        "AC-功能-知识模型生成-生成知识模板"
       ]
     },
     "owner": {
@@ -242,7 +243,7 @@
   ],
   "examples": [
     {
-      "id": "F04-AC-01",
+      "id": "AC-功能-知识模型生成-生成知识模板",
       "owner": "项目责任人",
       "condition": "生成标准知识库",
       "result": "not_started",
@@ -250,7 +251,7 @@
       "version": "0.19.0"
     },
     {
-      "id": "KB-AC-35",
+      "id": "AC-知识治理-全量结构校验-检查全部正式知识",
       "owner": "知识治理团队",
       "condition": "数据库模板和反例验证完成",
       "result": "passed",
@@ -269,6 +270,6 @@
     ]
   },
   "patterns": {
-    "id": "(?:F\\d{2}|KB)-AC-\\d{2}"
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*"
   }
 }

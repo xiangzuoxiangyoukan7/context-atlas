@@ -26,6 +26,7 @@
       "filename_stem_equals_id": true,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "^REQ-[A-Z0-9]+-([0-9]{8})-",
       "maximum_length": 120,
       "rename_policy": "标题语义名称变化时，ID、文件名和全部引用必须通过同一已确认事务迁移。",
@@ -55,20 +56,20 @@
     },
     "rules": [
       {
-        "id": "REQ-BODY-001",
+        "id": "RULE-SCHEMA-需求-正文必须包含稳定业务章节",
         "enforcement": "deterministic",
         "description": "需求正文必须包含规定的稳定章节，且不得用 Front Matter 重复保存正文业务内容。",
         "diagnostic_code": "KB_SPEC_REQUIREMENT",
         "remediation": "按需求模板补齐稳定章节，并将业务内容保存在正文。"
       },
       {
-        "id": "REQ-READINESS-001",
+        "id": "RULE-SCHEMA-需求-就绪状态必须满足下阶段条件",
         "enforcement": "human_review",
         "description": "只有范围、规则、成功标准和约束足以支持下一阶段，且不存在会改变行为或任务拆分的阻塞问题时，才能使用 ready。",
         "remediation": "解决阻塞问题，或使用 draft、clarifying、blocked 中符合事实的值。"
       },
       {
-        "id": "REQ-CLASSIFICATION-001",
+        "id": "RULE-SCHEMA-需求-必须唯一归入需求目录",
         "enforcement": "deterministic",
         "description": "需求必须通过唯一 rel_classified_under 关系归入需求目录 README。",
         "diagnostic_code": "KB_CLASSIFICATION_REQUIRED",
@@ -84,7 +85,7 @@
       {
         "case": "把批准状态等同于规格就绪",
         "value": {"status": "approved", "readiness": "ready"},
-        "expected_rule": "REQ-READINESS-001",
+        "expected_rule": "RULE-SCHEMA-需求-就绪状态必须满足下阶段条件",
         "reason": "仅凭批准状态不能证明范围、规则和阻塞问题已经完整。"
       }
     ]
@@ -154,8 +155,8 @@
       "minItems": 1,
       "maxItems": 1,
       "uniqueItems": true,
-      "items": {"type": "string", "pattern": "^\\[\\[[^|]+\\|IDX-[A-Z0-9_-]+\\]\\]$"},
-      "examples": [["[[01-功能基线/需求/README|IDX-REQUIREMENTS]]"]],
+      "items": {"type": "string", "pattern": "^\\[\\[[^|]+\\|IDX-[0-9A-Za-z\\u4e00-\\u9fff-]+\\]\\]$"},
+      "examples": [["[[01-功能基线/需求/README|IDX-功能基线-需求]]"]],
       "x-context-atlas": {"value_source": "当前文件所在需求目录的 README", "do_not_use_when": ["不要填写更高层分类或维护反向成员列表"]}
     },
     "last_updated": {
@@ -169,10 +170,10 @@
   },
   "required": ["id", "type", "title", "status", "readiness", "priority", "last_updated"],
   "examples": [
-    {"id": "REQ-DOMAIN-20260915-需求名称", "type": "requirement", "title": "需求名称", "status": "proposed", "readiness": "draft", "priority": "P1", "last_updated": "2026-09-15", "rel_classified_under": ["[[01-功能基线/需求/README|IDX-REQUIREMENTS]]"]},
-    {"id": "REQ-ATLAS-20260915-知识库README层级导航", "type": "requirement", "title": "知识库 README 层级导航", "status": "approved", "readiness": "ready", "priority": "P1", "last_updated": "2026-09-15", "rel_classified_under": ["[[01-功能基线/需求/README|IDX-REQUIREMENTS]]"]}
+    {"id": "REQ-DOMAIN-20260915-需求名称", "type": "requirement", "title": "需求名称", "status": "proposed", "readiness": "draft", "priority": "P1", "last_updated": "2026-09-15", "rel_classified_under": ["[[01-功能基线/需求/README|IDX-功能基线-需求]]"]},
+    {"id": "REQ-ATLAS-20260915-知识库README层级导航", "type": "requirement", "title": "知识库 README 层级导航", "status": "approved", "readiness": "ready", "priority": "P1", "last_updated": "2026-09-15", "rel_classified_under": ["[[01-功能基线/需求/README|IDX-功能基线-需求]]"]}
   ],
-  "context_atlas_rules": ["[[rules/知识治理规则#RULE-SPEC-001|RULE-SPEC-001]]"],
+  "context_atlas_rules": ["[[rules/知识治理规则#RULE-知识治理规则-需求正文唯一权威且就绪度独立|RULE-知识治理规则-需求正文唯一权威且就绪度独立]]"],
   "enums": {
     "type": ["requirement"],
     "status": ["missing", "proposed", "approved", "conflicted", "stale", "superseded", "archived"],

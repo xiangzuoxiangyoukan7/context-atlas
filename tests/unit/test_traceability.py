@@ -74,9 +74,9 @@ class TraceabilityTests(TempDirectoryTestCase):
         """验证 task_feature_reference_must_resolve 场景。"""
 
         write_record(
-            self.knowledge_base / "03-变更与证据/任务包/TASK-F99-001.md",
+            self.knowledge_base / "03-变更与证据/任务包/TASK-变更与证据-任务包-核对未知功能F99.md",
             {
-                "id": "TASK-F99-001",
+                "id": "TASK-变更与证据-任务包-核对未知功能F99",
                 "type": "task",
                 "title": "Unknown feature task",
                 "feature": "F99",

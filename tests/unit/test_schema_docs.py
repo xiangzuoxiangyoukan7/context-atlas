@@ -18,7 +18,7 @@ class SchemaDocsTests(unittest.TestCase):
     def test_generated_document_contains_rules_and_enum_conditions(self) -> None:
         """验证生成文档包含规则和枚举使用条件。"""
         body=render(ROOT/"schemas")
-        self.assertIn("REQ-READINESS-001",body)
+        self.assertIn("RULE-SCHEMA-需求-就绪状态必须满足下阶段条件",body)
         self.assertIn("使用条件",body)
         self.assertIn("batch-ingest-report.schema.json",body)
 

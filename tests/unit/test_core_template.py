@@ -19,7 +19,7 @@ class CoreTemplateTests(TempDirectoryTestCase):
         root = Path("templates/core/doc-project")
         readme = (root / "README.md").read_text(encoding="utf-8")
         governance = (root / "05-知识治理/README.md").read_text(encoding="utf-8")
-        guide = (root / "05-知识治理/使用场景.md").read_text(encoding="utf-8")
+        guide = (root / "05-知识治理/GOV-知识治理-使用场景.md").read_text(encoding="utf-8")
 
         for phrase in (
             "context-atlas-work",
@@ -38,8 +38,8 @@ class CoreTemplateTests(TempDirectoryTestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, guide)
         self.assertIn("## 常用场景", readme)
-        self.assertIn("./05-知识治理/使用场景.md", readme)
-        self.assertIn("./使用场景.md", governance)
+        self.assertIn("./05-知识治理/GOV-知识治理-使用场景.md", readme)
+        self.assertIn("./GOV-知识治理-使用场景.md", governance)
         self.assertNotIn("docs/context-atlas-usage-scenarios.md", readme)
 
     def test_current_change_is_a_dynamic_view_not_a_maintained_file(self) -> None:
@@ -49,7 +49,7 @@ class CoreTemplateTests(TempDirectoryTestCase):
         current_change = root / "03-变更与证据/当前变更.md"
         manifest = (root / "knowledge-base.yaml").read_text(encoding="utf-8")
         collaboration = (
-            root / "05-知识治理/AI知识采集协议.md"
+            root / "05-知识治理/GOV-知识治理-AI-知识采集协议.md"
         ).read_text(encoding="utf-8")
 
         self.assertFalse(current_change.exists())
@@ -62,7 +62,7 @@ class CoreTemplateTests(TempDirectoryTestCase):
         """生成的协作文档必须自包含，但不复制插件运行时细节。"""
 
         guide = Path(
-            "templates/core/doc-project/05-知识治理/AI知识采集协议.md"
+            "templates/core/doc-project/05-知识治理/GOV-知识治理-AI-知识采集协议.md"
         ).read_text(encoding="utf-8")
 
         for phrase in (

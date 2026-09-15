@@ -22,7 +22,7 @@
     ]
   },
   "patterns": {
-    "id": "TASK-F\\d{2}-\\d{3}",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "feature": "F\\d{2}",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"
   },
@@ -195,12 +195,13 @@
     "do_not_use_when": [
       "用任务状态替代功能验收或知识确认"
     ],
-    "canonical_location": "90-历史归档/实施任务包/TASK-F<序号>-<序号>-<名称>.md",
+    "canonical_location": "90-历史归档/实施任务包/TASK-<原领域层级>-<名称>.md",
     "identity_contract": {
       "id_field": "id",
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 160,
       "rename_policy": "稳定身份变化必须通过受控事务迁移全部引用。",
@@ -231,7 +232,7 @@
     },
     "rules": [
       {
-        "id": "TASK-STRUCTURE-001",
+        "id": "RULE-SCHEMA-任务-结构必须完整",
         "enforcement": "json_schema",
         "description": "所有必填字段、枚举和模式必须满足当前 Schema。",
         "remediation": "按字段说明修正输入。"
@@ -248,29 +249,29 @@
         "value": {
           "invalid": true
         },
-        "expected_rule": "TASK-STRUCTURE-001",
+        "expected_rule": "RULE-SCHEMA-任务-结构必须完整",
         "reason": "无法形成完整且可执行的契约。"
       }
     ]
   },
   "examples": [
     {
-      "id": "example",
+      "id": "TASK-功能基线-功能-实现知识库初始化",
       "type": "task",
-      "title": "example",
-      "feature": "example",
+      "title": "实现知识库初始化",
+      "feature": "FEATURE-功能基线-功能-知识库初始化",
       "status": "draft",
-      "acceptance": "example",
-      "last_updated": "example"
+      "acceptance": "AC-功能-知识库初始化-创建基础结构",
+      "last_updated": "2026-09-15"
     },
     {
-      "id": "recommended",
+      "id": "TASK-功能基线-功能-完成知识库校验",
       "type": "task",
-      "title": "recommended",
-      "feature": "recommended",
+      "title": "完成知识库校验",
+      "feature": "FEATURE-功能基线-功能-知识校验",
       "status": "completed",
-      "acceptance": "recommended",
-      "last_updated": "recommended"
+      "acceptance": "AC-功能-知识校验-报告全部结构问题",
+      "last_updated": "2026-09-15"
     }
   ]
 }

@@ -90,7 +90,7 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
 
         self.valid_feature(acceptance=[])
         self.metadata(
-            "03-变更与证据/任务包/TASK-F01-001.md", id="TASK-F01-001", type="task",
+            "03-变更与证据/任务包/TASK-变更与证据-任务包-实现功能F01.md", id="TASK-变更与证据-任务包-实现功能F01", type="task",
             title="Task", feature="F01", status="ready",
             acceptance=["F01-AC-01", "F01-AC-01"], last_updated="2026-08-07",
         )
@@ -131,7 +131,7 @@ class KnowledgeBaseValidationTests(unittest.TestCase):
         self.valid_current()
         self.write(
             "03-变更与证据/CURRENT.md",
-            "- 当前任务：无可执行开发任务\n- 任务包：[task](./任务包/TASK-F01-001.md)\n",
+            "- 当前任务：无可执行开发任务\n- 任务包：[task](./任务包/TASK-变更与证据-任务包-实现功能F01.md)\n",
         )
         self.assertNotIn("KB_CURRENT_STATE", self.codes(validate(self.root)))
 

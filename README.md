@@ -192,7 +192,7 @@ git diff --check
 
 - [本项目知识库](./doc-atlas/README.md)
 - [Marketplace 安装与使用](./packaging/marketplace-installation.md)
-- [场景化使用指南](./templates/core/doc-project/05-知识治理/使用场景.md)
+- [场景化使用指南](./templates/core/doc-project/05-知识治理/GOV-知识治理-使用场景.md)
 - [核心模板说明](./templates/core/README.md)
 - [Schema 总览](./schemas/README.md)
 - [Schema 字段说明](./schemas/字段说明.md)

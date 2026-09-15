@@ -93,16 +93,16 @@ class InitializationContractTests(InstalledPluginTestCase):
         self.assertEqual(3, report.execution.runtime_detection.attempts[0].python_major)
         self.assertEqual(("UNKNOWN-001",), report.unknowns)
         target = self.root / "doc-example"
-        self.assertIn("Python", (target / "02-技术基线/系统架构.md").read_text(encoding="utf-8"))
-        self.assertIn("提供可验证的知识库", (target / "00-项目总览/项目概述.md").read_text(encoding="utf-8"))
-        self.assertIn("Atlas", (target / "00-项目总览/术语表.md").read_text(encoding="utf-8"))
+        self.assertIn("Python", (target / "02-技术基线/ARCH-技术基线-系统架构.md").read_text(encoding="utf-8"))
+        self.assertIn("提供可验证的知识库", (target / "00-项目总览/OVERVIEW-项目总览-项目概述.md").read_text(encoding="utf-8"))
+        self.assertIn("Atlas", (target / "00-项目总览/OVERVIEW-项目总览-术语表.md").read_text(encoding="utf-8"))
         self.assertFalse((target / "01-功能基线/能力地图.md").exists())
-        self.assertTrue(any("初始化命令" in path.read_text(encoding="utf-8") for path in (target / "01-功能基线/功能").glob("FEATURE-001-*.md")))
-        self.assertIn("应用模块", (target / "02-技术基线/模块/MOD-001.md").read_text(encoding="utf-8"))
-        self.assertIn("POST /init", (target / "02-技术基线/接口/API-001-POST-init.md").read_text(encoding="utf-8"))
-        self.assertTrue(any("sqlite" in path.read_text(encoding="utf-8") for path in (target / "02-技术基线/数据库").glob("DB-001-*.md")))
-        self.assertTrue(any("GitHub API" in path.read_text(encoding="utf-8") for path in (target / "02-技术基线/外部依赖").glob("EXT-001-*.md")))
-        self.assertIn("py -m unittest", (target / "02-技术基线/系统架构.md").read_text(encoding="utf-8"))
+        self.assertTrue(any("初始化命令" in path.read_text(encoding="utf-8") for path in (target / "01-功能基线/功能").glob("ITEM-功能基线-功能-*.md")))
+        self.assertIn("应用模块", (target / "02-技术基线/模块/MOD-技术基线-模块-src-应用模块.md").read_text(encoding="utf-8"))
+        self.assertIn("POST /init", (target / "02-技术基线/接口/INTERFACE-技术基线-接口-POST-init.md").read_text(encoding="utf-8"))
+        self.assertTrue(any("sqlite" in path.read_text(encoding="utf-8") for path in (target / "02-技术基线/数据库").glob("ITEM-技术基线-数据库-*.md")))
+        self.assertTrue(any("GitHub API" in path.read_text(encoding="utf-8") for path in (target / "02-技术基线/外部依赖").glob("ITEM-技术基线-外部依赖-*.md")))
+        self.assertIn("py -m unittest", (target / "02-技术基线/ARCH-技术基线-系统架构.md").read_text(encoding="utf-8"))
         self.assertFalse((target / "04-决策记录").exists())
         self.assertFalse((self.assets_root / "templates/core/doc-project/04-决策记录").exists())
 
@@ -120,8 +120,8 @@ class InitializationContractTests(InstalledPluginTestCase):
         ]
         cases = (
             ["children", str(target), "--path", "."],
-            ["neighbors", str(target), "--id", "API-001"],
-            ["graph", str(target), "--start", "API-001", "--depth", "1", "--max-nodes", "20"],
+            ["neighbors", str(target), "--id", "INTERFACE-技术基线-接口-POST-init"],
+            ["graph", str(target), "--start", "INTERFACE-技术基线-接口-POST-init", "--depth", "1", "--max-nodes", "20"],
         )
 
         for arguments in cases:
@@ -163,7 +163,7 @@ class InitializationContractTests(InstalledPluginTestCase):
         self.assertEqual("initialized", payload["operation"])
         self.assertIn(
             "提供可验证的知识库",
-            (self.root / "doc-example/00-项目总览/项目概述.md").read_text(encoding="utf-8"),
+            (self.root / "doc-example/00-项目总览/OVERVIEW-项目总览-项目概述.md").read_text(encoding="utf-8"),
         )
 
     def test_revision_mismatch_has_zero_formal_writes(self) -> None:
@@ -233,8 +233,15 @@ class InitializationContractTests(InstalledPluginTestCase):
         self.assertIn("[type:feature]", queries)
         self.assertIn("[type:acceptance_evidence]", queries)
         self.assertIn("[type:governance_document]", queries)
+        self.assertIn(r"path:/^README\.md$/", queries)
+        self.assertIn(r"path:/^[^/]+\/README\.md$/", queries)
         self.assertNotIn("[type:contract OR independent_contract]", queries)
-        self.assertEqual('-path:"90-历史归档"', graph["search"])
+        self.assertEqual("", graph["search"])
+        self.assertTrue(graph["showTags"])
+        self.assertTrue(graph["showAttachments"])
+        self.assertTrue(graph["hideUnresolved"])
+        self.assertTrue(graph["collapse-color-groups"])
+        self.assertTrue(graph["close"])
         self.assertIn(".obsidian/app.json", report.written_files)
         self.assertIn("workspace_profile: obsidian", (target / "knowledge-base.yaml").read_text(encoding="utf-8"))
 

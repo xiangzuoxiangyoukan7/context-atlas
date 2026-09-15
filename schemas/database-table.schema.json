@@ -20,12 +20,13 @@
       "描述跨技术对象业务数据集合",
       "只有临时查询结果而无稳定表契约"
     ],
-    "canonical_location": "02-技术基线/数据库/DS-*/TABLE-<语义名称>.md",
+    "canonical_location": "02-技术基线/数据库/DS-<领域>-<名称>/TABLE-技术基线-数据库-DS-<领域>-<名称>-<表名称>.md",
     "identity_contract": {
       "id_field": "id",
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 96,
       "rename_policy": "语义未发生身份级变化时保持稳定 ID；身份级变化建立后继项并迁移引用。",
@@ -88,21 +89,21 @@
     },
     "rules": [
       {
-        "id": "TABLE-SOURCE-001",
+        "id": "RULE-SCHEMA-数据表-知识来源与DDL来源必须完整",
         "enforcement": "deterministic",
         "description": "sources 和 ddl_sources 均必须非空。",
         "remediation": "登记知识来源和可定位 DDL 来源。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "TABLE-BELONGS-001",
+        "id": "RULE-SCHEMA-数据表-必须唯一隶属于所在数据源",
         "enforcement": "deterministic",
         "description": "表必须通过 rel_belongs_to 归属且只指向所在数据源。",
         "remediation": "修正为所在 DS-*/README。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "TABLE-SENSITIVITY-001",
+        "id": "RULE-SCHEMA-数据表-敏感级别必须受控",
         "enforcement": "json_schema",
         "description": "敏感级别必须使用受控枚举。",
         "remediation": "按数据内容选择级别；无法判断时使用 missing。"
@@ -119,7 +120,7 @@
         "value": {
           "ddl_sources": []
         },
-        "expected_rule": "TABLE-SOURCE-001",
+        "expected_rule": "RULE-SCHEMA-数据表-知识来源与DDL来源必须完整",
         "reason": "结构无法追溯。"
       },
       {
@@ -127,7 +128,7 @@
         "value": {
           "sensitivity": "secret"
         },
-        "expected_rule": "TABLE-SENSITIVITY-001",
+        "expected_rule": "RULE-SCHEMA-数据表-敏感级别必须受控",
         "reason": "不属于受控分类。"
       }
     ]
@@ -137,9 +138,9 @@
       "title": "数据表稳定编号",
       "description": "以 TABLE- 开头的语义身份，不直接复用可变物理表名。",
       "type": "string",
-      "pattern": "^TABLE-[A-Z0-9-]+$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "TABLE-KNOWLEDGE-ITEM"
+        "TABLE-技术基线-数据库-DS-ATLAS-METADATA-知识项"
       ]
     },
     "type": {
@@ -392,7 +393,7 @@
       },
       "examples": [
         [
-          "[[02-技术基线/数据库/DS-KNOWLEDGE/README|DS-KNOWLEDGE]]"
+          "[[02-技术基线/数据库/DS-知识库-核心数据/README|DS-知识库-核心数据]]"
         ]
       ]
     },
@@ -422,7 +423,7 @@
   ],
   "examples": [
     {
-      "id": "TABLE-KNOWLEDGE-ITEM",
+      "id": "TABLE-技术基线-数据库-DS-ATLAS-METADATA-知识项",
       "type": "database_table",
       "title": "知识项表",
       "status": "proposed",
@@ -439,12 +440,12 @@
         "migrations/001.sql"
       ],
       "rel_belongs_to": [
-        "[[02-技术基线/数据库/DS-KNOWLEDGE/README|DS-KNOWLEDGE]]"
+        "[[02-技术基线/数据库/DS-知识库-核心数据/README|DS-知识库-核心数据]]"
       ],
       "last_updated": "2026-09-15"
     },
     {
-      "id": "TABLE-KNOWLEDGE-AUDIT",
+      "id": "TABLE-技术基线-数据库-DS-ATLAS-METADATA-知识审计",
       "type": "database_table",
       "title": "知识审计表",
       "status": "approved",
@@ -461,7 +462,7 @@
         "migrations/002.sql"
       ],
       "rel_belongs_to": [
-        "[[02-技术基线/数据库/DS-KNOWLEDGE/README|DS-KNOWLEDGE]]"
+        "[[02-技术基线/数据库/DS-知识库-核心数据/README|DS-知识库-核心数据]]"
       ],
       "last_updated": "2026-09-15"
     }
@@ -488,7 +489,7 @@
     ]
   },
   "patterns": {
-    "id": "TABLE-[A-Z0-9-]+",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "version": "\\d+\\.\\d+\\.\\d+",
     "content_revision": "\\d+",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"

@@ -29,9 +29,9 @@ class NavigationTests(unittest.TestCase):
         schema_root.mkdir(parents=True)
         shutil.copy2(ROOT / "schemas/relation-catalog.json", schema_root / "relation-catalog.json")
         self._write(
-            "01-功能基线/需求/REQ-ORDER-001.md",
+            "01-功能基线/需求/REQ-ORDER-20260915-创建订单.md",
             """---
-id: REQ-ORDER-001
+id: REQ-ORDER-20260915-创建订单
 type: requirement
 title: 创建订单需求
 status: approved
@@ -40,38 +40,38 @@ status: approved
 """,
         )
         self._write(
-            "01-功能基线/功能/F-ORDER-001.md",
+            "01-功能基线/功能/FEATURE-功能基线-功能-创建订单.md",
             """---
-id: F-ORDER-001
+id: FEATURE-功能基线-功能-创建订单
 type: feature
 title: 创建订单
 status: baselined
 rel_satisfies:
-  - "[[01-功能基线/需求/REQ-ORDER-001|REQ-ORDER-001]]"
+  - "[[01-功能基线/需求/REQ-ORDER-20260915-创建订单|REQ-ORDER-20260915-创建订单]]"
 rel_calls:
-  - "[[02-技术基线/接口/API-ORDER-001|API-ORDER-001]]"
+  - "[[02-技术基线/接口/INTERFACE-技术基线-接口-创建订单|INTERFACE-技术基线-接口-创建订单]]"
 ---
 # 创建订单
 """,
         )
         self._write(
-            "02-技术基线/接口/API-ORDER-001.md",
+            "02-技术基线/接口/INTERFACE-技术基线-接口-创建订单.md",
             """---
-id: API-ORDER-001
+id: INTERFACE-技术基线-接口-创建订单
 type: interface
 title: 创建订单接口
 status: approved
 rel_writes:
-  - "[[02-技术基线/数据库/DS-ORDER/TABLE-ORDER-001|TABLE-ORDER-001]]"
+  - "[[02-技术基线/数据库/DS-ORDER-CORE/TABLE-技术基线-数据库-DS-ORDER-CORE-订单表|TABLE-技术基线-数据库-DS-ORDER-CORE-订单表]]"
 ---
 # 创建订单接口
 """,
         )
-        self.table_path = "02-技术基线/数据库/DS-ORDER/TABLE-ORDER-001.md"
+        self.table_path = "02-技术基线/数据库/DS-ORDER-CORE/TABLE-技术基线-数据库-DS-ORDER-CORE-订单表.md"
         self._write(
             self.table_path,
             """---
-id: TABLE-ORDER-001
+id: TABLE-技术基线-数据库-DS-ORDER-CORE-订单表
 type: database_table
 title: 订单表
 status: approved
@@ -97,33 +97,33 @@ status: approved
 
         report = query_neighbors(self.root, path=self.table_path)
 
-        self.assertEqual("TABLE-ORDER-001", report.node.id)
+        self.assertEqual("TABLE-技术基线-数据库-DS-ORDER-CORE-订单表", report.node.id)
         self.assertEqual((), report.outgoing)
-        self.assertEqual(["API-ORDER-001"], [edge.node.id for edge in report.incoming])
+        self.assertEqual(["INTERFACE-技术基线-接口-创建订单"], [edge.node.id for edge in report.incoming])
         self.assertEqual("rel_writes", report.incoming[0].relation)
-        self.assertEqual("02-技术基线/接口/API-ORDER-001.md", report.incoming[0].node.path)
+        self.assertEqual("02-技术基线/接口/INTERFACE-技术基线-接口-创建订单.md", report.incoming[0].node.path)
 
     def test_interface_returns_table_and_calling_feature(self) -> None:
         """接口节点应同时返回正向数据表和反向功能。"""
 
-        report = query_neighbors(self.root, identifier="API-ORDER-001")
+        report = query_neighbors(self.root, identifier="INTERFACE-技术基线-接口-创建订单")
 
-        self.assertEqual(["TABLE-ORDER-001"], [edge.node.id for edge in report.outgoing])
-        self.assertEqual(["F-ORDER-001"], [edge.node.id for edge in report.incoming])
+        self.assertEqual(["TABLE-技术基线-数据库-DS-ORDER-CORE-订单表"], [edge.node.id for edge in report.outgoing])
+        self.assertEqual(["FEATURE-功能基线-功能-创建订单"], [edge.node.id for edge in report.incoming])
 
     def test_relation_and_direction_filters_remain_one_hop(self) -> None:
         """过滤条件不应隐式递归到需求。"""
 
         report = query_neighbors(
             self.root,
-            identifier="API-ORDER-001",
+            identifier="INTERFACE-技术基线-接口-创建订单",
             direction="incoming",
             relation="rel_calls",
         )
 
         self.assertEqual((), report.outgoing)
-        self.assertEqual(["F-ORDER-001"], [edge.node.id for edge in report.incoming])
-        self.assertNotIn("REQ-ORDER-001", [edge.node.id for edge in report.incoming])
+        self.assertEqual(["FEATURE-功能基线-功能-创建订单"], [edge.node.id for edge in report.incoming])
+        self.assertNotIn("REQ-ORDER-20260915-创建订单", [edge.node.id for edge in report.incoming])
 
     def test_path_without_stable_id_is_rejected(self) -> None:
         """聚合文件没有稳定编号时必须要求精确节点编号。"""
@@ -154,9 +154,9 @@ status: approved
         """数据源 README 的实体身份应由 children 暴露在目录节点上。"""
 
         self._write(
-            "02-技术基线/数据库/DS-ORDER/README.md",
+            "02-技术基线/数据库/DS-ORDER-CORE/README.md",
             """---
-id: DS-ORDER
+id: DS-ORDER-CORE
 type: data_source
 title: 订单数据源
 status: proposed
@@ -168,9 +168,9 @@ status: proposed
         )
 
         report = query_children(self.root, path="02-技术基线/数据库")
-        node = next(item for item in report.children if item.path.endswith("DS-ORDER"))
+        node = next(item for item in report.children if item.path.endswith("DS-ORDER-CORE"))
 
-        self.assertEqual("DS-ORDER", node.id)
+        self.assertEqual("DS-ORDER-CORE", node.id)
         self.assertEqual("data_source", node.type)
         self.assertEqual("proposed", node.status)
 
@@ -195,16 +195,16 @@ status: proposed
 
         self.assertEqual(1, len(report.children))
         node = report.children[0]
-        self.assertEqual("API-ORDER-001", node.id)
+        self.assertEqual("INTERFACE-技术基线-接口-创建订单", node.id)
         self.assertEqual("interface", node.type)
         self.assertEqual("approved", node.status)
 
     def test_search_ranks_exact_id_and_explains_match(self) -> None:
         """精确稳定编号应优先返回并说明匹配字段。"""
 
-        report = query_search(self.root, query="API-ORDER-001")
+        report = query_search(self.root, query="INTERFACE-技术基线-接口-创建订单")
 
-        self.assertEqual("API-ORDER-001", report.results[0].id)
+        self.assertEqual("INTERFACE-技术基线-接口-创建订单", report.results[0].id)
         self.assertIn("id", report.results[0].matched_fields)
 
     def test_search_finds_chinese_title_and_filters_type(self) -> None:
@@ -212,16 +212,16 @@ status: proposed
 
         report = query_search(self.root, query="创建订单", node_types=("feature",))
 
-        self.assertEqual(["F-ORDER-001"], [item.id for item in report.results])
+        self.assertEqual(["FEATURE-功能基线-功能-创建订单"], [item.id for item in report.results])
         self.assertIn("title", report.results[0].matched_fields)
 
     def test_summary_prefers_goal_and_skips_rule_comment(self) -> None:
         """摘要应跳过规则注释并优先读取稳定目标章节。"""
 
         self._write(
-            "01-功能基线/功能/F-SUMMARY-001.md",
+            "01-功能基线/功能/FEATURE-功能基线-功能-摘要示例.md",
             """---
-id: F-SUMMARY-001
+id: FEATURE-功能基线-功能-摘要示例
 type: feature
 title: 摘要示例
 status: proposed
@@ -243,27 +243,27 @@ status: proposed
         """检索必须报告截断，历史正文默认不参与匹配。"""
 
         self._write(
-            "90-历史归档/F-OLD-001.md",
-            "---\nid: F-OLD-001\ntype: feature\ntitle: 创建订单旧版\nstatus: archived\n---\n# 创建订单旧版\n",
+            "90-历史归档/FEATURE-功能基线-功能-创建订单旧版.md",
+            "---\nid: FEATURE-功能基线-功能-创建订单旧版\ntype: feature\ntitle: 创建订单旧版\nstatus: archived\n---\n# 创建订单旧版\n",
         )
         report = query_search(self.root, query="订单", limit=1)
         archived = query_search(self.root, query="旧版", include_archive=True)
 
         self.assertTrue(report.truncated)
-        self.assertNotIn("F-OLD-001", [item.id for item in report.results])
-        self.assertEqual(["F-OLD-001"], [item.id for item in archived.results])
+        self.assertNotIn("FEATURE-功能基线-功能-创建订单旧版", [item.id for item in report.results])
+        self.assertEqual(["FEATURE-功能基线-功能-创建订单旧版"], [item.id for item in archived.results])
 
     def test_graph_expands_both_directions_to_requested_depth(self) -> None:
         """多跳子图应从起点沿正反向关系展开，但不超过指定深度。"""
 
-        report = query_graph(self.root, start="API-ORDER-001", depth=1)
+        report = query_graph(self.root, start="INTERFACE-技术基线-接口-创建订单", depth=1)
 
         self.assertEqual("subgraph", report.mode)
         self.assertEqual(
-            ["API-ORDER-001", "F-ORDER-001", "TABLE-ORDER-001"],
+            ["FEATURE-功能基线-功能-创建订单", "INTERFACE-技术基线-接口-创建订单", "TABLE-技术基线-数据库-DS-ORDER-CORE-订单表"],
             [node.id for node in report.nodes],
         )
-        self.assertNotIn("REQ-ORDER-001", [node.id for node in report.nodes])
+        self.assertNotIn("REQ-ORDER-20260915-创建订单", [node.id for node in report.nodes])
         self.assertEqual(2, len(report.edges))
 
     def test_full_graph_is_explicit_and_bounded(self) -> None:
@@ -281,13 +281,13 @@ status: proposed
 
         report = query_graph(
             self.root,
-            start="F-ORDER-001",
+            start="FEATURE-功能基线-功能-创建订单",
             depth=2,
             relation="rel_satisfies",
         )
 
         self.assertEqual(
-            ["F-ORDER-001", "REQ-ORDER-001"],
+            ["FEATURE-功能基线-功能-创建订单", "REQ-ORDER-20260915-创建订单"],
             [node.id for node in report.nodes],
         )
         self.assertEqual(["rel_satisfies"], [edge.relation for edge in report.edges])
@@ -298,7 +298,7 @@ status: proposed
         self._write(
             "01-功能基线/功能/README.md",
             """---
-id: IDX-FEATURES
+id: IDX-功能基线-功能
 type: knowledge_index
 title: 功能
 rel_classified_under: []
@@ -306,31 +306,31 @@ rel_classified_under: []
 # 功能
 """,
         )
-        for name in ("F-ORDER-001.md",):
+        for name in ("FEATURE-功能基线-功能-创建订单.md",):
             path = self.root / "01-功能基线/功能" / name
             content = path.read_text(encoding="utf-8").replace(
                 "status: baselined\n",
-                'status: baselined\nrel_classified_under:\n  - "[[01-功能基线/功能/README|IDX-FEATURES]]"\n',
+                'status: baselined\nrel_classified_under:\n  - "[[01-功能基线/功能/README|IDX-功能基线-功能]]"\n',
             )
             path.write_text(content, encoding="utf-8")
         self._write(
-            "01-功能基线/功能/F-ORDER-002.md",
+            "01-功能基线/功能/FEATURE-功能基线-功能-查询订单.md",
             """---
-id: F-ORDER-002
+id: FEATURE-功能基线-功能-查询订单
 type: feature
 title: 查询订单
 status: baselined
 rel_classified_under:
-  - "[[01-功能基线/功能/README|IDX-FEATURES]]"
+  - "[[01-功能基线/功能/README|IDX-功能基线-功能]]"
 ---
 # 查询订单
 """,
         )
 
-        report = query_graph(self.root, start="F-ORDER-001", depth=2)
+        report = query_graph(self.root, start="FEATURE-功能基线-功能-创建订单", depth=2)
 
-        self.assertIn("IDX-FEATURES", [node.id for node in report.nodes])
-        self.assertNotIn("F-ORDER-002", [node.id for node in report.nodes])
+        self.assertIn("IDX-功能基线-功能", [node.id for node in report.nodes])
+        self.assertNotIn("FEATURE-功能基线-功能-查询订单", [node.id for node in report.nodes])
 
     def test_graph_expands_classification_members_only_when_explicit(self) -> None:
         """显式分类成员查询仍受深度和节点上限控制。"""
@@ -338,7 +338,7 @@ rel_classified_under:
         self._write(
             "01-功能基线/功能/README.md",
             """---
-id: IDX-FEATURES
+id: IDX-功能基线-功能
 type: knowledge_index
 title: 功能
 rel_classified_under: []
@@ -346,23 +346,23 @@ rel_classified_under: []
 # 功能
 """,
         )
-        for identifier in ("F-ORDER-001", "F-ORDER-002"):
+        for identifier in ("FEATURE-功能基线-功能-创建订单", "FEATURE-功能基线-功能-查询订单"):
             path = self.root / "01-功能基线/功能" / f"{identifier}.md"
-            if identifier == "F-ORDER-001":
+            if identifier == "FEATURE-功能基线-功能-创建订单":
                 content = path.read_text(encoding="utf-8").replace(
                     "status: baselined\n",
-                    'status: baselined\nrel_classified_under:\n  - "[[01-功能基线/功能/README|IDX-FEATURES]]"\n',
+                    'status: baselined\nrel_classified_under:\n  - "[[01-功能基线/功能/README|IDX-功能基线-功能]]"\n',
                 )
                 path.write_text(content, encoding="utf-8")
             else:
                 self._write(
                     f"01-功能基线/功能/{identifier}.md",
-                    f'''---\nid: {identifier}\ntype: feature\ntitle: 查询订单\nstatus: baselined\nrel_classified_under:\n  - "[[01-功能基线/功能/README|IDX-FEATURES]]"\n---\n# 查询订单\n''',
+                    f'''---\nid: {identifier}\ntype: feature\ntitle: 查询订单\nstatus: baselined\nrel_classified_under:\n  - "[[01-功能基线/功能/README|IDX-功能基线-功能]]"\n---\n# 查询订单\n''',
                 )
 
         report = query_graph(
             self.root,
-            start="IDX-FEATURES",
+            start="IDX-功能基线-功能",
             depth=1,
             max_nodes=2,
             expand_classification_members=True,
@@ -383,7 +383,7 @@ rel_classified_under: []
             search_code = main(["search", str(self.root), "--query", "创建订单"])
         with redirect_stdout(graph_output):
             graph_code = main(
-                ["graph", str(self.root), "--start", "F-ORDER-001", "--depth", "1"]
+                ["graph", str(self.root), "--start", "FEATURE-功能基线-功能-创建订单", "--depth", "1"]
             )
 
         children_payload = json.loads(children_output.getvalue())

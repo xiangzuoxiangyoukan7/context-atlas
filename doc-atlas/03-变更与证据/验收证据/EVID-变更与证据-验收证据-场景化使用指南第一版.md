@@ -1,0 +1,54 @@
+---
+id: EVID-变更与证据-验收证据-场景化使用指南第一版
+type: acceptance_evidence
+rel_classified_under:
+  - "[[03-变更与证据/验收证据/README|IDX-变更与证据-验收证据]]"
+title: 场景化使用指南第一版
+---
+# 场景化使用指南第一版验收证据
+
+## 范围
+
+本证据记录 ADR-006 第一版场景化使用指南的实施与验证结果。范围包括完整指南的唯一规范源、知识库入口、插件运行资产、初始化模板契约和单来源摄取说明；不包括 `context-atlas-ingest` Skill、批量摄取、现有外部项目迁移或插件发布。
+
+## 实现结果
+
+- 完整指南的唯一规范源为 `templates/core/doc-project/05-知识治理/使用场景.md`。
+- `docs/` 是 Superpowers 创建的临时工作区，不承载本指南的正式正文或长期入口；此前新增的 `docs/context-atlas-usage-scenarios.md` 已撤销。
+- 源码根 README 链接模板中的唯一规范源。
+- 生成后的目标知识库根 README 和 `05-知识治理/README.md` 均链接 `05-知识治理/使用场景.md`。
+- `assets/manifest.json` 和模板契约已纳入指南，未来初始化产物与插件构建资产均携带该文件。
+- 第一版资料摄取一次只处理一个来源：先进行只读分析，输出新增、修订、退役、冲突或不沉淀的候选映射，再显式路由到现有维护 Skill。
+- 自然语言摄取请求和查询答案不会自动写入正式知识。
+
+## 验证结果
+
+| 验证 | 实际结果 |
+| --- | --- |
+| `py -m unittest tests.unit.test_plugin_contract tests.unit.test_core_template tests.unit.test_skill_package` | 45 项测试通过 |
+| `py -m unittest discover -s tests -p 'test_*.py'` | 234 项测试通过 |
+| `py scripts/build_plugin.py claude --output build/claude/context-atlas` | 构建成功 |
+| `py scripts/build_plugin.py codex --output build/codex/context-atlas.zip --archive` | 构建成功 |
+| Claude 构建产物指南检查 | `assets/templates/core/doc-project/05-知识治理/使用场景.md` 存在 |
+| Codex ZIP 指南检查 | 同一路径存在，文件内容可读取 |
+| `py scripts/check_knowledge_base.py doc-atlas --schema-root schemas` | 通过 |
+| `git diff --check` | 通过 |
+
+## 确认与来源
+
+- `user_statement`：2026-08-21 用户确认第一版实施 Proposal `sha256:bc932478accf85e95f4002b8466ab770232bef21b332a0272b67cdb02099a2c6`。
+- `user_statement`：2026-08-21 用户说明 `docs/` 是 Superpowers 创建的临时目录。
+- `user_statement`：2026-08-21 用户确认指南迁移 Proposal `sha256:e65dcc25f70f721c70e508470ed2b40dbbc05386a64cec025b7812539785d04a`。
+- `repository_file`：ADR-006、场景指南、知识库入口、资产清单、模板契约和相关测试。
+- `command_output`：本次实施实际执行的定向测试、全量测试、知识库校验、两平台构建、构建产物检查和差异检查。
+
+## 结论与保留项
+
+第一版场景化使用指南已经实现并通过当前自动验证。自动测试和构建只证明文件、链接、打包及受测行为满足规则，不替代用户对产品内容的确认。
+
+以下事项仍未完成：
+
+- 本证据的第一版范围未包含 `context-atlas-ingest` Skill；其后续实现与阶段结果见[单来源摄取与维护路由阶段验证](./EVID-变更与证据-验收证据-单来源摄取与维护路由阶段验证.md)。
+- 批量摄取、查询结论候选化和知识库健康检查已进入 ADR-007 批准的 0.8.0 实施范围。
+- Marketplace 安装文档迁移到 `packaging/marketplace-installation.md`，由发布与打包边界长期维护。
+- 0.7.0 已提交、同步并发布到独立 Codex 插件仓库，详见[单来源摄取与维护路由阶段验证](./EVID-变更与证据-验收证据-单来源摄取与维护路由阶段验证.md)。

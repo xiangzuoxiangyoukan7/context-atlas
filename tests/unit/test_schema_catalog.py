@@ -355,6 +355,6 @@ class SchemaCatalogTests(TempDirectoryTestCase):
         issues = catalog.validate("requirement", metadata, self.root / "其他文件名.md")
 
         self.assertEqual(
-            {"KB_SCHEMA_ID_DATE", "KB_SCHEMA_ID_FILENAME", "KB_SCHEMA_ID_TITLE"},
+            {"KB_SCHEMA_ID_DATE", "KB_SCHEMA_ID_FILENAME", "KB_SCHEMA_ID_SEMANTIC"},
             {issue.code for issue in issues},
         )

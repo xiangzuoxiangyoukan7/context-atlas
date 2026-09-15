@@ -20,12 +20,13 @@
       "只描述代码边界，此时使用 module",
       "只记录一次性实施步骤"
     ],
-    "canonical_location": "01-功能基线/功能/F<序号>-<名称>.md",
+    "canonical_location": "01-功能基线/功能/FEATURE-功能基线-功能-<名称>.md",
     "identity_contract": {
       "id_field": "id",
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 64,
       "rename_policy": "标题变化不改变稳定功能 ID；文件名可在已确认事务中调整并迁移引用。",
@@ -99,20 +100,20 @@
     },
     "rules": [
       {
-        "id": "FEATURE-ACCEPTANCE-001",
+        "id": "RULE-SCHEMA-功能-必须登记稳定验收场景",
         "enforcement": "deterministic",
         "description": "必须登记至少一个稳定验收场景 ID。",
         "remediation": "在 acceptance 中登记正文内存在的验收场景。",
         "diagnostic_code": "KB_SCHEMA_LIST"
       },
       {
-        "id": "FEATURE-READINESS-001",
+        "id": "RULE-SCHEMA-功能-就绪状态必须满足实施条件",
         "enforcement": "human_review",
         "description": "只有行为、设计、失败边界和验收足以指导实施时才能标记 ready。",
         "remediation": "补齐阻塞内容或使用 draft、clarifying、blocked。"
       },
       {
-        "id": "FEATURE-ADR-001",
+        "id": "RULE-SCHEMA-功能-设计决策不得形成第二权威",
         "enforcement": "deterministic",
         "description": "功能决策保存在正文，不允许 adr 字段形成第二权威。",
         "remediation": "合并有效决策到正文并移除 adr。",
@@ -128,21 +129,21 @@
       {
         "case": "没有验收场景",
         "value": {
-          "id": "F04",
+          "id": "FEATURE-功能基线-功能-从数据库模型生成知识模板",
           "acceptance": []
         },
-        "expected_rule": "FEATURE-ACCEPTANCE-001",
+        "expected_rule": "RULE-SCHEMA-功能-必须登记稳定验收场景",
         "reason": "无法定位如何验证规范行为。"
       },
       {
         "case": "独立 ADR 字段",
         "value": {
-          "id": "F04",
+          "id": "FEATURE-功能基线-功能-从数据库模型生成知识模板",
           "adr": [
             "ADR-001"
           ]
         },
-        "expected_rule": "FEATURE-ADR-001",
+        "expected_rule": "RULE-SCHEMA-功能-设计决策不得形成第二权威",
         "reason": "会形成竞争权威。"
       }
     ]
@@ -152,9 +153,9 @@
       "title": "功能稳定编号",
       "description": "功能的全库稳定身份；标题变化时通常保持不变。",
       "type": "string",
-      "pattern": "^(?:F\\d{2}|F-[A-Z0-9]+-[0-9]{3})$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "F04"
+        "FEATURE-功能基线-功能-从数据库模型生成知识模板"
       ]
     },
     "type": {
@@ -445,7 +446,7 @@
       },
       "examples": [
         [
-          "F01"
+          "FEATURE-功能基线-功能-知识库初始化"
         ]
       ]
     },
@@ -461,7 +462,7 @@
       },
       "examples": [
         [
-          "F04-AC-01"
+          "AC-功能-知识模型生成-生成知识模板"
         ]
       ]
     },
@@ -490,7 +491,7 @@
   ],
   "examples": [
     {
-      "id": "F04",
+      "id": "FEATURE-功能基线-功能-从数据库模型生成知识模板",
       "type": "feature",
       "title": "完整核心模板与知识模型",
       "status": "baselined",
@@ -499,12 +500,12 @@
       "current_slice": "included",
       "depends_on": [],
       "acceptance": [
-        "F04-AC-01"
+        "AC-功能-知识模型生成-生成知识模板"
       ],
       "last_updated": "2026-09-15"
     },
     {
-      "id": "F05",
+      "id": "FEATURE-功能基线-功能-知识校验",
       "type": "feature",
       "title": "知识验证",
       "status": "completed",
@@ -512,7 +513,7 @@
       "priority": "P0",
       "current_slice": "included",
       "depends_on": [
-        "F04"
+        "FEATURE-功能基线-功能-从数据库模型生成知识模板"
       ],
       "acceptance": [
         "F05-AC-01"
@@ -551,7 +552,7 @@
     ]
   },
   "patterns": {
-    "id": "(?:F\\d{2}|F-[A-Z0-9]+-[0-9]{3})",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "last_updated": "\\d{4}-\\d{2}-\\d{2}"
   },
   "non_empty_lists": [

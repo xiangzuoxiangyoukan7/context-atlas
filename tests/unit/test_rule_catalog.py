@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-# context-atlas-rules: [[rules/知识治理规则#RULE-AGENT-001|RULE-AGENT-001]] [[rules/知识治理规则#RULE-ARCHIVE-001|RULE-ARCHIVE-001]] [[rules/知识治理规则#RULE-DB-001|RULE-DB-001]] [[rules/知识治理规则#RULE-GOV-001|RULE-GOV-001]] [[rules/知识治理规则#RULE-GOV-002|RULE-GOV-002]] [[rules/知识治理规则#RULE-GOV-003|RULE-GOV-003]] [[rules/知识治理规则#RULE-IMPACT-001|RULE-IMPACT-001]] [[rules/知识治理规则#RULE-REL-001|RULE-REL-001]] [[rules/知识治理规则#RULE-SRC-001|RULE-SRC-001]]
+# context-atlas-rules: [[rules/知识治理规则#RULE-知识治理规则-正式写入必须基于已确认提案|RULE-知识治理规则-正式写入必须基于已确认提案]] [[rules/知识治理规则#RULE-知识治理规则-归档必须在替代和引用迁移后确认执行|RULE-知识治理规则-归档必须在替代和引用迁移后确认执行]] [[rules/知识治理规则#RULE-知识治理规则-数据库表字段必须记录值域和逻辑外键|RULE-知识治理规则-数据库表字段必须记录值域和逻辑外键]] [[rules/知识治理规则#RULE-知识治理规则-每条正式规则只有一个中文权威来源|RULE-知识治理规则-每条正式规则只有一个中文权威来源]] [[rules/知识治理规则#RULE-知识治理规则-规则使用方主动引用并接受覆盖检查|RULE-知识治理规则-规则使用方主动引用并接受覆盖检查]] [[rules/知识治理规则#RULE-知识治理规则-当前变更是可选知识而不是任务执行门禁|RULE-知识治理规则-当前变更是可选知识而不是任务执行门禁]] [[rules/知识治理规则#RULE-知识治理规则-业务影响由关系分析与验收证据共同判断|RULE-知识治理规则-业务影响由关系分析与验收证据共同判断]] [[rules/知识治理规则#RULE-知识治理规则-关系必须同时引用目标文件和稳定知识编号|RULE-知识治理规则-关系必须同时引用目标文件和稳定知识编号]] [[rules/知识治理规则#RULE-知识治理规则-正式知识和质检结果必须引用来源与目标|RULE-知识治理规则-正式知识和质检结果必须引用来源与目标]]
 
 import unittest
 import shutil
@@ -57,10 +57,10 @@ class RuleCatalogTests(unittest.TestCase):
         self.assertEqual(set(catalog), set(reverse_index))
         self.assertFalse(validate_rule_coverage(ROOT))
         self.assertTrue(
-            any(consumer.kind == "skill" for consumer in reverse_index["RULE-AGENT-001"])
+            any(consumer.kind == "skill" for consumer in reverse_index["RULE-知识治理规则-正式写入必须基于已确认提案"])
         )
         self.assertTrue(
-            any(consumer.kind == "validator" for consumer in reverse_index["RULE-GOV-002"])
+            any(consumer.kind == "validator" for consumer in reverse_index["RULE-知识治理规则-规则使用方主动引用并接受覆盖检查"])
         )
 
     def test_unknown_consumer_rule_is_rejected(self) -> None:
@@ -84,7 +84,7 @@ class RuleCatalogTests(unittest.TestCase):
     def test_rule_change_impact_classifies_consumers(self) -> None:
         """验证 rule_change_impact_classifies_consumers 场景。"""
 
-        impacts = build_rule_change_impact(ROOT, {"RULE-GOV-002"})
+        impacts = build_rule_change_impact(ROOT, {"RULE-知识治理规则-规则使用方主动引用并接受覆盖检查"})
 
         self.assertTrue(any(item.action == "must_handle" for item in impacts))
         self.assertTrue(any(item.consumer.kind == "validator" for item in impacts))

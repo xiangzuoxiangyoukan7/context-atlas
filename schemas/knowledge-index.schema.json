@@ -26,6 +26,7 @@
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 96,
       "rename_policy": "语义未发生身份级变化时保持稳定 ID；身份级变化建立后继项并迁移引用。",
@@ -64,20 +65,20 @@
     },
     "rules": [
       {
-        "id": "INDEX-ID-001",
+        "id": "RULE-SCHEMA-知识索引-身份必须表达目录作用域",
         "enforcement": "json_schema",
         "description": "索引 ID 必须使用 IDX- 前缀。",
         "remediation": "分配稳定 IDX- 身份。"
       },
       {
-        "id": "INDEX-CLASSIFY-001",
+        "id": "RULE-SCHEMA-知识索引-必须指向直接父目录",
         "enforcement": "deterministic",
         "description": "除根索引外必须通过 rel_classified_under 指向直接父索引。",
         "remediation": "添加唯一直接父分类关系。",
           "diagnostic_code": "KB_CLASSIFICATION_REQUIRED"
       },
       {
-        "id": "INDEX-BODY-001",
+        "id": "RULE-SCHEMA-知识索引-正文必须说明边界与查询方式",
         "enforcement": "human_review",
         "description": "正文必须说明保存边界和渐进查询方式。",
         "remediation": "补齐目录契约，不维护重复完整清单。"
@@ -92,19 +93,19 @@
       {
         "case": "普通实体 ID",
         "value": {
-          "id": "F04",
+          "id": "FEATURE-功能基线-功能-从数据库模型生成知识模板",
           "type": "knowledge_index"
         },
-        "expected_rule": "INDEX-ID-001",
+        "expected_rule": "RULE-SCHEMA-知识索引-身份必须表达目录作用域",
         "reason": "不能识别为分类节点。"
       },
       {
         "case": "非根索引缺少父分类",
         "value": {
-          "id": "IDX-MODULES",
+          "id": "IDX-技术基线-模块",
           "rel_classified_under": []
         },
-        "expected_rule": "INDEX-CLASSIFY-001",
+        "expected_rule": "RULE-SCHEMA-知识索引-必须指向直接父目录",
         "reason": "分类树发生断裂。"
       }
     ]
@@ -114,9 +115,9 @@
       "title": "索引稳定编号",
       "description": "使用 IDX- 前缀的全库唯一分类身份。",
       "type": "string",
-      "pattern": "^IDX-[A-Z0-9_-]+$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "IDX-MODULES"
+        "IDX-技术基线-模块"
       ]
     },
     "type": {
@@ -144,11 +145,11 @@
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "pattern": "^\\[\\[[^|]+\\|IDX-[A-Z0-9_-]+\\]\\]$"
+        "pattern": "^\\[\\[[^|]+\\|IDX-[0-9A-Za-z\\u4e00-\\u9fff-]+\\]\\]$"
       },
       "examples": [
         [
-          "[[02-技术基线/README|IDX-TECHNICAL]]"
+          "[[02-技术基线/README|IDX-技术基线]]"
         ]
       ]
     }
@@ -161,17 +162,17 @@
   ],
   "examples": [
     {
-      "id": "IDX-ROOT",
+      "id": "IDX-知识库",
       "type": "knowledge_index",
       "title": "知识库",
       "rel_classified_under": []
     },
     {
-      "id": "IDX-MODULES",
+      "id": "IDX-技术基线-模块",
       "type": "knowledge_index",
       "title": "模块",
       "rel_classified_under": [
-        "[[02-技术基线/README|IDX-TECHNICAL]]"
+        "[[02-技术基线/README|IDX-技术基线]]"
       ]
     }
   ],
@@ -181,7 +182,7 @@
     ]
   },
   "patterns": {
-    "id": "IDX-[A-Z0-9_-]+"
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*"
   },
   "unique_lists": [
     "rel_classified_under"

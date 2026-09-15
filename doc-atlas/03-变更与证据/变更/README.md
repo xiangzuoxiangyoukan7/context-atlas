@@ -1,17 +1,17 @@
 ---
-id: IDX-CHANGES
+id: IDX-变更与证据-变更
 type: knowledge_index
 rel_classified_under:
-  - "[[03-变更与证据/README|IDX-CHANGES-EVIDENCE]]"
+  - "[[03-变更与证据/README|IDX-变更与证据]]"
 title: 变更
 ---
 # 规格变更
 
 ## 目录契约
 
-本目录只保存具有稳定身份的规格变更。先用 `search` 定位变更；需要查看基线和证据关联时再使用 `children`、`neighbors` 和有边界的 `graph`。
+本目录只保存有稳定身份的规格变化，不保存实现任务或一次性日志。变更使用稳定身份命名，并以 `rel_classified_under` 指向本 README。使用 `children` 查看目录内容、`neighbors` 查询直接成员；普通 `graph` 到达本 README 后停止，只有显式分类成员查询才继续展开。
 
 每个 `CHG-*` 使用独立目录保存单一变更意图、规格 Delta、可选设计和外部任务引用。变更接受或外部归档后只能生成基线合并 Proposal，不能直接批准当前事实。
 
-- 变更模板位于 `.project-kb/templates/knowledge/specification-change.md`。
+- `.project-kb/templates/knowledge/specification-change.md`
 - Delta 模板位于 `.project-kb/templates/knowledge/specification-delta.md`。

@@ -20,12 +20,13 @@
       "把初始任务请求当作确认",
       "把 confirmed 状态当作代码执行或部署许可"
     ],
-    "canonical_location": "03-变更与证据/知识提案/PROP-<YYYYMMDD>-<摘要>.md",
+    "canonical_location": "03-变更与证据/待确认知识/PROP-<领域>-<YYYYMMDD>-<名称>.md",
     "identity_contract": {
       "id_field": "id",
       "filename_stem_equals_id": false,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
+      "semantic_identity": "type_and_file_or_scope",
       "date_capture_pattern": "(?!)",
       "maximum_length": 128,
       "rename_policy": "标题变化不改变稳定 ID；身份级变化建立后继项并迁移引用。",
@@ -82,20 +83,20 @@
     },
     "rules": [
       {
-        "id": "PROPOSAL-DIGEST-001",
+        "id": "RULE-SCHEMA-知识提案-内容摘要必须匹配候选内容",
         "enforcement": "deterministic",
         "description": "content_digest 必须匹配规范化候选内容的小写 SHA-256。",
         "remediation": "重新规范化并生成新修订。",
         "diagnostic_code": "KB_SCHEMA_PATTERN"
       },
       {
-        "id": "PROPOSAL-CONFIRM-001",
+        "id": "RULE-SCHEMA-知识提案-确认必须匹配当前修订",
         "enforcement": "human_review",
         "description": "只有当前完整 Proposal 被明确确认时才能进入 confirmed。",
         "remediation": "展示全部目标、事实、影响和验证后请求精确确认。"
       },
       {
-        "id": "PROPOSAL-TARGET-001",
+        "id": "RULE-SCHEMA-知识提案-目标身份必须非空且唯一",
         "enforcement": "deterministic",
         "description": "target_ids 必须非空且不可重复。",
         "remediation": "登记全部正式写入目标。",
@@ -113,7 +114,7 @@
         "value": {
           "target_ids": []
         },
-        "expected_rule": "PROPOSAL-TARGET-001",
+        "expected_rule": "RULE-SCHEMA-知识提案-目标身份必须非空且唯一",
         "reason": "无法确定正式写入范围。"
       },
       {
@@ -122,7 +123,7 @@
           "status": "confirmed",
           "content_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
-        "expected_rule": "PROPOSAL-CONFIRM-001",
+        "expected_rule": "RULE-SCHEMA-知识提案-确认必须匹配当前修订",
         "reason": "责任人未看到完整待确认内容。"
       }
     ]
@@ -132,9 +133,9 @@
       "title": "候选稳定编号",
       "description": "使用日期和内容摘要前八位形成去重身份。",
       "type": "string",
-      "pattern": "^PROP-\\d{8}-[A-F0-9]{8}$",
+      "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "PROP-20260915-A1B2C3D4"
+        "PROP-知识治理-20260915-Schema候选"
       ]
     },
     "type": {
@@ -348,7 +349,7 @@
       },
       "examples": [
         [
-          "F04"
+          "FEATURE-功能基线-功能-从数据库模型生成知识模板"
         ]
       ]
     },
@@ -522,14 +523,14 @@
   ],
   "examples": [
     {
-      "id": "PROP-20260915-A1B2C3D4",
+      "id": "PROP-知识治理-20260915-Schema候选",
       "type": "knowledge_proposal",
       "title": "Schema 候选",
       "status": "proposed",
       "checkpoint": "before_delivery",
       "content_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "target_ids": [
-        "F04"
+        "FEATURE-功能基线-功能-从数据库模型生成知识模板"
       ],
       "source_type": "repository_file",
       "source_reference": "schemas/feature.schema.json",
@@ -541,14 +542,14 @@
       "captured_at": "2026-09-15T12:00:00+08:00"
     },
     {
-      "id": "PROP-20260915-001122AA",
+      "id": "PROP-知识治理-20260915-数据库确认",
       "type": "knowledge_proposal",
       "title": "需求身份确认",
       "status": "confirmed",
       "checkpoint": "user_decision",
       "content_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       "target_ids": [
-        "REQ-ATLAS-001"
+        "REQ-ATLAS-20260915-知识库README层级导航"
       ],
       "source_type": "user_statement",
       "source_reference": "当前会话",
@@ -590,7 +591,7 @@
     ]
   },
   "patterns": {
-    "id": "PROP-\\d{8}-[A-F0-9]{8}",
+    "id": "[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*",
     "content_digest": "[a-f0-9]{64}",
     "proposed_by": "(?:PERSON|AGENT)-[A-Z0-9-]+",
     "operated_by": "AGENT-[A-Z0-9-]+",
