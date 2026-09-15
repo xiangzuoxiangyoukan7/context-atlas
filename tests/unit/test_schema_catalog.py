@@ -337,24 +337,25 @@ class SchemaCatalogTests(TempDirectoryTestCase):
         with self.assertRaisesRegex(ValueError, "terminal_states must use values"):
             SchemaCatalog.load(self.root)
 
-    def test_requirement_identity_rejects_invalid_date_filename_and_title(self) -> None:
-        """验证需求身份同时约束真实日期、文件名和语义名称。"""
+    def test_requirement_identity_rejects_invalid_date_and_filename(self) -> None:
+        """验证需求身份同时约束真实身份日期和文件名。"""
 
         repository_root = Path(__file__).resolve().parents[2]
         catalog = SchemaCatalog.load(repository_root / "schemas")
         metadata = {
-            "id": "REQ-ATLAS-20260230-错误名称",
+            "id": "REQ-20260230-错误名称",
             "type": "requirement",
             "title": "正确名称",
             "status": "proposed",
             "readiness": "draft",
             "priority": "P1",
+            "identity_created_at": "2026-02-30",
             "last_updated": "2026-09-15",
         }
 
         issues = catalog.validate("requirement", metadata, self.root / "其他文件名.md")
 
-        self.assertEqual(
-            {"KB_SCHEMA_ID_DATE", "KB_SCHEMA_ID_FILENAME", "KB_SCHEMA_ID_SEMANTIC"},
-            {issue.code for issue in issues},
-        )
+        codes = {issue.code for issue in issues}
+        self.assertIn("KB_SCHEMA_ID_DATE", codes)
+        self.assertIn("KB_SCHEMA_ID_FILENAME", codes)
+        self.assertIn("KB_JSON_SCHEMA", codes)

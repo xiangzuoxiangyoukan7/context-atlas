@@ -20,16 +20,16 @@
       "把初始任务请求当作确认",
       "把 confirmed 状态当作代码执行或部署许可"
     ],
-    "canonical_location": "03-变更与证据/待确认知识/PROP-<领域>-<YYYYMMDD>-<名称>.md",
+    "canonical_location": "03-变更与证据/待确认知识/PROP-<YYYYMMDD>-<语义名称>.md",
     "identity_contract": {
       "id_field": "id",
-      "filename_stem_equals_id": false,
+      "filename_stem_equals_id": true,
       "semantic_name_field": "title",
       "semantic_name_normalization": "remove_non_alphanumeric_or_hyphen",
-      "semantic_identity": "type_and_file_or_scope",
-      "date_capture_pattern": "(?!)",
-      "maximum_length": 128,
-      "rename_policy": "标题变化不改变稳定 ID；身份级变化建立后继项并迁移引用。",
+      "semantic_identity": "type_date_and_semantic_name",
+      "date_capture_pattern": "^PROP-([0-9]{8})-",
+      "maximum_length": 120,
+      "rename_policy": "身份建立日期不可变；普通标题或内容修订保持 ID；身份级改名必须通过已确认事务迁移全部引用。",
       "collision_policy": "目标 ID 或路径冲突时阻塞，不追加隐式序号。"
     },
     "body_contract": {
@@ -131,11 +131,11 @@
   "properties": {
     "id": {
       "title": "候选稳定编号",
-      "description": "使用日期和内容摘要前八位形成去重身份。",
+      "description": "由类型、不可变身份建立日期和最小可区分语义名称组成，并与文件名主体一致。",
       "type": "string",
       "pattern": "^[0-9A-Za-z\\u4e00-\\u9fff]+(?:-[0-9A-Za-z\\u4e00-\\u9fff]+)*$",
       "examples": [
-        "PROP-知识治理-20260915-Schema候选"
+        "PROP-20260916-示例知识"
       ]
     },
     "type": {
@@ -502,6 +502,22 @@
       "examples": [
         "2026-09-15T12:00:00+08:00"
       ]
+    },
+    "identity_created_at": {
+      "title": "身份建立日期",
+      "description": "该知识稳定身份首次建立的日期；建立后不可因内容修订而改变。",
+      "type": "string",
+      "format": "date",
+      "examples": [
+        "2026-09-16"
+      ],
+      "x-context-atlas": {
+        "value_source": "由正式新增或格式升级事务的实际身份建立日期确定，并与 ID 中 YYYYMMDD 一致。",
+        "do_not_use_when": [
+          "不得使用最后修改日期替代",
+          "不得根据业务发生日期猜测"
+        ]
+      }
     }
   },
   "required": [

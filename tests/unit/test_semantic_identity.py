@@ -16,8 +16,11 @@ class SemanticIdentityTests(unittest.TestCase):
         root = Path("C:/project/doc-demo")
         path = root / "01-功能基线/功能/旧文件.md"
         self.assertEqual(
-            "FEATURE-功能基线-功能-Agent-驱动的知识库初始化",
-            build_semantic_id("feature", "Agent 驱动的知识库初始化", path, root),
+            "FEAT-20260916-Agent-驱动的知识库初始化",
+            build_semantic_id(
+                "feature", "Agent 驱动的知识库初始化", path, root,
+                identity_created_at="2026-09-16",
+            ),
         )
 
     def test_readme_identity_uses_directory_scope(self) -> None:
@@ -40,14 +43,32 @@ class SemanticIdentityTests(unittest.TestCase):
             build_semantic_id("knowledge_index", "Schema 自描述", path, root),
         )
 
-    def test_root_architecture_uses_canonical_identity(self) -> None:
-        """项目架构标题可以业务化，但权威入口保持稳定规范路径。"""
+    def test_root_architecture_keeps_fixed_authority_identity(self) -> None:
+        """固定权威入口在清单驱动改造前保持兼容身份。"""
 
         root = Path("C:/project/doc-demo")
         path = root / "02-技术基线/系统架构.md"
         self.assertEqual(
             "ARCH-技术基线-系统架构",
-            build_semantic_id("architecture", "Agent 原生项目知识库系统架构", path, root),
+            build_semantic_id(
+                "architecture", "Agent 原生项目知识库系统架构", path, root,
+                identity_created_at="2026-09-16",
+            ),
+        )
+
+    def test_content_update_date_does_not_change_identity(self) -> None:
+        """last_updated 变化不得改变已经建立的身份日期。"""
+
+        root = Path("C:/project/doc-demo")
+        path = root / "02-技术基线/接口/IFACE-20260916-刷新统计.md"
+        self.assertEqual(
+            "IFACE-20260916-刷新统计",
+            build_semantic_id(
+                "interface", "刷新统计", path, root,
+                current_id=path.stem,
+                identity_created_at="2026-09-16",
+                last_updated="2026-09-18",
+            ),
         )
 
     def test_normalization_keeps_chinese_and_technical_words(self) -> None:

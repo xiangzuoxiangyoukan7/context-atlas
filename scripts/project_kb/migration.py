@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import replace
+from datetime import date
 import hashlib
 import json
 from pathlib import Path
@@ -15,7 +16,12 @@ from typing import Iterable
 from .compatibility import CompatibilityPolicy, FormatVersion, format_generation
 from .model import DocumentRecord
 from .obsidian import graph_text, read_graph
-from .semantic_identity import SEMANTIC_ID_PREFIXES, build_semantic_id, normalize_semantic_name
+from .semantic_identity import (
+    DATED_FILE_IDENTITY_TYPES,
+    SEMANTIC_ID_PREFIXES,
+    build_semantic_id,
+    normalize_semantic_name,
+)
 
 
 CURRENT_ONLY_RUNTIME_REMOVALS = (
@@ -550,6 +556,28 @@ def _remove_frontmatter_field(content: str, field: str) -> str:
     while end < closing and lines[end].startswith((" ", "\t")):
         end += 1
     return "".join(lines[:start] + lines[end:])
+
+
+def _set_frontmatter_scalar(content: str, field: str, value: str) -> str:
+    """设置简单 Front Matter 标量；字段不存在时插入关闭分隔符之前。"""
+
+    lines = content.splitlines(keepends=True)
+    if not lines or lines[0].rstrip("\r\n") != "---":
+        raise ValueError("migration target lacks front matter")
+    closing = next(
+        (index for index, line in enumerate(lines[1:], start=1) if line.rstrip("\r\n") == "---"),
+        None,
+    )
+    if closing is None:
+        raise ValueError("migration target has incomplete front matter")
+    prefix = f"{field}:"
+    for index in range(1, closing):
+        if lines[index].startswith(prefix):
+            ending = "\r\n" if lines[index].endswith("\r\n") else "\n"
+            lines[index] = f"{field}: {value}{ending}"
+            return "".join(lines)
+    lines.insert(closing, f"{field}: {value}\n")
+    return "".join(lines)
 
 
 def _current_database_table_rewrites(
@@ -1248,6 +1276,8 @@ def _format16_semantic_identities(
     filename_replacements: dict[str, str] = {}
     added_moves: list[MigrationMove] = []
     unresolved: list[MigrationUnresolved] = []
+    rewrite_map = {item.path.resolve(): item for item in rewrites}
+    migration_identity_date = date.today().isoformat()
     for record in records:
         try:
             relative_parts = record.path.resolve().relative_to(root.resolve()).parts
@@ -1261,19 +1291,26 @@ def _format16_semantic_identities(
         if (
             not isinstance(identifier, str)
             or not isinstance(knowledge_type, str)
-            or knowledge_type not in SEMANTIC_ID_PREFIXES
+            or knowledge_type not in DATED_FILE_IDENTITY_TYPES
         ):
             continue
         if not isinstance(title, str):
             continue
         try:
             last_updated = record.metadata.get("last_updated")
+            existing_identity_date = record.metadata.get("identity_created_at")
+            identity_created_at = (
+                existing_identity_date
+                if isinstance(existing_identity_date, str)
+                else migration_identity_date
+            )
             new_identifier = build_semantic_id(
                 knowledge_type,
                 title,
                 record.path,
                 root,
                 current_id=identifier,
+                identity_created_at=identity_created_at,
                 last_updated=last_updated if isinstance(last_updated, str) else None,
             )
         except ValueError as error:
@@ -1289,12 +1326,23 @@ def _format16_semantic_identities(
             unresolved.append(MigrationUnresolved(record.path, identifier, "语义身份与其他知识冲突"))
             continue
         replacements[identifier] = new_identifier
+        current_rewrite = rewrite_map.get(record.path.resolve())
+        current_content = (
+            current_rewrite.content
+            if current_rewrite is not None and current_rewrite.content is not None
+            else record.path.read_text(encoding="utf-8")
+        )
+        dated_content = _set_frontmatter_scalar(
+            current_content, "identity_created_at", identity_created_at
+        )
+        rewrite_map[record.path.resolve()] = MigrationRewrite(
+            record.path.resolve(), _digest(record.path.read_bytes()), dated_content
+        )
         if target.resolve() != record.path.resolve():
             filename_replacements[record.path.name] = target.name
             filename_replacements[record.path.stem] = target.stem
             added_moves.append(MigrationMove(record.path.resolve(), target.resolve(), _digest(record.path.read_bytes())))
 
-    rewrite_map = {item.path.resolve(): item for item in rewrites}
     rewrite_candidates = [*root.rglob("*.md")]
     manifest = root / "knowledge-base.yaml"
     if manifest.is_file():
@@ -1468,7 +1516,7 @@ def build_migration_proposal(
     )
     rewrites = _current_template_frontmatter_rewrites(resolved_root, rewrites)
     if (
-        format_generation(result.creates_format_version) >= 16
+        format_generation(result.creates_format_version) >= 17
         and result.format_version != result.creates_format_version
     ):
         moves, rewrites, identity_unresolved = _format16_semantic_identities(

@@ -33,6 +33,8 @@ def format_generation(version: FormatVersion) -> int:
     if isinstance(version, int):
         return version
     major, minor, patch = (int(part) for part in version.split("."))
+    if (major, minor, patch) >= (0, 20, 0):
+        return 17
     return 16 if (major, minor, patch) >= (0, 19, 0) else 15
 
 

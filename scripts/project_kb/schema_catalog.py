@@ -273,18 +273,46 @@ class SchemaCatalog:
                     issues.append(Issue("KB_SCHEMA_ID_FILENAME", path, "identifier must equal filename stem"))
                 capture = identity.get("date_capture_pattern")
                 match = re.search(str(capture), identifier) if capture else None
+                if (
+                    identity.get("semantic_identity") == "type_date_and_semantic_name"
+                    and match is not None
+                    and "identity_created_at" not in metadata
+                ):
+                    issues.append(Issue(
+                        "KB_SCHEMA_REQUIRED", path, "missing required field: identity_created_at"
+                    ))
                 if match is not None:
                     try:
                         datetime.strptime(match.group(1), "%Y%m%d")
                     except (ValueError, IndexError):
                         issues.append(Issue("KB_SCHEMA_ID_DATE", path, "identifier contains an invalid calendar date"))
+                if (
+                    identity.get("semantic_identity") == "type_date_and_semantic_name"
+                    and "identity_created_at" in metadata
+                ):
+                    identity_created_at = metadata.get("identity_created_at")
+                    expected_date = (
+                        identity_created_at.replace("-", "")
+                        if isinstance(identity_created_at, str) else None
+                    )
+                    captured_date = match.group(1) if match is not None else None
+                    if expected_date is None or captured_date != expected_date:
+                        issues.append(Issue(
+                            "KB_SCHEMA_IDENTITY_DATE",
+                            path,
+                            "identifier date must equal identity_created_at",
+                        ))
                 if identity.get("semantic_identity") == "type_and_file_or_scope" and isinstance(title, str):
                     knowledge_type = metadata.get("type")
                     if isinstance(knowledge_type, str):
                         root = _knowledge_root(path)
                         last_updated = metadata.get("last_updated")
+                        identity_created_at = metadata.get("identity_created_at")
                         if not semantic_id_matches(
                             identifier, knowledge_type, title, path, root,
+                            identity_created_at=(
+                                identity_created_at if isinstance(identity_created_at, str) else None
+                            ),
                             last_updated=last_updated if isinstance(last_updated, str) else None,
                         ):
                             issues.append(Issue("KB_SCHEMA_ID_SEMANTIC", path, "identifier must express its type and file or README scope"))
