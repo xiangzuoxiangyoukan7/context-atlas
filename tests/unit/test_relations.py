@@ -80,6 +80,36 @@ class RelationIndexTests(TempDirectoryTestCase):
             index.outgoing("FEATURE-001")[0].target.anchor,
         )
 
+    def test_current_semantic_prefixes_keep_relation_endpoint_compatibility(self) -> None:
+        """0.20.0 的 FEAT/IFACE 前缀应继续满足既有关系端点类型。"""
+
+        _write_document(
+            self.root / "01-功能基线/需求/REQ-20260916-示例需求.md",
+            "id: REQ-20260916-示例需求\ntype: requirement\n",
+        )
+        _write_document(
+            self.root / "01-功能基线/功能/FEAT-20260916-示例功能.md",
+            "id: FEAT-20260916-示例功能\ntype: feature\n"
+            "rel_satisfies:\n"
+            "  - \"[[01-功能基线/需求/REQ-20260916-示例需求|REQ-20260916-示例需求]]\"\n",
+        )
+        _write_document(
+            self.root / "02-技术基线/数据库/TABLE-20260916-示例表.md",
+            "id: TABLE-20260916-示例表\ntype: database_table\n",
+        )
+        _write_document(
+            self.root / "02-技术基线/接口/IFACE-20260916-示例接口.md",
+            "id: IFACE-20260916-示例接口\ntype: interface\n"
+            "rel_reads:\n"
+            "  - \"[[02-技术基线/数据库/TABLE-20260916-示例表|TABLE-20260916-示例表]]\"\n",
+        )
+
+        index, issues = self._build()
+
+        self.assertEqual([], issues)
+        self.assertEqual("REQ-20260916-示例需求", index.outgoing("FEAT-20260916-示例功能")[0].target.identifier)
+        self.assertEqual("TABLE-20260916-示例表", index.outgoing("IFACE-20260916-示例接口")[0].target.identifier)
+
     def test_invalid_relations_report_exact_codes(self) -> None:
         """未知字段、断链、错 ID、错锚点、错方向和重复目标应分别定位。"""
 

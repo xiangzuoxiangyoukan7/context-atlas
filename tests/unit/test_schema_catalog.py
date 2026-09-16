@@ -7,6 +7,9 @@ from tests.helpers import TempDirectoryTestCase
 from scripts.project_kb.schema_catalog import SchemaCatalog
 
 
+ROOT = Path(__file__).resolve().parents[2]
+
+
 class SchemaCatalogTests(TempDirectoryTestCase):
     """验证 SchemaCatalogTests 相关行为。"""
 
@@ -47,6 +50,27 @@ class SchemaCatalogTests(TempDirectoryTestCase):
         )
 
         self.assertEqual([issue.code for issue in issues], ["KB_SCHEMA_ENUM"])
+
+    def test_requirement_pattern_accepts_current_type_date_identity(self) -> None:
+        """需求兼容规则必须接受 0.20.0 的 REQ-YYYYMMDD-语义名称。"""
+
+        for identifier in (
+            "REQ-20260916-协同标签推送统计需求",
+            "REQ-ATLAS-20260916-协同标签推送统计需求",
+        ):
+            with self.subTest(identifier=identifier):
+                issues = SchemaCatalog.load(ROOT / "schemas").validate(
+                    "requirement",
+                    {
+                        "id": identifier,
+                        "type": "requirement",
+                        "title": "协同标签推送统计需求",
+                        "identity_created_at": "2026-09-16",
+                    },
+                    self.root / f"{identifier}.md",
+                )
+
+                self.assertNotIn("KB_SCHEMA_PATTERN", [issue.code for issue in issues])
 
     def test_catalog_reports_all_supported_constraint_failures(self) -> None:
         """验证 catalog_reports_all_supported_constraint_failures 场景。"""

@@ -103,6 +103,39 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertIn("graph", rewrite.content)
         self.assertNotIn("## 本目录文件", rewrite.content)
 
+    def test_preflight_diagnostics_become_stable_unresolved_items(self) -> None:
+        """隔离预检问题必须带稳定 issue_id，并绑定回正式库中的原始文件。"""
+
+        from scripts.project_kb.health import HealthReport
+        from scripts.project_kb.migration import preflight_migration
+        from scripts.project_kb.model import Issue
+
+        self._manifest()
+        self._source()
+        original = self._knowledge()
+        proposal = self._proposal()
+        moved = next(item for item in proposal.moves if item.source == original.resolve())
+
+        def validation_issue(staging: Path, _config: object) -> list[Issue]:
+            """返回定位到迁移后目标路径的模拟预检问题。"""
+
+            relative = moved.target.relative_to(self.root.resolve())
+            return [Issue("KB_TEST", staging / relative, "需要语义判断")]
+
+        clean_health = HealthReport("healthy", (), 1)
+        with patch("scripts.project_kb.validator.validate", side_effect=validation_issue), patch(
+            "scripts.project_kb.health.inspect_health", return_value=clean_health
+        ):
+            first = preflight_migration(self.root, proposal, ROOT / "schemas")
+            second = preflight_migration(self.root, proposal, ROOT / "schemas")
+
+        self.assertEqual("failed", first.preflight_status)
+        self.assertEqual(1, len(first.unresolved))
+        self.assertEqual(original.resolve(), first.unresolved[0].path)
+        self.assertRegex(first.unresolved[0].issue_id, r"^upgrade-unresolved-[0-9a-f]{12}$")
+        self.assertEqual(first.unresolved[0].issue_id, second.unresolved[0].issue_id)
+        self.assertEqual(first.proposal_revision, second.proposal_revision)
+
     def test_agent_plan_resolves_legacy_data_source_merge_before_formal_apply(self) -> None:
         """Agent 可合并旧数据源双文件，并在隔离副本证明最终结构收敛。"""
 
