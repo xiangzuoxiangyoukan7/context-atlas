@@ -103,6 +103,46 @@ class MigrationTests(TempDirectoryTestCase):
         self.assertIn("graph", rewrite.content)
         self.assertNotIn("## 本目录文件", rewrite.content)
 
+    def test_obsidian_workspace_changes_do_not_stale_normalization_proposal(self) -> None:
+        """Obsidian 自动保存个人视图状态时，受管颜色规范化修订号仍须稳定。"""
+
+        import json
+
+        from scripts.project_kb.compatibility import CompatibilityPolicy
+        from scripts.project_kb.discovery import discover_records
+        from scripts.project_kb.migration import apply_migration, build_migration_proposal
+
+        root = materialize_core_template(self.root, "volatile-obsidian")
+        graph = root / ".obsidian/graph.json"
+        from scripts.project_kb.obsidian import graph_text
+
+        graph.parent.mkdir()
+        graph.write_text(graph_text(), encoding="utf-8")
+        payload = json.loads(graph.read_text(encoding="utf-8"))
+        payload["scale"] = 1.25
+        payload["colorGroups"] = []
+        graph.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+        policy = CompatibilityPolicy.load(ROOT / "compatibility.json")
+        records, issues = discover_records(root, frozenset())
+        self.assertEqual([], issues)
+        first = build_migration_proposal(root, records, policy)
+        graph_rewrite = next(item for item in first.rewrites if item.path == graph.resolve())
+        self.assertEqual("dynamic", graph_rewrite.original_digest)
+        self.assertIsNone(graph_rewrite.content)
+
+        payload["scale"] = 2.5
+        graph.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        records, issues = discover_records(root, frozenset())
+        self.assertEqual([], issues)
+        second = build_migration_proposal(root, records, policy)
+
+        self.assertEqual(first.proposal_revision, second.proposal_revision)
+        apply_migration(root, second, second.proposal_revision)
+        applied = json.loads(graph.read_text(encoding="utf-8"))
+        self.assertEqual(2.5, applied["scale"])
+        self.assertTrue(applied["colorGroups"])
+
     def test_preflight_diagnostics_become_stable_unresolved_items(self) -> None:
         """隔离预检问题必须带稳定 issue_id，并绑定回正式库中的原始文件。"""
 
@@ -481,7 +521,7 @@ rel_classified_under:
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
         converted_path = next(requirement.parent.glob("REQ-????????-示例需求.md"))
         converted = converted_path.read_text(encoding="utf-8")
-        self.assertEqual("0.20.0", report.format_version)
+        self.assertEqual("0.20.2", report.format_version)
         self.assertIn("readiness: ready", converted)
         self.assertNotIn("business_rules:", converted)
         self.assertIn("## 来源与确认", converted)
@@ -497,7 +537,7 @@ rel_classified_under:
         proposal = self._proposal()
 
         self.assertEqual(1, proposal.source_version)
-        self.assertEqual("0.20.0", proposal.target_version)
+        self.assertEqual("0.20.2", proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
         self.assertIn(
             '"reference": "fixture"',
@@ -536,7 +576,7 @@ rel_classified_under:
 
         proposal = self._proposal()
 
-        self.assertEqual("0.20.0", proposal.target_version)
+        self.assertEqual("0.20.2", proposal.target_version)
         self.assertEqual([], list(proposal.unresolved))
 
         from scripts.project_kb.migration import apply_migration
@@ -573,7 +613,7 @@ rel_classified_under:
         self.assertNotIn("SRC-001", content)
         source_content = (self.root / "00-项目总览/SRC-001.md").read_text(encoding="utf-8")
         self.assertIn("type: knowledge_item", source_content)
-        self.assertIn("format_version: 0.20.0", manifest_content)
+        self.assertIn("format_version: 0.20.2", manifest_content)
         self.assertIn("knowledge_revision: 1", manifest_content)
         self.assertIn("created_by:", manifest_content)
         self.assertNotIn("revision:", manifest_content.replace("knowledge_revision:", ""))
@@ -626,7 +666,7 @@ rel_classified_under:
         )
 
         self.assertEqual(2, proposal.source_version)
-        self.assertEqual("0.20.0", proposal.target_version)
+        self.assertEqual("0.20.2", proposal.target_version)
         self.assertEqual(2, len(proposal.moves))
         self.assertEqual(2, len(proposal.removals))
         self.assertEqual([], list(proposal.unresolved))
@@ -637,7 +677,7 @@ rel_classified_under:
         self.assertTrue((self.root / "05-知识治理/GOV-知识治理-AI-知识采集协议.md").is_file())
         self.assertFalse((legacy / "本地开发.md").exists())
         self.assertFalse((legacy / "测试规则.md").exists())
-        self.assertIn("format_version: 0.20.0", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 0.20.2", manifest.read_text(encoding="utf-8"))
         self.assertIn("05-知识治理/README.md", root_readme.read_text(encoding="utf-8"))
         self.assertNotIn("05-开发指南", root_readme.read_text(encoding="utf-8"))
         governance = (self.root / "05-知识治理/README.md").read_text(encoding="utf-8")
@@ -664,11 +704,11 @@ rel_classified_under:
 
         proposal = self._proposal()
         self.assertEqual([], list(proposal.unresolved))
-        self.assertEqual("0.20.0", proposal.target_version)
+        self.assertEqual("0.20.2", proposal.target_version)
         apply_migration(self.root, proposal, proposal.proposal_revision)
 
         self.assertIn("rel_satisfies: []", feature.read_text(encoding="utf-8"))
-        self.assertIn("format_version: 0.20.0", manifest.read_text(encoding="utf-8"))
+        self.assertIn("format_version: 0.20.2", manifest.read_text(encoding="utf-8"))
 
     def test_format_six_creates_complete_specification_workspaces_atomically(self) -> None:
         """格式六升级应创建目录说明及其模板，并拒绝提案后的目标冲突。"""
@@ -692,7 +732,7 @@ rel_classified_under:
 
         proposal = self._proposal()
         report = apply_migration(self.root, proposal, proposal.proposal_revision)
-        self.assertEqual("0.20.0", report.format_version)
+        self.assertEqual("0.20.2", report.format_version)
         self.assertTrue((self.root / "03-变更与证据/变更/README.md").is_file())
         self.assertFalse((self.root / "03-变更与证据/变更/TEMPLATE.md").exists())
         self.assertFalse((self.root / "03-变更与证据/变更/Delta/TEMPLATE.md").exists())

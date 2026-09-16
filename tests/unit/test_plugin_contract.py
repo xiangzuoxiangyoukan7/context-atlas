@@ -1,5 +1,7 @@
 """test_plugin_contract 自动化测试。"""
 
+# context-atlas-rules: [[rules/知识治理规则#RULE-知识治理规则-每次发布必须升版且版本身份一致|RULE-知识治理规则-每次发布必须升版且版本身份一致]]
+
 from __future__ import annotations
 
 import json
@@ -10,6 +12,7 @@ import unittest
 from pathlib import Path
 
 from scripts.project_kb.plugin_contract import (
+    _validate_version_increment,
     load_qoder_manifest,
     load_marketplace_manifests,
     load_plugin_manifests,
@@ -77,6 +80,12 @@ class PluginContractTests(unittest.TestCase):
             encoding="utf-8",
         )
         PluginContractTests._write_valid_marketplaces(root)
+        (root / "compatibility.json").write_text(
+            json.dumps({"created_format_version": "0.1.0"}), encoding="utf-8"
+        )
+        template_manifest = root / "templates/core/doc-project/knowledge-base.yaml"
+        template_manifest.parent.mkdir(parents=True, exist_ok=True)
+        template_manifest.write_text("format_version: 0.1.0\n", encoding="utf-8")
         for name in ("context-atlas-work", "context-atlas-init", "context-atlas-navigate", "context-atlas-review", "context-atlas-ingest", "context-atlas-add", "context-atlas-revise", "context-atlas-retire", "context-atlas-delete", "context-atlas-upgrade"):
             skill = root / "skills" / name / "SKILL.md"
             skill.parent.mkdir(parents=True, exist_ok=True)
@@ -204,6 +213,32 @@ class PluginContractTests(unittest.TestCase):
         """验证 repository_contract_has_no_errors 场景。"""
 
         self.assertEqual([], validate_plugin_contract(ROOT))
+
+    def test_release_versions_are_aligned(self) -> None:
+        """插件清单、兼容清单与知识库模板必须使用同一个发布版本。"""
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_release_plugin(root)
+            self.assertEqual([], validate_plugin_contract(root))
+
+            compatibility = root / "compatibility.json"
+            compatibility.write_text(
+                json.dumps({"created_format_version": "0.1.1"}), encoding="utf-8"
+            )
+            errors = validate_plugin_contract(root)
+
+        self.assertTrue(any("created_format_version" in error for error in errors))
+
+    def test_release_version_advances_exactly_one_patch_or_minor(self) -> None:
+        """发布版本只允许顺序 patch，或破坏性变更顺序提升 minor。"""
+
+        tags = ["v0.19.2", "v0.20.0", "v0.20.1"]
+        self.assertEqual([], _validate_version_increment("0.20.2", tags))
+        self.assertEqual([], _validate_version_increment("0.21.0", tags))
+        self.assertTrue(_validate_version_increment("0.20.3", tags))
+        self.assertTrue(_validate_version_increment("0.21.1", tags))
+        self.assertTrue(_validate_version_increment("0.22.0", tags))
 
     def test_marketplace_installation_documentation_covers_user_flow(self) -> None:
         """Marketplace 文档必须覆盖两平台安装、确认门禁和路径替换说明。"""

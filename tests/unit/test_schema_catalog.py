@@ -52,7 +52,7 @@ class SchemaCatalogTests(TempDirectoryTestCase):
         self.assertEqual([issue.code for issue in issues], ["KB_SCHEMA_ENUM"])
 
     def test_requirement_pattern_accepts_current_type_date_identity(self) -> None:
-        """需求兼容规则必须接受 0.20.0 的 REQ-YYYYMMDD-语义名称。"""
+        """需求兼容规则必须接受 0.20.0 起的 REQ-YYYYMMDD-语义名称。"""
 
         for identifier in (
             "REQ-20260916-协同标签推送统计需求",
